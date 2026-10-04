@@ -71,7 +71,7 @@ fun HistoryScreen(state: HistoryState, onDay: (Long) -> Unit, onRetry: () -> Uni
                         }
                         CalIcon(R.drawable.ic_chevron)
                     }
-                    Text("${nutritionText(day.totals.energyKcal, 0)} ${stringResource(R.string.kcal)}",
+                    Text(stringResource(R.string.nutrition_with_unit, nutritionText(day.totals.energyKcal, 0), stringResource(R.string.kcal)),
                         style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
                     MacroSummary(day.totals, targets = state.settings)
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)

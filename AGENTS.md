@@ -123,10 +123,14 @@ Prefer clear native Android interactions over custom UI components unless the cu
 Avoid premature visual polish when implementing infrastructure or domain work.
 
 - Telegram is a navigation geometry and interaction reference only; do not copy its source or styling.
-- Keep Just Cal's floating navigation visually restrained and its global FAB separate from destinations.
+- Keep Just Cal's floating navigation content-sized and horizontally centered in a transparent host; its separate global FAB sits above/right. Reserve the action row when Settings hides the FAB, and reserve enough screen content space for all floating controls.
+- Keep pinned bottom actions in transparent hosts. Scroll content behind floating controls with end padding for the final item; focus scrolling must clear the controls and keyboard.
 - Retain each top-level Navigation 3 stack when switching tabs.
 - History selection and direct “go to day” navigation must converge on the same Day Detail flow.
 - Macro goals are independently optional; clearing a goal removes it. Never display an absent goal as a zero target.
+- Keep brightness and color style independent in the existing DataStore. Just Cal is the branded default; Material You uses dynamic colors on Android 12+ and the branded fallback below that. Use semantic theme colors in components.
+- Language belongs to Android application locales, never a duplicate DataStore key. Retain AppCompatActivity/autoStoreLocales for Android 11/12 and AGP-generated locale config filtered to supported resource languages.
+- Keep user-visible strings in matching English/Russian resources, route identifiers language-independent, and displayed dates/nutrition numbers locale-aware.
 
 ## Image acquisition
 

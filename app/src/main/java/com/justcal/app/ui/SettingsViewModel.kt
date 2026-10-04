@@ -32,10 +32,13 @@ class SettingsViewModel @Inject constructor(
         savedState["profile_name"] ?: "", savedState["profile_goal"] ?: "2000",
         Appearance.entries.firstOrNull { it.name == savedState.get<String>("profile_appearance") } ?: Appearance.SYSTEM,
         savedState["profile_protein"] ?: "", savedState["profile_fat"] ?: "", savedState["profile_carbs"] ?: "",
+        ColorStyle.entries.firstOrNull { it.name == savedState.get<String>("profile_color_style") } ?: ColorStyle.JUST_CAL,
     )))
     val state = mutableState.asStateFlow()
     val appearance = state.map { it.settings.appearance }.distinctUntilChanged()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Appearance.SYSTEM)
+    val colorStyle = state.map { it.settings.colorStyle }.distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ColorStyle.JUST_CAL)
     private var loadJob: Job? = null
     init { retry() }
 
@@ -63,6 +66,7 @@ class SettingsViewModel @Inject constructor(
         savedState["profile_name"] = draft.displayName
         savedState["profile_goal"] = draft.goal
         savedState["profile_appearance"] = draft.appearance.name
+        savedState["profile_color_style"] = draft.colorStyle.name
         savedState["profile_protein"] = draft.proteinGoal
         savedState["profile_fat"] = draft.fatGoal
         savedState["profile_carbs"] = draft.carbsGoal

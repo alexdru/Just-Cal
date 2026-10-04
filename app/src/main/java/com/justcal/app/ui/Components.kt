@@ -16,9 +16,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import com.justcal.app.R
 import com.justcal.app.domain.ConsumedNutrition
 import com.justcal.app.domain.AppSettings
-import com.justcal.app.domain.display
 import java.math.BigDecimal
-import java.text.DecimalFormatSymbols
 
 @Composable
 fun CalIcon(@DrawableRes resource: Int, description: String? = null) {
@@ -28,7 +26,7 @@ fun CalIcon(@DrawableRes resource: Int, description: String? = null) {
 @Composable
 fun nutritionText(value: BigDecimal, scale: Int): String {
     val locale = LocalConfiguration.current.locales[0]
-    return value.display(scale).replace('.', DecimalFormatSymbols(locale).decimalSeparator)
+    return formatNutrition(value, scale, locale)
 }
 
 @Composable
@@ -47,9 +45,10 @@ fun MacroSummary(nutrition: ConsumedNutrition, modifier: Modifier = Modifier, ta
 private fun macroText(consumed: BigDecimal, goalHundredths: Long?): AnnotatedString {
     val amount = nutritionText(consumed, 1)
     val unit = stringResource(R.string.grams)
-    val text = if (goalHundredths == null) "$amount $unit" else {
+    val text = if (goalHundredths == null) stringResource(R.string.nutrition_with_unit, amount, unit) else {
         val goal = BigDecimal.valueOf(goalHundredths, 2).stripTrailingZeros()
-        "${stringResource(R.string.macro_progress, amount, nutritionText(goal, goal.scale().coerceAtLeast(0)))} $unit"
+        stringResource(R.string.nutrition_with_unit,
+            stringResource(R.string.macro_progress, amount, nutritionText(goal, goal.scale().coerceAtLeast(0))), unit)
     }
     val contextStyle = MaterialTheme.typography.bodyMedium.toSpanStyle()
         .copy(color = MaterialTheme.colorScheme.onSurfaceVariant)

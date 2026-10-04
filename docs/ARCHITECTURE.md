@@ -14,7 +14,9 @@ Diary history rows and the direct “Choose a day” calendar both open the same
 
 The separate floating FAB is an action, not a fourth destination. It is visible on Home, Diary root and Day Detail, and hidden in Settings and the food editor. It opens a modal Add Food launcher with Scan package, Scan meal and Add manually. The launcher freezes today's date from Home/Diary root or the viewed date from Day Detail. Manual entry still opens the existing FoodEditor. Scans show a compact camera/photo source choice in the same sheet, then enter the shared image pipeline.
 
-The navigation uses Just Cal's own restrained Compose styling. Telegram is only a reference for geometry and interaction; no Telegram source or assets are included.
+The navigation pill is content-sized and horizontally centered on every top-level screen and Day Detail. The global FAB sits separately above/right; its row remains reserved in Settings so hiding it does not change the pill's geometry. The outer host is transparent, with no full-width bottom surface. Scaffold measures the complete control host, including navigation-bar and horizontal safe insets, and screens reserve that height plus a content gap so the last item remains reachable. Inactive tabs are transparent; a compact capsule and animated semantic icon/label colors indicate selection. Telegram is only a reference for geometry and interaction; no Telegram source or assets are included.
+
+Pinned food-editor actions (Add to diary / Save changes) use a transparent host above the navigation bar or keyboard. Scroll content extends behind the button, with end padding based on the measured host height. Focus scrolling accounts for that overlay so the active field remains above the button when the keyboard opens.
 
 ## Local image acquisition
 
@@ -40,8 +42,20 @@ Portions and daily totals are derived with exact BigDecimal arithmetic, rounded 
 
 ## Settings and local profile
 
-GoalPreferences owns the existing DataStore preferences file. It atomically saves optional local display name, calorie target, independently optional protein/fat/carbohydrate targets and appearance preference. There are no accounts, authentication or cloud profiles.
+GoalPreferences owns the existing DataStore preferences file. It atomically saves optional local display name, calorie target, independently optional protein/fat/carbohydrate targets, brightness (System/Light/Dark) and color style (Just Cal/Material You). Existing appearance and nutrition keys are retained; the additive color_style key defaults to Just Cal when absent or unrecognized. There are no accounts, authentication or cloud profiles.
 
 The calorie target is a required positive whole number, initially an editable 2000 kcal placeholder. Macro targets are independently nullable positive values in integer hundredths of grams. A blank field removes that target; zero is rejected, never used as an absence sentinel. Existing preferences without macro keys mean no macro targets.
 
-Home, Diary and Day Detail observe the same saved settings reactively. Configured macros display consumed / target; unconfigured macros display consumed grams alone. Unsaved Settings drafts survive tab switches and configuration changes but do not alter displayed targets or appearance until saved.
+Home, Diary and Day Detail observe the same saved settings reactively. Configured macros display consumed / target; unconfigured macros display consumed grams alone. Unsaved Settings drafts, including both appearance choices, survive tab switches and configuration changes but do not alter displayed targets or appearance until saved.
+
+Just Cal is the default green leaf palette, with complete semantic Material color roles in light and dark. Material You opts into Android dynamic colors on API 31+, with a Just Cal fallback below that. Custom components use MaterialTheme semantic colors; brightness and palette are independent.
+
+## Application language and formatting
+
+English is the unqualified resource fallback; Russian has matching translated resources. AGP generates the locale config from resources.properties and resource qualifiers, filtered to en/ru so dependency translations do not advertise unsupported languages.
+
+The in-app System default/English/Русский selector uses AppCompatDelegate application locales and applies immediately, independently of Save changes. MainActivity extends AppCompatActivity to support the same official API on Android 11/12; AndroidX autoStoreLocales owns storage there. Android 13+ delegates to the framework locale service, synchronizing with system app-language settings. There is no language key in DataStore, custom context wrapping or resource mutation. Empty application locales mean System default; the picker rereads the actual app override on configuration changes and resume.
+
+Locale recreation retains the existing saved Navigation 3 keys/stacks and Settings drafts. Route and enum identifiers stay language-independent. Dates use the resource configuration locale; nutrition numbers use NumberFormat with exact BigDecimal input and HALF_UP presentation rounding, including consumed weight and goals. Editable decimal input continues to accept comma or dot.
+
+The locale implementation follows [Android per-app language guidance](https://developer.android.com/guide/topics/resources/app-languages).

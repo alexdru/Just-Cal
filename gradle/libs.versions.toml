@@ -4,6 +4,7 @@ kotlin = "2.4.20"
 ksp = "2.3.12"
 compose = "2026.09.00"
 activity = "1.13.0"
+appcompat = "1.8.0"
 core = "1.19.1"
 lifecycle = "2.11.0"
 navigation = "1.2.0"
@@ -22,6 +23,7 @@ camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = 
 camera-compose = { module = "androidx.camera:camera-compose", version.ref = "camerax" }
 core = { module = "androidx.core:core-ktx", version.ref = "core" }
 activity = { module = "androidx.activity:activity-compose", version.ref = "activity" }
+appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose" }
 compose-ui = { module = "androidx.compose.ui:ui" }
 compose-foundation = { module = "androidx.compose.foundation:foundation" }

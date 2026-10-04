@@ -11,6 +11,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,6 +31,8 @@ import com.justcal.app.ui.theme.CalSpacing
 fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSave: () -> Unit,
     onRetry: () -> Unit, bottomBar: @Composable () -> Unit) {
     val focus = LocalFocusManager.current
+    val direction = LocalLayoutDirection.current
+    val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
     var showMacros by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(state.loading) {
         if (!state.loading && listOf(state.draft.proteinGoal, state.draft.fatGoal, state.draft.carbsGoal).any { it.isNotBlank() }) {
@@ -36,8 +44,14 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSa
         bottomBar = { Box(Modifier.imePadding()) { bottomBar() } },
         contentWindowInsets = WindowInsets.safeDrawing.union(WindowInsets.ime),
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)
-            .verticalScroll(rememberScrollState()).padding(horizontal = CalSpacing.page, vertical = 16.dp),
+        // Only the keyboard bounds the viewport. Content scrolls behind the floating controls;
+        // end padding lets the final item settle above them.
+        Column(Modifier.fillMaxSize().padding(
+            start = padding.calculateStartPadding(direction), end = padding.calculateEndPadding(direction),
+            top = padding.calculateTopPadding(), bottom = imeBottom,
+        ).consumeWindowInsets(padding)
+            .verticalScroll(rememberScrollState()).padding(horizontal = CalSpacing.page)
+            .padding(top = 16.dp, bottom = (padding.calculateBottomPadding() - imeBottom).coerceAtLeast(0.dp) + 16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)) {
             if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
             SectionTitle(stringResource(R.string.profile))
@@ -80,6 +94,7 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSa
             }
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 SectionTitle(stringResource(R.string.appearance))
+                Text(stringResource(R.string.brightness), style = MaterialTheme.typography.titleMedium)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Appearance.entries.forEach { appearance ->
                         val label = when (appearance) {
@@ -94,6 +109,20 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSa
                     }
                 }
             }
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(stringResource(R.string.color_style), style = MaterialTheme.typography.titleMedium)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ColorStyle.entries.forEach { style ->
+                        FilterChip(selected = state.draft.colorStyle == style,
+                            onClick = { onChange(state.draft.copy(colorStyle = style)) },
+                            label = { Text(stringResource(if (style == ColorStyle.JUST_CAL) R.string.color_just_cal else R.string.color_material_you)) },
+                            enabled = !state.loading && !state.busy, modifier = Modifier.heightIn(min = 48.dp))
+                    }
+                }
+                Text(stringResource(R.string.color_style_hint), style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            LanguageSettings()
             if (state.error) {
                 Text(stringResource(R.string.storage_error), color = MaterialTheme.colorScheme.error)
                 TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
@@ -131,4 +160,33 @@ private fun MacroGoalField(label: Int, value: String, invalid: Boolean, enabled:
         singleLine = true, shape = MaterialTheme.shapes.medium, isError = invalid,
         supportingText = if (invalid) ({ Text(stringResource(R.string.macro_goal_error)) }) else null,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+}
+
+/** Android owns the selected app locale; returning from system Settings rereads it. */
+@Composable
+private fun LanguageSettings() {
+    val configuration = LocalConfiguration.current
+    val focus = LocalFocusManager.current
+    var language by remember { mutableStateOf(AppCompatDelegate.getApplicationLocales()[0]?.language.orEmpty()) }
+    LaunchedEffect(configuration) {
+        language = AppCompatDelegate.getApplicationLocales()[0]?.language.orEmpty()
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        language = AppCompatDelegate.getApplicationLocales()[0]?.language.orEmpty()
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        SectionTitle(stringResource(R.string.language))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("" to R.string.language_system, "en" to R.string.language_english, "ru" to R.string.language_russian)
+                .forEach { (tag, label) ->
+                    FilterChip(selected = language == tag, onClick = {
+                        focus.clearFocus()
+                        language = tag
+                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
+                    }, label = { Text(stringResource(label)) }, modifier = Modifier.heightIn(min = 48.dp))
+                }
+        }
+        Text(stringResource(R.string.language_hint), style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
 }

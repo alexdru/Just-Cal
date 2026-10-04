@@ -36,6 +36,7 @@ import kotlinx.serialization.Serializable
 fun JustCalApp() {
     val settingsViewModel = hiltViewModel<SettingsViewModel>()
     val appearance by settingsViewModel.appearance.collectAsStateWithLifecycle()
+    val colorStyle by settingsViewModel.colorStyle.collectAsStateWithLifecycle()
     val dark = when (appearance) {
         Appearance.SYSTEM -> isSystemInDarkTheme()
         Appearance.LIGHT -> false
@@ -49,7 +50,7 @@ fun JustCalApp() {
     var launcherDay by rememberSaveable { mutableStateOf<Long?>(null) }
     var launcherMode by rememberSaveable { mutableStateOf<ScanMode?>(null) }
 
-    JustCalTheme(darkTheme = dark) {
+    JustCalTheme(darkTheme = dark, colorStyle = colorStyle) {
         // Decorate every stack even while inactive, retaining its entry state and ViewModels.
         val entries = stacks.mapValues { (tab, stack) ->
             key(tab) {

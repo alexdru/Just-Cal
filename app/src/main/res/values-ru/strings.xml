@@ -50,7 +50,7 @@
     <string name="amount_helper">Рассчитаем пищевую ценность для этого веса.</string>
     <string name="saving">Сохранение…</string>
     <string name="portion_detail">%1$s ккал · Б %2$s · Ж %3$s · У %4$s</string>
-    <string name="home">Дом</string>
+    <string name="home">Главная</string>
     <string name="history">Дневник</string>
     <string name="settings">Настройки</string>
     <string name="consumed_day">Съедено</string>
@@ -107,4 +107,15 @@
     <string name="image_dimensions">%1$d × %2$d пикс.</string>
     <string name="about">О приложении</string>
     <string name="app_version">Версия %1$s</string>
+    <string name="brightness">Яркость</string>
+    <string name="color_style">Палитра</string>
+    <string name="color_just_cal">Just Cal</string>
+    <string name="color_material_you">Material You</string>
+    <string name="color_style_hint">Material You использует цвета обоев на Android 12 и новее. На более ранних версиях — палитру Just Cal.</string>
+    <string name="language">Язык</string>
+    <string name="language_system">Как в системе</string>
+    <string name="language_english">English</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_hint">Язык меняется сразу.</string>
+    <string name="nutrition_with_unit">%1$s %2$s</string>
 </resources>

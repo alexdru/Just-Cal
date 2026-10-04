@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import com.justcal.app.domain.AppSettings
 import com.justcal.app.domain.Appearance
+import com.justcal.app.domain.ColorStyle
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -19,6 +20,7 @@ class GoalPreferences @Inject constructor(@ApplicationContext private val contex
     private val goalKey = intPreferencesKey("daily_calorie_goal")
     private val nameKey = stringPreferencesKey("display_name")
     private val appearanceKey = stringPreferencesKey("appearance")
+    private val colorStyleKey = stringPreferencesKey("color_style")
     private val proteinKey = longPreferencesKey("protein_goal_grams_hundredths")
     private val fatKey = longPreferencesKey("fat_goal_grams_hundredths")
     private val carbsKey = longPreferencesKey("carbs_goal_grams_hundredths")
@@ -32,6 +34,7 @@ class GoalPreferences @Inject constructor(@ApplicationContext private val contex
             proteinGoalGramsHundredths = preferences[proteinKey],
             fatGoalGramsHundredths = preferences[fatKey],
             carbsGoalGramsHundredths = preferences[carbsKey],
+            colorStyle = ColorStyle.entries.firstOrNull { it.name == preferences[colorStyleKey] } ?: ColorStyle.JUST_CAL,
         )
     }
     val goal = settings.map { (_, goalKcal) -> goalKcal }
@@ -45,6 +48,7 @@ class GoalPreferences @Inject constructor(@ApplicationContext private val contex
             it[goalKey] = settings.goalKcal
             it[nameKey] = settings.displayName
             it[appearanceKey] = settings.appearance.name
+            it[colorStyleKey] = settings.colorStyle.name
             settings.proteinGoalGramsHundredths?.let { value -> it[proteinKey] = value } ?: it.remove(proteinKey)
             settings.fatGoalGramsHundredths?.let { value -> it[fatKey] = value } ?: it.remove(fatKey)
             settings.carbsGoalGramsHundredths?.let { value -> it[carbsKey] = value } ?: it.remove(carbsKey)

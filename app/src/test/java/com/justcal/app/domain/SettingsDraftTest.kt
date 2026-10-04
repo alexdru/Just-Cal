@@ -47,6 +47,16 @@ class SettingsDraftTest {
         assertEquals(1L, SettingsDraft(proteinGoal = " 0,01 ").validated()!!.proteinGoalGramsHundredths)
     }
 
+    @Test fun brightnessAndPaletteRoundTripIndependentlyWithoutChangingGoals() {
+        val original = AppSettings("Alex", 2300, Appearance.DARK,
+            proteinGoalGramsHundredths = 12345, colorStyle = ColorStyle.MATERIAL_YOU)
+        val draft = SettingsDraft.from(original)
+        assertEquals(original, draft.validated())
+        assertEquals(original.copy(appearance = Appearance.LIGHT), draft.copy(appearance = Appearance.LIGHT).validated())
+        assertEquals(original.copy(colorStyle = ColorStyle.JUST_CAL), draft.copy(colorStyle = ColorStyle.JUST_CAL).validated())
+        assertEquals(ColorStyle.JUST_CAL, AppSettings().colorStyle)
+    }
+
     @Test fun loadingExistingPreferencesDoesNotChangeTheirValues() {
         val original = AppSettings("Алекс", 2300, Appearance.LIGHT)
         assertEquals(original, SettingsDraft.from(original).validated())

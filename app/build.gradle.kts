@@ -77,6 +77,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures { compose = true; buildConfig = true }
+    // AGP marks this supported locale-generation DSL as incubating.
+    @Suppress("UnstableApiUsage")
+    androidResources {
+        generateLocaleConfig = true
+        localeFilters += listOf("en", "ru")
+    }
     signingConfigs {
         if (hasReleaseSigning) {
             create("release") {
@@ -103,6 +109,7 @@ dependencies {
     androidTestImplementation(platform(libs.compose.bom))
     implementation(libs.core)
     implementation(libs.activity)
+    implementation(libs.appcompat)
     implementation(libs.camera.core)
     implementation(libs.camera.camera2)
     implementation(libs.camera.lifecycle)

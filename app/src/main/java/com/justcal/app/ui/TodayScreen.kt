@@ -81,7 +81,7 @@ fun TodayScreen(
                         TextButton(
                             onClick = { showGoal = true },
                             contentPadding = PaddingValues(horizontal = 0.dp),
-                        ) { Text(stringResource(R.string.goal, state.goalKcal.toString())) }
+                        ) { Text(stringResource(R.string.goal, nutritionText(state.goalKcal.toBigDecimal(), 0))) }
                     }
                 }
             }
@@ -116,6 +116,7 @@ fun TodayScreen(
 
 @Composable
 private fun FoodRow(entry: DiaryEntry, portion: ConsumedNutrition, onClick: () -> Unit) {
+    val weight = java.math.BigDecimal.valueOf(entry.eatenGramsHundredths, 2).stripTrailingZeros()
     Column {
         Row(
             Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick).padding(vertical = 12.dp),
@@ -123,7 +124,8 @@ private fun FoodRow(entry: DiaryEntry, portion: ConsumedNutrition, onClick: () -
         ) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(entry.name, style = MaterialTheme.typography.titleMedium)
-                Text("${entry.eatenGramsHundredths.hundredthsText()} ${stringResource(R.string.grams)}",
+                Text(stringResource(R.string.nutrition_with_unit,
+                    nutritionText(weight, weight.scale().coerceAtLeast(0)), stringResource(R.string.grams)),
                     style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(stringResource(R.string.portion_detail, nutritionText(portion.energyKcal, 0),
                     nutritionText(portion.proteinGrams, 1), nutritionText(portion.fatGrams, 1), nutritionText(portion.carbsGrams, 1)),

@@ -1,6 +1,7 @@
 package com.justcal.app.domain
 
 enum class Appearance { SYSTEM, LIGHT, DARK }
+enum class ColorStyle { JUST_CAL, MATERIAL_YOU }
 
 /** Local settings. Macro goals are nullable integer hundredths of a gram, never zero sentinels. */
 data class AppSettings(
@@ -10,6 +11,7 @@ data class AppSettings(
     val proteinGoalGramsHundredths: Long? = null,
     val fatGoalGramsHundredths: Long? = null,
     val carbsGoalGramsHundredths: Long? = null,
+    val colorStyle: ColorStyle = ColorStyle.JUST_CAL,
 )
 
 data class SettingsDraft(
@@ -19,6 +21,7 @@ data class SettingsDraft(
     val proteinGoal: String = "",
     val fatGoal: String = "",
     val carbsGoal: String = "",
+    val colorStyle: ColorStyle = ColorStyle.JUST_CAL,
 ) {
     val nameValid get() = displayName.trim().length <= 80
     val calorieGoalValid get() = goal.trim().toIntOrNull()?.let { it in 1..100000 } == true
@@ -29,7 +32,7 @@ data class SettingsDraft(
     fun validated(): AppSettings? {
         if (!nameValid || !calorieGoalValid || !proteinGoalValid || !fatGoalValid || !carbsGoalValid) return null
         return AppSettings(displayName.trim(), goal.trim().toInt(), appearance,
-            parseGoal(proteinGoal), parseGoal(fatGoal), parseGoal(carbsGoal))
+            parseGoal(proteinGoal), parseGoal(fatGoal), parseGoal(carbsGoal), colorStyle)
     }
 
     companion object {
@@ -38,6 +41,7 @@ data class SettingsDraft(
             settings.proteinGoalGramsHundredths?.hundredthsText().orEmpty(),
             settings.fatGoalGramsHundredths?.hundredthsText().orEmpty(),
             settings.carbsGoalGramsHundredths?.hundredthsText().orEmpty(),
+            settings.colorStyle,
         )
 
         private fun optionalGoalValid(text: String) = text.isBlank() || parseGoal(text) != null
