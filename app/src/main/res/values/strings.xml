@@ -107,6 +107,11 @@
     <string name="image_dimensions">%1$d × %2$d px</string>
     <string name="about">About</string>
     <string name="app_version">Version %1$s</string>
+    <string name="app_author">Author: %1$s</string>
+    <string name="author_name" translatable="false">alexdru</string>
+    <string name="repository">Source code on GitHub</string>
+    <string name="repository_name" translatable="false">alexdru/Just-Cal</string>
+    <string name="repository_url" translatable="false">https://github.com/alexdru/Just-Cal</string>
     <string name="brightness">Brightness</string>
     <string name="color_style">Color style</string>
     <string name="color_just_cal">Just Cal</string>

@@ -9,6 +9,8 @@ Edit only [version.properties](../version.properties) for application versions:
 - Git tags are `vMAJOR.MINOR.PATCH`; the `v` is not part of Android's version name.
 - `0.x.y` means development before 1.0. These are normal GitHub Releases, not GitHub pre-releases. Alpha/beta tag syntax is not supported yet.
 
+Agents update the explicit version once when completing application changes: patch for fixes, minor for new features, and an increased version code alongside either. A version already chosen by the user for that task is retained. Implementation/verification retries and documentation-only changes do not trigger extra increments. Version updates do not create tags or publish releases.
+
 Gradle consumes explicit properties without Git. Source archives build normally. Release validation compares the tag to the committed version and requires a code greater than every other SemVer release tag. Release validation also rejects uncommitted tracked changes. Keep published tags immutable; never move or delete them.
 
 ## Create the signing key manually

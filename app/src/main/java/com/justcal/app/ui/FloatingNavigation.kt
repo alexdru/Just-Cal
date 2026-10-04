@@ -22,10 +22,10 @@ import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class MainTab(val label: Int, val icon: Int) : NavKey {
-    HOME(R.string.home, R.drawable.ic_home),
-    DIARY(R.string.history, R.drawable.ic_diary),
-    SETTINGS(R.string.settings, R.drawable.ic_settings),
+enum class MainTab(val label: Int, val icon: Int, val selectedIcon: Int) : NavKey {
+    HOME(R.string.home, R.drawable.ic_home, R.drawable.ic_home_filled),
+    DIARY(R.string.history, R.drawable.ic_diary, R.drawable.ic_diary_filled),
+    SETTINGS(R.string.settings, R.drawable.ic_settings, R.drawable.ic_settings_filled),
 }
 
 /** Transparent host; its measured height reserves space for both floating controls. */
@@ -69,7 +69,7 @@ fun FloatingNavigation(selected: MainTab, onSelect: (MainTab) -> Unit, onAdd: ((
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.spacedBy(2.dp),
                             ) {
-                                CalIcon(tab.icon)
+                                CalIcon(if (active) tab.selectedIcon else tab.icon)
                                 Text(stringResource(tab.label), style = MaterialTheme.typography.labelSmall,
                                     color = foreground, textAlign = TextAlign.Center)
                             }

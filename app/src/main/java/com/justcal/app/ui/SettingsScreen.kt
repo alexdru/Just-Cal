@@ -10,9 +10,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.Lifecycle
@@ -136,12 +138,37 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSa
             Text(stringResource(R.string.privacy_title), style = MaterialTheme.typography.titleMedium)
             Text(stringResource(R.string.privacy_description), style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SectionTitle(stringResource(R.string.about))
-                Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleMedium)
-                Text(stringResource(R.string.app_version, BuildConfig.VERSION_NAME),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            AboutSettings()
+        }
+    }
+}
+
+@Composable
+private fun AboutSettings() {
+    val uriHandler = LocalUriHandler.current
+    val repositoryUrl = stringResource(R.string.repository_url)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        SectionTitle(stringResource(R.string.about))
+        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.app_version, BuildConfig.VERSION_NAME),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(R.string.app_author, stringResource(R.string.author_name)),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+        TextButton(
+            onClick = { uriHandler.openUri(repositoryUrl) },
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+            contentPadding = PaddingValues(vertical = 12.dp),
+            shape = RectangleShape,
+        ) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(stringResource(R.string.repository), style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.repository_name), style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                CalIcon(R.drawable.ic_chevron)
             }
         }
     }

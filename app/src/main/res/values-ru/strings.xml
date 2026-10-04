@@ -107,6 +107,8 @@
     <string name="image_dimensions">%1$d × %2$d пикс.</string>
     <string name="about">О приложении</string>
     <string name="app_version">Версия %1$s</string>
+    <string name="app_author">Автор: %1$s</string>
+    <string name="repository">Исходный код на GitHub</string>
     <string name="brightness">Яркость</string>
     <string name="color_style">Палитра</string>
     <string name="color_just_cal">Just Cal</string>

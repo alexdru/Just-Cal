@@ -188,6 +188,7 @@ For small reversible decisions, choose the simplest reasonable implementation an
 ## Release engineering
 
 - Edit application versions explicitly in `version.properties`; never derive or rewrite them from Git.
+- Automatically update the version once per completed application-changing task unless the user has already supplied or bumped the version for that task. Use a patch increment for fixes and a minor increment for new features; increase `versionCode` with each version change. Keep that version during implementation and verification retries. Do not bump versions for discussion or documentation-only changes.
 - Release tags must equal `v` plus `versionName`. Increase `versionCode` for every published Android release and preserve published tags.
 - Never commit keystores, signing credentials or generated release binaries.
 - Preserve adaptive foreground/background and explicit monochrome launcher support.

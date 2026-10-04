@@ -4,7 +4,7 @@
 
 ## App version
 
-The current app version and Android version code are defined in [version.properties](version.properties), the single editable source of truth. Settings → About shows the installed build's version. User-facing versions follow SemVer; release tags add a `v` prefix. Versions below 1.0 are development releases.
+The current app version and Android version code are defined in [version.properties](version.properties), the single editable source of truth. Settings → About shows the installed build's version, credits alexdru as the author and opens the [source repository](https://github.com/alexdru/Just-Cal) in the external browser. User-facing versions follow SemVer; release tags add a `v` prefix. Versions below 1.0 are development releases.
 
 A local-first calorie diary for Android 11+ (`com.justcal.app`). Language can follow the system or be set to English or Russian in the app; Android 13+ also exposes Just Cal in system app-language settings. Brightness (System/Light/Dark) and color style are saved separately. Just Cal's green leaf palette is the default; Material You opts into dynamic wallpaper colors on Android 12+, with a branded fallback on older devices.
 
