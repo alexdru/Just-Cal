@@ -18,13 +18,15 @@ data class TodayState(
     val date: LocalDate = LocalDate.now(),
     val entries: List<DiaryEntry> = emptyList(),
     val totals: ConsumedNutrition = ConsumedNutrition(),
-    val goalKcal: Int = GoalPreferences.DEFAULT_GOAL,
+    val settings: AppSettings = AppSettings(),
     val portions: Map<Long, ConsumedNutrition> = emptyMap(),
     val remainingKcal: BigDecimal = BigDecimal.valueOf(GoalPreferences.DEFAULT_GOAL.toLong()),
     val progress: Float = 0f,
     val loading: Boolean = true,
     val error: Boolean = false,
-)
+) {
+    val goalKcal get() = settings.goalKcal
+}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -55,8 +57,9 @@ class TodayViewModel @Inject constructor(
                 emit(TodayState(date = date, loading = false, error = true))
             }
     }
-    val state = combine(entries, preferences.goal, goalError) { diary, goal, error ->
-        diary.copy(goalKcal = goal, error = diary.error || error,
+    val state = combine(entries, preferences.settings, goalError) { diary, settings, error ->
+        val goal = settings.goalKcal
+        diary.copy(settings = settings, error = diary.error || error,
             remainingKcal = NutritionCalculator.remaining(diary.totals, goal),
             progress = diary.totals.energyKcal.divide(BigDecimal.valueOf(goal.toLong()), 4, RoundingMode.HALF_UP).toFloat().coerceIn(0f, 1f))
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TodayState(date = day.value))

@@ -26,6 +26,7 @@ data class EditorState(
     val completed: Boolean = false,
     val missing: Boolean = false,
     val storageError: Boolean = false,
+    val dayEpoch: Long? = null,
 )
 
 @HiltViewModel(assistedFactory = EditorViewModel.Factory::class)
@@ -33,13 +34,14 @@ class EditorViewModel @AssistedInject constructor(
     private val repository: DiaryRepository,
     private val savedState: SavedStateHandle,
     private val clock: Clock,
-    @Assisted private val entryId: Long?,
+    @Assisted("entryId") private val entryId: Long?,
+    @Assisted("dayEpoch") private val dayEpoch: Long? = null,
 ) : ViewModel() {
     private var original: DiaryEntry? = null
     private fun restoredDraft() = FoodField.entries.fold(FoodDraft()) { draft, field ->
         draft.with(field, savedState[field.name] ?: draft.value(field))
     }
-    private val mutableState = MutableStateFlow(EditorState(draft = restoredDraft(), loading = entryId != null))
+    private val mutableState = MutableStateFlow(EditorState(draft = restoredDraft(), loading = entryId != null, dayEpoch = dayEpoch))
     val state: StateFlow<EditorState> = mutableState.asStateFlow()
 
     init {
@@ -54,7 +56,7 @@ class EditorViewModel @AssistedInject constructor(
                 original = repository.get(requireNotNull(entryId))
                 val draft = if (savedState.get<Boolean>("hasDraft") == true) restoredDraft()
                     else original?.let(FoodDraft::from) ?: FoodDraft()
-                mutableState.update { it.copy(draft = draft, loading = false, missing = original == null) }
+                mutableState.update { it.copy(draft = draft, loading = false, missing = original == null, dayEpoch = original?.dayEpoch) }
                 updatePreview()
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
@@ -92,7 +94,7 @@ class EditorViewModel @AssistedInject constructor(
                     name = food.name,
                     per100g = food.per100g,
                     eatenGramsHundredths = food.eatenGramsHundredths,
-                    dayEpoch = original?.dayEpoch ?: clock.instant().atZone(ZoneId.systemDefault()).toLocalDate().toEpochDay(),
+                    dayEpoch = original?.dayEpoch ?: dayEpoch ?: clock.instant().atZone(ZoneId.systemDefault()).toLocalDate().toEpochDay(),
                     createdAtMillis = original?.createdAtMillis ?: clock.millis(),
                     source = original?.source ?: EntrySource.MANUAL,
                 )
@@ -120,5 +122,5 @@ class EditorViewModel @AssistedInject constructor(
         }
     }
 
-    @AssistedFactory interface Factory { fun create(entryId: Long?): EditorViewModel }
+    @AssistedFactory interface Factory { fun create(@Assisted("entryId") entryId: Long?, @Assisted("dayEpoch") dayEpoch: Long?): EditorViewModel }
 }

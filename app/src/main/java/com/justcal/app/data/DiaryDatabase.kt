@@ -33,6 +33,8 @@ data class DiaryEntryEntity(
 interface DiaryDao {
     @Query("SELECT * FROM diary_entries WHERE dayEpoch = :dayEpoch ORDER BY createdAtMillis DESC, id DESC")
     fun observeDay(dayEpoch: Long): Flow<List<DiaryEntryEntity>>
+    @Query("SELECT * FROM diary_entries ORDER BY dayEpoch DESC, createdAtMillis DESC, id DESC")
+    fun observeAll(): Flow<List<DiaryEntryEntity>>
     @Query("SELECT * FROM diary_entries WHERE id = :id")
     suspend fun get(id: Long): DiaryEntryEntity?
     @Insert

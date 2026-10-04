@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -27,8 +26,9 @@ import java.time.format.FormatStyle
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodayScreen(
-    state: TodayState, onAdd: () -> Unit, onEdit: (Long) -> Unit,
+    state: TodayState, onEdit: (Long) -> Unit,
     onGoal: (Int) -> Unit, onRetry: () -> Unit,
+    onBack: (() -> Unit)? = null, bottomBar: @Composable () -> Unit,
 ) {
     var showGoal by rememberSaveable { mutableStateOf(false) }
     val locale = LocalConfiguration.current.locales[0]
@@ -37,25 +37,16 @@ fun TodayScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text(stringResource(R.string.today), style = MaterialTheme.typography.headlineLarge)
+                        Text(stringResource(if (onBack == null) R.string.home else R.string.history), style = MaterialTheme.typography.headlineLarge)
                         Text(state.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale)),
                             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 },
+                navigationIcon = { onBack?.let { IconButton(onClick = it) { CalIcon(R.drawable.ic_back, stringResource(R.string.close)) } } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
             )
         },
-        bottomBar = {
-            Surface {
-                Box(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = CalSpacing.page, vertical = 12.dp)) {
-                    Button(onClick = onAdd, modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp), shape = CircleShape) {
-                        CalIcon(R.drawable.ic_add)
-                        Spacer(Modifier.width(12.dp))
-                        Text(stringResource(R.string.add_food), style = MaterialTheme.typography.titleMedium)
-                    }
-                }
-            }
-        },
+        bottomBar = bottomBar,
     ) { padding ->
         LazyColumn(
             Modifier.fillMaxSize().consumeWindowInsets(padding),
@@ -69,7 +60,7 @@ fun TodayScreen(
             item {
                 Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = MaterialTheme.shapes.extraLarge) {
                     Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(stringResource(R.string.consumed), style = MaterialTheme.typography.labelLarge)
+                        Text(stringResource(if (onBack == null) R.string.consumed else R.string.consumed_day), style = MaterialTheme.typography.labelLarge)
                         FlowRow(verticalArrangement = Arrangement.spacedBy(0.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(nutritionText(state.totals.energyKcal, 0), style = MaterialTheme.typography.displayLarge)
                             Text(stringResource(R.string.kcal), modifier = Modifier.align(Alignment.Bottom).padding(bottom = 10.dp), style = MaterialTheme.typography.titleLarge)
@@ -94,7 +85,7 @@ fun TodayScreen(
                     }
                 }
             }
-            item { MacroSummary(state.totals) }
+            item { MacroSummary(state.totals, targets = state.settings) }
             item {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                     SectionTitle(stringResource(R.string.diary))

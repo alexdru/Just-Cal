@@ -60,6 +60,7 @@ dependencies {
     androidTestImplementation(libs.test.junit)
     androidTestImplementation(libs.test.runner)
     androidTestImplementation(libs.test.core)
+    androidTestImplementation(libs.test.espresso)
     androidTestImplementation(libs.ui.test)
     debugImplementation(libs.ui.test.manifest)
 }

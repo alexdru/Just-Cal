@@ -87,11 +87,31 @@ class EditorViewModelTest {
         assertTrue(vm.state.value.completed)
         assertFalse(repository.rows.containsKey(7))
     }
+    @Test fun addingToPastDayUsesSelectedDateAndManualSource() = runTest(dispatcher) {
+        val repository = FakeDiary()
+        val vm = EditorViewModel(repository, SavedStateHandle(), clock, null, 123)
+        fill(vm); vm.save(); advanceUntilIdle()
+        val entry = repository.rows.values.single()
+        assertEquals(123L, entry.dayEpoch)
+        assertEquals(clock.millis(), entry.createdAtMillis)
+        assertEquals(EntrySource.MANUAL, entry.source)
+    }
+
+    @Test fun editingKeepsOriginalDayEvenWhenDifferentDayIsRequested() = runTest(dispatcher) {
+        val repository = FakeDiary()
+        repository.rows[7] = DiaryEntry(7, "Food", NutritionPer100g(100, 0, 0, 0), 10000, 12, 99)
+        val vm = EditorViewModel(repository, SavedStateHandle(), clock, 7, 123)
+        advanceUntilIdle()
+        fill(vm); vm.save(); advanceUntilIdle()
+        assertEquals(12L, repository.rows.getValue(7).dayEpoch)
+    }
+
     private class FakeDiary : DiaryRepository {
         val rows = mutableMapOf<Long, DiaryEntry>()
         var fail = false
         var saves = 0
         override fun observeDay(dayEpoch: Long) = flowOf(rows.values.filter { it.dayEpoch == dayEpoch })
+        override fun observeAll() = flowOf(rows.values.toList())
         override suspend fun get(id: Long) = rows[id]
         override suspend fun save(entry: DiaryEntry): Long {
             delay(10)

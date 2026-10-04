@@ -1,10 +1,12 @@
 # Just Cal
 
-A local-first calorie diary for Android 11+ (`com.justcal.app`). English and Russian follow the device language; light/dark appearance and dynamic colors follow the system.
+A local-first calorie diary for Android 11+ (`com.justcal.app`). English and Russian follow the device language. Appearance can follow the system or use a saved light/dark override; supported devices use dynamic colors.
 
-## Milestone 1
+## Diary and navigation
 
-Today shows consumed calories, an editable daily goal, remaining calories, macros and diary entries. Manual entry supports preview, add, edit and confirmed deletion. Camera and AI are intentionally deferred.
+Home shows today's consumed calories, daily goal, remaining calories, macros and food entries. Diary groups history by recorded calendar day; its calendar opens any past day, including one without entries. Entries can be added, edited or deleted within that day. Settings contains an optional local profile name, calorie goal, independently optional macro goals and system/light/dark appearance. Blank macro goals are absent, not zero targets; configured goals appear alongside consumed grams.
+
+A custom floating Compose navigation surface provides Home, Diary and Settings alongside an Add Food FAB. On a day page, the FAB adds to that date; on Home and Diary root, it adds to today. The FAB is hidden in Settings. Navigation 3 maintains a separate saved back stack for each top-level destination and handles predictive back. Open days, scroll positions and settings drafts survive tab switching and configuration changes. No external navigation component or Telegram code is used. Camera and AI are intentionally deferred.
 
 ## Implementation
 
@@ -12,7 +14,7 @@ Today shows consumed calories, an editable daily goal, remaining calories, macro
 - Screen ViewModels own StateFlow state and actions; Compose collects with lifecycle awareness. Editor drafts use SavedStateHandle.
 - Room stores the original nutrition per 100 g, consumed weight, source, immutable local calendar day and creation timestamp. Queries use the stored epoch day, so changing time zones does not reassign previous entries. The active Today date refreshes on resume and across midnight.
 - Nutrition inputs accept comma or dot decimal separators and up to two fractional digits. Integer hundredths are persisted; BigDecimal arithmetic computes exact portions and totals before display rounding. Calculations and validation live in `domain`.
-- DataStore persists the calorie goal. The initial 2000 kcal is an editable placeholder, not a personalized recommendation.
+- DataStore atomically persists the local profile name, calorie goal, nullable macro goals and appearance, retaining the original preferences file and goal key. The initial 2000 kcal is an editable placeholder, not a personalized recommendation.
 - Room schema version 1 is exported under `app/schemas`. Future schema changes must include data-preserving migrations.
 - No network permission, cloud backup, accounts, food database, camera or AI integration.
 
@@ -25,6 +27,8 @@ Open this directory as a Gradle project in Android Studio and use its bundled JD
 ./gradlew :app:connectedDebugAndroidTest
 ```
 
-The connected test requires an emulator/device. It exercises a real Room database: day isolation, reopen persistence, edit/recalculation and deletion. JVM tests cover decimal calculation, rounding, input validation and editor failure/retry/restoration behavior.
+Connected tests require an emulator/device. They cover real Room history queries, day isolation, reopen persistence, edit/recalculation and deletion; DataStore profile/goal/theme persistence; and settings keyboard input, draft retention across tabs and Activity recreation, invalid-input handling, retained day navigation through both history and calendar, selected-date FAB/CRUD, and independently optional goals with reactive screen updates. JVM tests cover exact decimal arithmetic, validation, daily history summaries, selected-day creation and editor failure/retry/restoration behavior.
 
-For this implementation, debug build, 19 JVM tests, the Room device test and Lint passed on the API 37 emulator. The UI was also checked manually for add, process restart, edit, delete, live totals, light/dark appearance and 200% system font scaling.
+UI tests use Compose's v2 JUnit API and Espresso 3.7.0; the older transitive Espresso version cannot initialize its input manager on API 37.
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the implemented navigation, persistence and global-action boundaries.

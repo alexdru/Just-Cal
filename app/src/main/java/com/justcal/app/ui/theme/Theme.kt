@@ -1,5 +1,6 @@
 package com.justcal.app.ui.theme
 
+import android.app.Activity
 import android.os.Build
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -7,6 +8,9 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -16,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 object CalMotion {
+    const val navigationDurationMillis = 160
     fun progress() = spring<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow)
 }
 
@@ -60,6 +65,16 @@ private val CalShapes = Shapes(
 @Composable
 fun JustCalTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val context = LocalContext.current
+    val view = LocalView.current
+    if (!view.isInEditMode) SideEffect {
+        val activity = context as? Activity
+        activity?.let {
+            WindowCompat.getInsetsController(it.window, view).apply {
+                isAppearanceLightStatusBars = !darkTheme
+                isAppearanceLightNavigationBars = !darkTheme
+            }
+        }
+    }
     val colors = if (Build.VERSION.SDK_INT >= 31) {
         if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
     } else if (darkTheme) DarkColors else LightColors

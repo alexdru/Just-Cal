@@ -28,6 +28,7 @@ class DiaryPersistenceTest {
         val id = repository.save(entry)
         repository.save(entry.copy(dayEpoch = 20729))
         assertEquals(listOf(id), repository.observeDay(20730).first().map { it.id })
+        assertEquals(listOf(20730L, 20729L), repository.observeAll().first().map { it.dayEpoch })
 
         database.close()
         database = open()
@@ -37,9 +38,11 @@ class DiaryPersistenceTest {
         repository.save(requireNotNull(repository.get(id)).copy(name = "Edited", eatenGramsHundredths = 5000))
         val updated = repository.observeDay(20730).first().single()
         assertEquals("Edited", updated.name)
+        assertEquals("Edited", repository.observeAll().first().first().name)
         assertEquals("102.75", NutritionCalculator.consumed(updated.per100g, updated.eatenGramsHundredths).energyKcal.display(2))
         repository.delete(id)
         assertTrue(repository.observeDay(20730).first().isEmpty())
         assertEquals(1, repository.observeDay(20729).first().size)
+        assertEquals(listOf(20729L), repository.observeAll().first().map { it.dayEpoch })
     }
 }

@@ -11,8 +11,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.buildAnnotatedString
 import com.justcal.app.R
 import com.justcal.app.domain.ConsumedNutrition
+import com.justcal.app.domain.AppSettings
 import com.justcal.app.domain.display
 import java.math.BigDecimal
 import java.text.DecimalFormatSymbols
@@ -29,22 +32,38 @@ fun nutritionText(value: BigDecimal, scale: Int): String {
 }
 
 @Composable
-fun MacroSummary(nutrition: ConsumedNutrition, modifier: Modifier = Modifier) {
+fun MacroSummary(nutrition: ConsumedNutrition, modifier: Modifier = Modifier, targets: AppSettings? = null) {
     FlowRow(
         modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        MacroValue(stringResource(R.string.protein), nutritionText(nutrition.proteinGrams, 1))
-        MacroValue(stringResource(R.string.fat), nutritionText(nutrition.fatGrams, 1))
-        MacroValue(stringResource(R.string.carbs), nutritionText(nutrition.carbsGrams, 1))
+        MacroValue(stringResource(R.string.protein), macroText(nutrition.proteinGrams, targets?.proteinGoalGramsHundredths))
+        MacroValue(stringResource(R.string.fat), macroText(nutrition.fatGrams, targets?.fatGoalGramsHundredths))
+        MacroValue(stringResource(R.string.carbs), macroText(nutrition.carbsGrams, targets?.carbsGoalGramsHundredths))
     }
 }
 
 @Composable
-private fun MacroValue(label: String, value: String) {
+private fun macroText(consumed: BigDecimal, goalHundredths: Long?): AnnotatedString {
+    val amount = nutritionText(consumed, 1)
+    val unit = stringResource(R.string.grams)
+    val text = if (goalHundredths == null) "$amount $unit" else {
+        val goal = BigDecimal.valueOf(goalHundredths, 2).stripTrailingZeros()
+        "${stringResource(R.string.macro_progress, amount, nutritionText(goal, goal.scale().coerceAtLeast(0)))} $unit"
+    }
+    val contextStyle = MaterialTheme.typography.bodyMedium.toSpanStyle()
+        .copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+    return buildAnnotatedString {
+        append(text)
+        if (goalHundredths != null) addStyle(contextStyle, amount.length, text.length)
+    }
+}
+
+@Composable
+private fun MacroValue(label: String, value: AnnotatedString) {
     Column(Modifier.widthIn(min = 84.dp).semantics(mergeDescendants = true) {}) {
         Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text("$value ${stringResource(R.string.grams)}", style = MaterialTheme.typography.titleLarge)
+        Text(value, style = MaterialTheme.typography.titleLarge)
     }
 }
 

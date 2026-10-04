@@ -122,6 +122,12 @@ Prefer clear native Android interactions over custom UI components unless the cu
 
 Avoid premature visual polish when implementing infrastructure or domain work.
 
+- Telegram is a navigation geometry and interaction reference only; do not copy its source or styling.
+- Keep Just Cal's floating navigation visually restrained and its global FAB separate from destinations.
+- Retain each top-level Navigation 3 stack when switching tabs.
+- History selection and direct “go to day” navigation must converge on the same Day Detail flow.
+- Macro goals are independently optional; clearing a goal removes it. Never display an absent goal as a zero target.
+
 ## Persistence
 
 Use Room for persistent application data.

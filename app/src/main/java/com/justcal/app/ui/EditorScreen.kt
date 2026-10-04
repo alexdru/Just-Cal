@@ -32,7 +32,17 @@ fun EditorScreen(
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(if (editing) R.string.edit_food else R.string.add_food), style = MaterialTheme.typography.titleLarge) },
+                title = {
+                    Column {
+                        Text(stringResource(if (editing) R.string.edit_food else R.string.add_food), style = MaterialTheme.typography.titleLarge)
+                        state.dayEpoch?.let {
+                            val locale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
+                            Text(java.time.LocalDate.ofEpochDay(it).format(
+                                java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM).withLocale(locale)),
+                                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                },
                 navigationIcon = { IconButton(onClick = onBack) { CalIcon(R.drawable.ic_back, stringResource(R.string.close)) } },
                 actions = {
                     if (editing && !state.missing) IconButton(onClick = { confirmDelete = true }, enabled = !state.busy && !state.loading) {
