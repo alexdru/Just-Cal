@@ -42,10 +42,12 @@ class DiaryNavigationTest {
         val editedTotal = (baseline.energyKcal + 500.toBigDecimal()).display(0)
         try {
             fab().performClick()
+            compose.onNodeWithText(label(R.string.add_manually)).performClick()
             compose.onNodeWithText(dateText(LocalDate.now(), FormatStyle.MEDIUM)).assertExists()
             back()
             tab(R.string.history).performClick()
             fab().performClick()
+            compose.onNodeWithText(label(R.string.add_manually)).performClick()
             compose.onNodeWithText(dateText(LocalDate.now(), FormatStyle.MEDIUM)).assertExists()
             back()
 
@@ -62,6 +64,7 @@ class DiaryNavigationTest {
             compose.onNodeWithText(dateText(date, FormatStyle.FULL)).assertExists()
 
             fab().performClick()
+            compose.onNodeWithText(label(R.string.add_manually)).performClick()
             compose.onNodeWithText(dateText(date, FormatStyle.MEDIUM)).assertExists()
             for ((id, value) in listOf(R.string.food_name to name, R.string.energy to "200",
                 R.string.protein to "10", R.string.fat to "5", R.string.carbs to "20", R.string.amount to "125")) {

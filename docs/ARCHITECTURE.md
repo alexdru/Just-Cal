@@ -8,9 +8,25 @@ Home, Diary and Settings each have a saved Navigation 3 back stack, including en
 
 Diary history rows and the direct “Choose a day” calendar both open the same Day Detail destination. That destination uses the selected local calendar date and the same diary presentation and repository as Home. Day Detail is retained when switching tabs.
 
-The separate floating FAB is an action, not a fourth destination. It is visible on Home, Diary root and Day Detail, and hidden in Settings and the food editor. It opens manual Add Food with today's date from Home/Diary root or the viewed date from Day Detail. This date-carrying action is the boundary for a future Add Food launcher; scans, camera and AI are not implemented.
+The separate floating FAB is an action, not a fourth destination. It is visible on Home, Diary root and Day Detail, and hidden in Settings and the food editor. It opens a modal Add Food launcher with Scan package, Scan meal and Add manually. The launcher freezes today's date from Home/Diary root or the viewed date from Day Detail. Manual entry still opens the existing FoodEditor. Scans show a compact camera/photo source choice in the same sheet, then enter the shared image pipeline.
 
 The navigation uses Just Cal's own restrained Compose styling. Telegram is only a reference for geometry and interaction; no Telegram source or assets are included.
+
+## Local image acquisition
+
+Both PACKAGE and MEAL use a serializable ScanRequest containing mode and target epoch day. ImageAcquisition and PhotoReview are typed Navigation 3 keys in the existing top-level stack. Acquisition is replaced by review; retake/reselect replaces review with acquisition using the same request and original source. Back/cancel returns to the originating diary screen without writing an entry. Launcher choice, request and review reference survive Activity recreation; Navigation 3 saves the keys for process restoration.
+
+CameraCapture owns CameraX Preview, ImageCapture and the stable Compose CameraXViewfinder. It binds only while the navigation entry is resumed, unbinds its own use cases on pause/disposal, and disables the orientation listener with them. Still capture uses the rear camera and private temporary files. The orientation listener updates ImageCapture target rotation, including reverse orientations. CameraX objects never enter saved state or ViewModels.
+
+ImageSourceScreen registers Activity Result RequestPermission and PickVisualMedia(ImageOnly). CAMERA is requested only on Take photo. Denial leaves photo selection available; rationale/retry and an explicit app-settings action handle repeated denial. Permission is checked again on resume and before camera operations. No storage/media permissions, FileProvider, external camera intent, custom gallery or network client are used. AndroidX falls back to the platform document picker when Photo Picker is unavailable.
+
+ImagePreprocessor is the Android image boundary. Provider content URIs are streamed into a private cache snapshot, never resolved into a real path. Camera output is already private and is adopted directly. PreparedImage carries the owned URI string, source, scan request, upright width/height and actual MIME type. No Bitmap, CameraX object or AI-runtime type is stored in a navigation key or ViewModel.
+
+Preparation runs on Dispatchers.IO. ImageDecoder validates actual image pixels, applies EXIF rotation/reflection, and decodes into sRGB software pixels. It limits input to 64 MiB and decode size to 12 million pixels / 4096 px longest edge, preserving aspect ratio without upscaling. These are generic resource limits, not a future model's input resolution. Smaller files retain their original encoded bytes (including EXIF); oversized images are saved upright as JPEG quality 95 or lossless PNG when alpha must be preserved, and the original temporary copy is removed. JPEG, PNG, WebP, HEIF/HEIC and AVIF are accepted when supported by the device decoder.
+
+Photo Review decodes the same prepared URI through that boundary, with a separate display budget of 2 million pixels / 1920 px. The Bitmap lives only in the screen composition; recomposition does not decode it again. A future AI adapter should use ImagePreprocessor.decode for upright pixels and apply model-specific preprocessing in the AI layer. Review provides source-specific retake/reselect, current mode/date and Use photo. Use photo validates the reference and creates VerifiedImageInput; the current endpoint explicitly says recognition is not available and adds nothing to the diary. No inference engine, OCR or fake nutrition exists.
+
+Ownership transfers from the acquisition ViewModel to review on success. Cancelled/failed work removes partial files, including results cancelled during dispatcher handoff. Review exit/replacement releases its private image explicitly, with entry disposal and ViewModel cleanup as safeguards. Camera callbacks after leaving the screen discard their output. Files left by process termination expire after 24 hours and are pruned when the image component starts; the OS may evict cache earlier. A restored missing image shows a recoverable error with retake/reselect. An interrupted picker import/capture is restarted by the user; original gallery images are never modified or deleted.
 
 ## Diary and calculations
 

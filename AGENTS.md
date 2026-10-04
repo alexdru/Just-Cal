@@ -128,6 +128,15 @@ Avoid premature visual polish when implementing infrastructure or domain work.
 - History selection and direct “go to day” navigation must converge on the same Day Detail flow.
 - Macro goals are independently optional; clearing a goal removes it. Never display an absent goal as a zero target.
 
+## Image acquisition
+
+- Package and meal scans share the local-only CameraX / Photo Picker pipeline; always retain scan mode and target diary date.
+- Use Photo Picker for individual images, never broad media/storage permissions. Request camera access only for Take photo.
+- Treat external images as URIs; never resolve content URIs to filesystem paths. Keep owned temporary files private and release them when their flow ends.
+- Keep Bitmaps and camera resources out of ViewModels and saved navigation state. Decode off the main thread within the image budget.
+- Generic orientation/decoding belongs in the image boundary; model-specific preprocessing and inference belong in the future AI layer.
+- Use photo confirms the reviewed image; it must not invent nutrition or add a diary entry.
+
 ## Persistence
 
 Use Room for persistent application data.

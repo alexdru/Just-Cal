@@ -17,9 +17,13 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.NavDisplay
 import com.justcal.app.domain.Appearance
+import com.justcal.app.camera.*
 import com.justcal.app.ui.theme.JustCalTheme
 import java.time.LocalDate
 import kotlinx.serialization.Serializable
+
+@Serializable data class ImageAcquisition(val request: ScanRequest, val source: ImageSource) : NavKey
+@Serializable data class PhotoReview(val image: PreparedImage) : NavKey
 
 @Serializable data class DiaryDate(val dayEpoch: Long) : NavKey
 @Serializable data class FoodEditor(
@@ -42,13 +46,15 @@ fun JustCalApp() {
         key(tab) { rememberNavBackStack(tab) }
     }
     val selectTab: (MainTab) -> Unit = { selected = it }
+    var launcherDay by rememberSaveable { mutableStateOf<Long?>(null) }
+    var launcherMode by rememberSaveable { mutableStateOf<ScanMode?>(null) }
 
     JustCalTheme(darkTheme = dark) {
         // Decorate every stack even while inactive, retaining its entry state and ViewModels.
         val entries = stacks.mapValues { (tab, stack) ->
             key(tab) {
                 // One date-carrying Add Food action, shared by roots and Day Detail.
-                val openAddFood: (Long) -> Unit = { day -> stack.add(FoodEditor(dayEpoch = day, origin = tab)) }
+                val openAddFood: (Long) -> Unit = { day -> launcherMode = null; launcherDay = day }
                 rememberDecoratedNavEntries(
                     backStack = stack,
                     entryDecorators = listOf(
@@ -57,7 +63,7 @@ fun JustCalApp() {
                     ),
                     entryProvider = entryProvider {
                         entry<MainTab> { root ->
-                            // The global action boundary can later open a launcher with this date.
+                            // Freeze the intended diary date when the launcher opens.
                             val addFood = dropUnlessResumed {
                                 if (stack.lastOrNull() == root) {
                                     openAddFood(LocalDate.now().toEpochDay())
@@ -90,6 +96,45 @@ fun JustCalApp() {
                                                 openAddFood(route.dayEpoch)
                                             }
                                         })
+                                })
+                        }
+                        entry<ImageAcquisition> { route ->
+                            val viewModel = hiltViewModel<ImageInputViewModel>()
+                            val state by viewModel.state.collectAsStateWithLifecycle()
+                            LaunchedEffect(state.image) {
+                                state.image?.let { image ->
+                                    if (stack.lastOrNull() == route) {
+                                        viewModel.transfer()
+                                        stack[stack.lastIndex] = PhotoReview(image)
+                                    }
+                                }
+                            }
+                            ImageSourceScreen(route.request, route.source, state, viewModel.images,
+                                onImage = { uri, source -> viewModel.prepare(uri, source, route.request) },
+                                onRetry = viewModel::retry,
+                                onBack = { if (stack.lastOrNull() == route) stack.removeLastOrNull() })
+                        }
+                        entry<PhotoReview> { route ->
+                            val viewModel = hiltViewModel<PhotoReviewViewModel>()
+                            viewModel.attach(route.image)
+                            DisposableEffect(route) {
+                                onDispose {
+                                    // A configuration change keeps the route; a pop/replacement releases it.
+                                    if (route !in stack) viewModel.images.discard(route.image.uri)
+                                }
+                            }
+                            PhotoReviewScreen(route.image, viewModel.images,
+                                onReplace = {
+                                    if (stack.lastOrNull() == route) {
+                                        viewModel.images.discard(route.image.uri)
+                                        stack[stack.lastIndex] = ImageAcquisition(route.image.request, route.image.source)
+                                    }
+                                },
+                                onBack = {
+                                    if (stack.lastOrNull() == route) {
+                                        viewModel.images.discard(route.image.uri)
+                                        stack.removeLastOrNull()
+                                    }
                                 })
                         }
                         entry<FoodEditor> { route ->
@@ -128,6 +173,19 @@ fun JustCalApp() {
             },
             // Keep Navigation 3's platform predictive-back transition.
         )
+        launcherDay?.let { day ->
+            AddFoodLauncher(day, launcherMode,
+                onDismiss = { launcherDay = null; launcherMode = null },
+                onMode = { launcherMode = it },
+                onManual = {
+                    launcherDay = null
+                    stacks.getValue(selected).add(FoodEditor(dayEpoch = day, origin = selected))
+                },
+                onSource = { request, source ->
+                    launcherDay = null
+                    stacks.getValue(selected).add(ImageAcquisition(request, source))
+                })
+        }
     }
 }
 

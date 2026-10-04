@@ -13,8 +13,13 @@ androidxHilt = "1.4.0"
 datastore = "1.2.1"
 coroutines = "1.11.0"
 serialization = "1.11.0"
+camerax = "1.6.2"
 
 [libraries]
+camera-core = { module = "androidx.camera:camera-core", version.ref = "camerax" }
+camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
+camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
+camera-compose = { module = "androidx.camera:camera-compose", version.ref = "camerax" }
 core = { module = "androidx.core:core-ktx", version.ref = "core" }
 activity = { module = "androidx.activity:activity-compose", version.ref = "activity" }
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose" }
