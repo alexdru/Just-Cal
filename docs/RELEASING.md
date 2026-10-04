@@ -70,6 +70,10 @@ Release packaging fails with an actionable message when signing variables are in
 
 ## Create a release
 
+Both GitHub workflows explicitly provision Android command-line tools, platform 37 and build tools 36.0.0 with `android-actions/setup-android` before running Gradle. They do not depend on `sdkmanager` being preinstalled or present on the runner's PATH.
+
+Android CI validates pushes and pull requests; it does not create tags. Android Release starts when a version tag is pushed, following the steps below.
+
 1. Update both fields in `version.properties`, commit all intended changes to `master`, and push.
 2. Ensure **Android CI** succeeds (unit tests, lint and debug assembly).
 3. Fetch tags and create the tag at the intended clean commit:
