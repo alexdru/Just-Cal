@@ -1,5 +1,9 @@
 # Just Cal architecture
 
+## Application build identity
+
+The root `version.properties` is the explicit application version source for Gradle and release validation; normal builds require no Git metadata. Settings reads the generated application BuildConfig version. Release signing is supplied through environment variables and kept outside application code. Procedures are in [RELEASING.md](RELEASING.md).
+
 Just Cal is a single-module, offline Android application. Compose renders lifecycle-aware StateFlow screen state owned by Hilt ViewModels. Room implementation details stay behind DiaryRepository; deterministic nutrition calculation and input validation belong to domain code.
 
 ## Navigation and the global action

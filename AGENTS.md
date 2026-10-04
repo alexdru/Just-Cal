@@ -181,6 +181,15 @@ When a request exposes a significant architectural tradeoff, explain the tradeof
 
 For small reversible decisions, choose the simplest reasonable implementation and proceed.
 
+## Release engineering
+
+- Edit application versions explicitly in `version.properties`; never derive or rewrite them from Git.
+- Release tags must equal `v` plus `versionName`. Increase `versionCode` for every published Android release and preserve published tags.
+- Never commit keystores, signing credentials or generated release binaries.
+- Preserve adaptive foreground/background and explicit monochrome launcher support.
+- CI and releases use the Gradle Wrapper; ordinary CI must work without release signing secrets.
+- Keep release procedures in `docs/RELEASING.md`.
+
 ## Completion
 
 Before declaring a coding task complete:

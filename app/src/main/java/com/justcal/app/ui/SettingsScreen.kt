@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.justcal.app.BuildConfig
 import com.justcal.app.R
 import com.justcal.app.domain.*
 import com.justcal.app.ui.theme.CalSpacing
@@ -106,6 +107,13 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSa
             Text(stringResource(R.string.privacy_title), style = MaterialTheme.typography.titleMedium)
             Text(stringResource(R.string.privacy_description), style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                SectionTitle(stringResource(R.string.about))
+                Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.app_version, BuildConfig.VERSION_NAME),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
     }
 }

@@ -1,0 +1,91 @@
+name: Android Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+
+# Serialize publication so the versionCode check observes earlier releases.
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v5
+        with:
+          # Signing secrets must never enter a reusable Gradle/configuration cache.
+          cache-disabled: true
+      - name: Validate tagged source and monotonic version code
+        run: |
+          bash scripts/validate-release.sh "$RELEASE_TAG"
+          ./gradlew :app:validateReleaseVersion --no-daemon
+      - name: Check signing secrets
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [[ -z "${!name}" ]]; then
+              printf '::error::Missing repository secret %s. See docs/RELEASING.md.\n' "$name"
+              exit 1
+            fi
+          done
+      - name: Install Android SDK components
+        run: sdkmanager "platforms;android-37" "build-tools;36.0.0"
+      - name: Verify release tooling, test and lint
+        run: |
+          bash scripts/test-release-validation.sh
+          ./gradlew :app:testDebugUnitTest :app:lintRelease --no-daemon
+      - name: Build and verify signed APK and AAB
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          umask 077
+          export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/just-cal-release.keystore"
+          export BUNDLETOOL_JAR="$RUNNER_TEMP/bundletool.jar"
+          trap 'rm -f "$ANDROID_KEYSTORE_PATH" "$BUNDLETOOL_JAR"' EXIT
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$ANDROID_KEYSTORE_PATH"
+          unset ANDROID_KEYSTORE_BASE64
+          curl --fail --silent --show-error --location \
+            https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar \
+            --output "$BUNDLETOOL_JAR"
+          printf 'a099cfa1543f55593bc2ed16a70a7c67fe54b1747bb7301f37fdfd6d91028e29  %s\n' "$BUNDLETOOL_JAR" | sha256sum --check
+          ./gradlew :app:validateReleaseSigning :app:assembleRelease :app:bundleRelease \
+            --no-daemon --no-configuration-cache --no-build-cache
+          bash scripts/package-release.sh "$RELEASE_TAG"
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          # A draft ensures users only see the release after every asset is uploaded.
+          gh release create "$RELEASE_TAG" --verify-tag --draft \
+            --title "Just Cal $RELEASE_TAG" --generate-notes \
+            "release-files/Just-Cal-$RELEASE_TAG.apk" \
+            "release-files/Just-Cal-$RELEASE_TAG.aab" \
+            "release-files/Just-Cal-$RELEASE_TAG-SHA256SUMS.txt"
+          gh release edit "$RELEASE_TAG" --draft=false --prerelease=false --latest

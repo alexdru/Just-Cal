@@ -105,4 +105,6 @@
     <string name="photo_ready_message">Фото подготовлено. Распознавание на устройстве появится в следующем обновлении; в дневник ничего не добавлено.</string>
     <string name="done">Готово</string>
     <string name="image_dimensions">%1$d × %2$d пикс.</string>
+    <string name="about">О приложении</string>
+    <string name="app_version">Версия %1$s</string>
 </resources>

@@ -5,3 +5,15 @@ local.properties
 .idea/
 *.iml
 .DS_Store
+
+# Private signing material and local release staging
+*.jks
+*.keystore
+*.p12
+*.pfx
+signing.properties
+keystore.properties
+.env.signing*
+release-files/
+*.apk
+*.aab
