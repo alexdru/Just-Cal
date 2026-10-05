@@ -130,6 +130,7 @@ dependencies {
     implementation(libs.hilt.viewmodel)
     implementation(libs.datastore)
     implementation(libs.coroutines)
+    implementation(libs.litertlm)
     implementation(libs.serialization)
     debugImplementation(libs.tooling)
     testImplementation(libs.junit)

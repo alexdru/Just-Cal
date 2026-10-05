@@ -100,7 +100,7 @@ Avoid floating-point assumptions that can produce incorrect displayed nutrition 
 
 ## AI
 
-On-device AI will be introduced separately from the core diary functionality.
+Keep experimental on-device AI separate from the core diary functionality.
 
 Keep AI implementations behind a small application-facing interface so that models and runtimes can be replaced without changing diary or UI logic.
 
@@ -109,6 +109,12 @@ Do not couple domain models to a specific AI framework.
 AI-produced nutrition information must be treated as untrusted input and validated before persistence.
 
 Users must be able to review and correct recognized values before they are added to the diary.
+
+- Keep Local AI Lab experimental and independent from production Add Food until that integration is explicitly requested. Lab results must never create diary entries.
+- Import external models through SAF into app-private, backup-excluded storage; never bundle multi-GB models or pass content URIs as native filesystem paths.
+- Keep native AI engine/conversation types inside the runtime adapter. Initialize, infer and close off the main thread; cancellation must finish native processing before freeing resources.
+- Reuse the generic bounded image boundary. Keep model preprocessing in the AI adapter and large Bitmaps out of ViewModels/saved state.
+- Report backend failures explicitly and benchmark only measured values. JSON-constrained output remains untrusted nutrition input; preserve raw responses and explicit missing values.
 
 ## UI
 

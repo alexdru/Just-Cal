@@ -15,8 +15,10 @@ datastore = "1.2.1"
 coroutines = "1.11.0"
 serialization = "1.11.0"
 camerax = "1.6.2"
+litertlm = "0.17.1"
 
 [libraries]
+litertlm = { module = "com.google.ai.edge.litertlm:litertlm-android", version.ref = "litertlm" }
 camera-core = { module = "androidx.camera:camera-core", version.ref = "camerax" }
 camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
 camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }

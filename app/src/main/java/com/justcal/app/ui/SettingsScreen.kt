@@ -31,7 +31,7 @@ import com.justcal.app.ui.theme.CalSpacing
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSave: () -> Unit,
-    onRetry: () -> Unit, bottomBar: @Composable () -> Unit) {
+    onRetry: () -> Unit, onLab: () -> Unit, bottomBar: @Composable () -> Unit) {
     val focus = LocalFocusManager.current
     val direction = LocalLayoutDirection.current
     val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
@@ -138,6 +138,18 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSa
             Text(stringResource(R.string.privacy_title), style = MaterialTheme.typography.titleMedium)
             Text(stringResource(R.string.privacy_description), style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = { focus.clearFocus(); onLab() },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.local_ai_lab), Modifier.weight(1f),
+                            style = MaterialTheme.typography.titleMedium)
+                        CalIcon(R.drawable.ic_chevron)
+                    }
+                }
+                Text(stringResource(R.string.lab_intro), style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             AboutSettings()
         }
     }

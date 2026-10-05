@@ -24,6 +24,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable data class ImageAcquisition(val request: ScanRequest, val source: ImageSource) : NavKey
 @Serializable data class PhotoReview(val image: PreparedImage) : NavKey
+@Serializable data object LocalAiLab : NavKey
 
 @Serializable data class DiaryDate(val dayEpoch: Long) : NavKey
 @Serializable data class FoodEditor(
@@ -72,6 +73,7 @@ fun JustCalApp() {
                             }
                             MainScreen(
                                 root, settingsViewModel, onSelect = selectTab, onAdd = addFood,
+                                onLab = { if (stack.lastOrNull() == root) stack.add(LocalAiLab) },
                                 onEdit = { id ->
                                     if (stack.lastOrNull() == root) stack.add(FoodEditor(id = id, origin = tab))
                                 },
@@ -98,6 +100,18 @@ fun JustCalApp() {
                                             }
                                         })
                                 })
+                        }
+                        entry<LocalAiLab> { route ->
+                            val viewModel = hiltViewModel<LocalAiLabViewModel>()
+                            DisposableEffect(route) {
+                                onDispose { if (route !in stack) viewModel.closeLab() }
+                            }
+                            LocalAiLabScreen(viewModel, onBack = {
+                                if (stack.lastOrNull() == route) {
+                                    viewModel.closeLab()
+                                    stack.removeLastOrNull()
+                                }
+                            })
                         }
                         entry<ImageAcquisition> { route ->
                             val viewModel = hiltViewModel<ImageInputViewModel>()
@@ -193,7 +207,7 @@ fun JustCalApp() {
 @Composable
 private fun MainScreen(
     tab: MainTab, settingsViewModel: SettingsViewModel,
-    onSelect: (MainTab) -> Unit, onAdd: () -> Unit, onEdit: (Long) -> Unit, onDay: (Long) -> Unit,
+    onSelect: (MainTab) -> Unit, onAdd: () -> Unit, onLab: () -> Unit, onEdit: (Long) -> Unit, onDay: (Long) -> Unit,
 ) {
     val bar: @Composable () -> Unit = {
         FloatingNavigation(tab, onSelect, onAdd = onAdd.takeUnless { tab == MainTab.SETTINGS })
@@ -213,7 +227,7 @@ private fun MainScreen(
         MainTab.SETTINGS -> {
             val state by settingsViewModel.state.collectAsStateWithLifecycle()
             SettingsScreen(state, settingsViewModel::change,
-                settingsViewModel::save, settingsViewModel::retry, bottomBar = bar)
+                settingsViewModel::save, settingsViewModel::retry, onLab = onLab, bottomBar = bar)
         }
     }
 }
