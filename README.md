@@ -1,5 +1,15 @@
 # Just Cal
 
+SPDX-License-Identifier: GPL-3.0-or-later
+
+## License
+
+Copyright (C) 2026 alexdru and Just Cal contributors.
+
+Just Cal is free software licensed under the GNU General Public License, version 3 or (at your option) any later version (**GPL-3.0-or-later**). You may redistribute and modify it under those terms. It is provided without warranty. See [LICENSE](LICENSE) for the unchanged official text and [NOTICE](NOTICE) for project attribution.
+
+Third-party components retain their own licenses. See [the licensing review](docs/LICENSING.md) for attribution requirements and items to verify before distributing binaries. Imported AI models are separate and are not relicensed by this project.
+
 [![Android CI](https://github.com/alexdru/Just-Cal/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/alexdru/Just-Cal/actions/workflows/ci.yml)
 
 ## App version

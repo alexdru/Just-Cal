@@ -97,3 +97,32 @@ Use a physical Android device with enough RAM/storage and a compatible vision ar
 7. Remove the private model copy and confirm its runtime cache disappears while the original SAF document remains.
 
 Keep this verification record explicit when compatible-device coverage is added.
+
+## Physical-device verification on 2026-10-06
+
+Tested Just Cal 0.3.0 on OnePlus 7T HD1900, Android 11 / API 30, with `gemma-4-E2B-it.litertlm` (2,588,147,712 bytes). SAF import completed into private storage. Automated selection in the Downloads provider did not reliably finish; the successful selection followed opening Download through the internal-storage provider. The private model is retained for further experiments.
+
+Real CPU and GPU image inference both completed. GPU logs confirm OpenCL / LITERT_CL delegation for language prefill/decode and vision graphs. The native sampler separately reported an unavailable OpenCL sampler library and used its C API fallback; this is not an application fallback from GPU to CPU.
+
+The selected image was the fresh package label for chicken, spinach and cheese wraps, prepared at 3000 × 4000. Native LiteRT-LM logged resizing it to 672 × 912 (2394 patches). Results:
+- CPU free-form description read the product name and the prominent 15.8 g protein per 100 g text, but missed small-print calories/macros and included unreliable extra label interpretations.
+- CPU Nutrition extraction with constrained decoding returned all seven fields as null. Parsing succeeded, but this is an extraction failure.
+- The identical Russian nutrition prompt in free-form mode returned the product description and `nutritionBasisGrams: "100 г"`, with the other nutrition values null. The quoted weight is invalid for the strict parser.
+- GPU Nutrition extraction also returned all seven fields as null. Changing backend did not solve the extraction failure.
+
+These observations confirm image delivery and actual multimodal processing, but do not establish the exact cause of poor extraction. Small text after native resizing, the long prompt with an all-null example, and constrained decoding require separate controlled comparisons. No food-recognition integration or diary writes were added.
+
+Measured completed Nutrition extraction runs (one sample per backend, not a general speed comparison):
+
+| Metric | CPU | GPU |
+| --- | ---: | ---: |
+| Initialization | 11,160 ms | 16,094 ms |
+| App inference duration | 25,127 ms | 21,548 ms |
+| First visible response | 21,334 ms | 17,548 ms |
+| Native TTFT | 6.46 s | 3.20 s |
+| Native prefill | 86.82 tokens/s | 178.60 tokens/s |
+| Native decode | 10.17 tokens/s | 9.42 tokens/s |
+
+Three CPU runs completed without reloading. A subsequent real CPU run was cancelled; controls became available and unloading/switching to GPU succeeded. GPU inference completed once. GPU repeated-run/cancellation testing remains outstanding.
+
+After CPU unloading, process PSS fell from 3,394,179 KiB during inference to 295,015 KiB. After GPU completion and leaving the Lab, PSS was 421,920 KiB and the image-input cache returned to its empty-directory baseline of 8 KiB. These are ADB meminfo observations, not a full Android Profiler leak analysis or proof that all allocations returned to baseline. Original gallery photos and the source model were preserved. No code changes were made during this verification.

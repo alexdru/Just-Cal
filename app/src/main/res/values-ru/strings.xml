@@ -105,6 +105,7 @@
     <string name="photo_ready_message">Фото подготовлено. Распознавание на устройстве появится в следующем обновлении; в дневник ничего не добавлено.</string>
     <string name="done">Готово</string>
     <string name="image_dimensions">%1$d × %2$d пикс.</string>
+    <string name="app_license_notice">Copyright © 2026 alexdru и участники проекта. Свободное ПО; распространение и изменение разрешены по GPL v3 или более поздней версии. Без гарантий. Лицензия доступна в репозитории исходного кода (LICENSE).</string>
     <string name="about">О приложении</string>
     <string name="app_version">Версия %1$s</string>
     <string name="app_author">Автор: %1$s</string>

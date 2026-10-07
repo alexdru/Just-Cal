@@ -1,5 +1,9 @@
 # Just Cal — Agent Instructions
 
+## Licensing
+
+Just Cal is licensed under GPL-3.0-or-later. Contributed code must remain compatible with this license.
+
 ## Project
 
 Just Cal is a cutting-edge, privacy-first, offline-first Android calorie tracker focused on making food logging nearly effortless through on-device intelligence and carefully designed native Android UX.
