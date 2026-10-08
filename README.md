@@ -45,7 +45,7 @@ The Nutrition extraction preset enables JSON Schema constrained decoding and dis
 
 ## Build and test
 
-Open this directory as a Gradle project in Android Studio and use its compatible bundled JDK, or JDK 17. Install Android SDK platform 37 and build tools 36.0.0, then use the Gradle Wrapper:
+Open this directory as a Gradle project in Android Studio and use its compatible bundled JDK, or JDK 17. Install Android SDK package `platforms;android-37.0` and build tools 36.0.0, then use the Gradle Wrapper:
 
 ```sh
 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
@@ -58,7 +58,9 @@ UI tests use Compose's v2 JUnit API and Espresso 3.7.0; the older transitive Esp
 
 ## Release builds
 
-Signed APK and AAB builds use environment-based credentials; debug builds and ordinary CI need no signing secrets. Pushing a matching `vMAJOR.MINOR.PATCH` tag validates, tests, builds and publishes signed binaries, generated notes and SHA-256 checksums through GitHub Actions. See [docs/RELEASING.md](docs/RELEASING.md) for signing-key setup and the release checklist.
+Android CI checks pull requests and pushes to `master` with unit tests, lint, debug assembly and Gradle caching. Successful default-branch builds retain a version/commit-named debug APK as an Actions artifact for 14 days.
+
+Android Release is manually triggered with a version and optional source ref. It validates the existing `version.properties`, runs tests/lint, builds and verifies signed release APK/AAB, calculates SHA-256 checksums, then creates the matching `vMAJOR.MINOR.PATCH` tag and GitHub Release with generated notes. Signing uses one persistent key supplied through GitHub Secrets; ordinary CI needs no secrets. Debug artifacts are separate from production release assets. See [docs/RELEASING.md](docs/RELEASING.md) for one-time key setup, exact release steps and update verification.
 
 The green leaf launcher identity uses adaptive foreground/background layers and an explicit monochrome layer for themed icons on Android 13+. Android supplies the mask.
 

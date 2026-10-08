@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Exercise failure paths in a disposable Git repository; never tag the app checkout.
-validator="$(pwd)/scripts/validate-release.sh"
+validator="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/validate-release.sh"
 fixture="$(mktemp -d)"
 trap 'rm -rf "$fixture"' EXIT
 cd "$fixture"
@@ -22,6 +22,9 @@ reject() {
     fi
 }
 commit_version 0.1.0 1
+# Dispatch must validate a new release before its tag exists.
+bash "$validator" v0.1.0
+[[ -z "$(git tag --list)" ]] || exit 1
 git tag v0.1.0
 bash "$validator" v0.1.0
 printf 'versionName=0.1.0\nversionCode=2\n' > version.properties
@@ -44,5 +47,20 @@ reject v0.3.0
 git tag -d v0.3.0
 commit_version 0.3.0 2100000001
 git tag v0.3.0
+reject v0.3.0
+git tag -d v0.3.0
+commit_version 0.3.0 3
+bash "$validator" v0.3.0
+# Same-commit tag permits recovery, including annotated tags.
+git tag -a v0.3.0 -m fixture
+bash "$validator" v0.3.0
+commit_version 0.3.0 4
+reject v0.3.0
+git tag -d v0.3.0
+printf 'versionName=0.3.0\nversionCode=4\nversionCode=5\n' > version.properties
+git add version.properties
+git commit -qm duplicate
+reject v0.3.0
+commit_version 0.3.0 04
 reject v0.3.0
 printf 'Release validation tests passed.\n'

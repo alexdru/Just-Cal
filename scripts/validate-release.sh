@@ -24,8 +24,11 @@ code="$(property versionCode < version.properties)" || fail "Missing/duplicate v
 [[ "$name" == "${tag#v}" ]] || fail "Tag $tag does not match versionName $name."
 [[ "$code" =~ ^[1-9][0-9]{0,9}$ ]] && (( code <= 2100000000 )) ||
     fail "versionCode must be an integer in 1..2100000000."
-[[ "$(git rev-parse "$tag^{commit}")" == "$(git rev-parse HEAD)" ]] ||
-    fail "HEAD must be the exact tagged commit."
+# A dispatch validates before creating a tag. Existing tags are immutable.
+if git show-ref --verify --quiet "refs/tags/$tag"; then
+    [[ "$(git rev-parse "$tag^{commit}")" == "$(git rev-parse HEAD)" ]] ||
+        fail "Existing tag $tag points to a different commit."
+fi
 git diff --quiet && git diff --cached --quiet ||
     fail "Release source has uncommitted tracked changes. Build the exact tagged source."
 

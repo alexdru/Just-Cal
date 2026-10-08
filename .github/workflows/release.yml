@@ -1,48 +1,111 @@
 name: Android Release
 
 on:
-  push:
-    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version in version.properties (MAJOR.MINOR.PATCH, without v)'
+        required: true
+        type: string
+      ref:
+        description: 'Blank = workflow commit; master or a full commit SHA reachable from master'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
 
-# Serialize publication so the versionCode check observes earlier releases.
+# Keep versionCode validation and publication serialized across all refs/versions.
 concurrency:
   group: android-release
   cancel-in-progress: false
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     permissions:
-      contents: write
-    env:
-      RELEASE_TAG: ${{ github.ref_name }}
+      contents: read
+      actions: read
+    outputs:
+      commit: ${{ steps.source.outputs.commit }}
     steps:
-      - uses: actions/checkout@v6
+      - name: Require dispatch from master
+        run: |
+          [[ "$GITHUB_REF" == refs/heads/master ]] || {
+            printf '::error::Run Android Release from master only.\n'
+            exit 1
+          }
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
-        with:
-          packages: 'platform-tools platforms;android-37 build-tools;36.0.0'
-          log-accepted-android-sdk-licenses: false
-      - uses: gradle/actions/setup-gradle@v5
-        with:
-          # Signing secrets must never enter a reusable Gradle/configuration cache.
-          cache-disabled: true
-      - name: Validate tagged source and monotonic version code
+      - name: Require protected release Environment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: bash scripts/validate-release-environment.sh
+      - name: Validate inputs and pin trusted source
+        id: source
+        env:
+          REQUESTED_REF: ${{ inputs.ref }}
+          RELEASE_VERSION: ${{ inputs.version }}
         run: |
-          bash scripts/validate-release.sh "$RELEASE_TAG"
-          ./gradlew :app:validateReleaseVersion --no-daemon
+          [[ "$RELEASE_VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] || {
+            printf '::error::version must be MAJOR.MINOR.PATCH without leading zeroes.\n'
+            exit 1
+          }
+          git fetch origin refs/heads/master:refs/remotes/origin/master --tags
+          commit=$(bash scripts/validate-release-ref.sh "$REQUESTED_REF")
+          printf 'commit=%s\n' "$commit" >> "$GITHUB_OUTPUT"
+          printf 'Release source: %s\n' "$commit" >> "$GITHUB_STEP_SUMMARY"
+
+  release:
+    needs: preflight
+    if: github.ref == 'refs/heads/master'
+    environment:
+      name: release
+      url: ${{ github.server_url }}/${{ github.repository }}/commit/${{ needs.preflight.outputs.commit }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_COMMIT: ${{ needs.preflight.outputs.commit }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Preserve reviewed release policies
+        run: |
+          mkdir -p "$RUNNER_TEMP/just-cal-release-tools"
+          cp scripts/*.sh "$RUNNER_TEMP/just-cal-release-tools/"
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ needs.preflight.outputs.commit }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate requested version, source and existing tags
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          export RELEASE_TAG="v$RELEASE_VERSION"
+          [[ "$(git rev-parse HEAD)" == "$RELEASE_COMMIT" ]]
+          bash "$RUNNER_TEMP/just-cal-release-tools/validate-release-ref.sh" "$RELEASE_COMMIT"
+          bash "$RUNNER_TEMP/just-cal-release-tools/validate-release.sh" "$RELEASE_TAG"
+          printf 'RELEASE_TAG=%s\n' "$RELEASE_TAG" >> "$GITHUB_ENV"
+          # A published release is immutable. A missing release or interrupted draft can recover.
+          draft=$(gh api "repos/$GH_REPO/releases" --paginate --jq ".[] | select(.tag_name == \"$RELEASE_TAG\") | .draft")
+          if [[ "$draft" == false ]]; then
+            printf '::error::Release %s is already public; publish a new version instead.\n' "$RELEASE_TAG"
+            exit 1
+          fi
       - name: Check signing secrets
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -56,10 +119,26 @@ jobs:
               exit 1
             fi
           done
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
+        with:
+          packages: 'platform-tools platforms;android-37.0 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@4c125117fe7c5aed11272ec4213f602f012f89f2 # v5
+        with:
+          # Do not persist signing values or signed build intermediates in a shared cache.
+          cache-disabled: true
       - name: Verify release tooling, test and lint
         run: |
-          bash scripts/test-release-validation.sh
-          ./gradlew :app:testDebugUnitTest :app:lintRelease --no-daemon
+          bash "$RUNNER_TEMP/just-cal-release-tools/test-release-environment.sh"
+          bash "$RUNNER_TEMP/just-cal-release-tools/test-release-ref.sh"
+          bash "$RUNNER_TEMP/just-cal-release-tools/test-release-validation.sh"
+          bash "$RUNNER_TEMP/just-cal-release-tools/test-release-publication.sh"
+          ./gradlew :app:validateReleaseVersion :app:testDebugUnitTest :app:lintRelease --no-daemon
       - name: Build and verify signed APK and AAB
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -67,6 +146,8 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
+          git fetch origin refs/heads/master:refs/remotes/origin/master --tags
+          bash "$RUNNER_TEMP/just-cal-release-tools/validate-release-ref.sh" "$RELEASE_COMMIT"
           umask 077
           export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/just-cal-release.keystore"
           export BUNDLETOOL_JAR="$RUNNER_TEMP/bundletool.jar"
@@ -79,16 +160,9 @@ jobs:
           printf 'a099cfa1543f55593bc2ed16a70a7c67fe54b1747bb7301f37fdfd6d91028e29  %s\n' "$BUNDLETOOL_JAR" | sha256sum --check
           ./gradlew :app:validateReleaseSigning :app:assembleRelease :app:bundleRelease \
             --no-daemon --no-configuration-cache --no-build-cache
-          bash scripts/package-release.sh "$RELEASE_TAG"
-      - name: Publish GitHub Release
+          bash "$RUNNER_TEMP/just-cal-release-tools/package-release.sh" "$RELEASE_TAG"
+      - name: Create tag and publish verified GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: |
-          # A draft ensures users only see the release after every asset is uploaded.
-          gh release create "$RELEASE_TAG" --verify-tag --draft \
-            --title "Just Cal $RELEASE_TAG" --generate-notes \
-            "release-files/Just-Cal-$RELEASE_TAG.apk" \
-            "release-files/Just-Cal-$RELEASE_TAG.aab" \
-            "release-files/Just-Cal-$RELEASE_TAG-SHA256SUMS.txt"
-          gh release edit "$RELEASE_TAG" --draft=false --prerelease=false --latest
+        run: bash "$RUNNER_TEMP/just-cal-release-tools/publish-release.sh" "$RELEASE_TAG"

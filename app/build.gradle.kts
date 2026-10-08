@@ -39,6 +39,9 @@ val validateReleaseSigning = tasks.register("validateReleaseSigning") {
         check(missing.isEmpty()) {
             "Release signing is missing: ${missing.joinToString()}. See docs/RELEASING.md."
         }
+        check(signingValues["ANDROID_KEY_ALIAS"] != "androiddebugkey") {
+            "The Android debug key cannot be used for release signing."
+        }
         check(file(requireNotNull(signingValues["ANDROID_KEYSTORE_PATH"])).isFile) {
             "ANDROID_KEYSTORE_PATH must point to an existing keystore. See docs/RELEASING.md."
         }
@@ -58,7 +61,7 @@ tasks.register("validateReleaseVersion") {
 }
 
 // Keep compile/lint/debug usable without secrets; never package an unsigned release.
-tasks.matching { it.name in setOf("assembleRelease", "bundleRelease", "packageRelease", "signReleaseBundle") }
+tasks.matching { it.name in setOf("assembleRelease", "bundleRelease", "packageRelease", "packageReleaseBundle", "signReleaseBundle") }
     .configureEach { dependsOn(validateReleaseSigning) }
 
 android {

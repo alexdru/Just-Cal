@@ -200,7 +200,9 @@ For small reversible decisions, choose the simplest reasonable implementation an
 - Edit application versions explicitly in `version.properties`; never derive or rewrite them from Git.
 - Automatically update the version once per completed application-changing task unless the user has already supplied or bumped the version for that task. Use a patch increment for fixes and a minor increment for new features; increase `versionCode` with each version change. Keep that version during implementation and verification retries. Do not bump versions for discussion or documentation-only changes.
 - Release tags must equal `v` plus `versionName`. Increase `versionCode` for every published Android release and preserve published tags.
-- Never commit keystores, signing credentials or generated release binaries.
+- Release APK/AAB must be signed with the persistent release key; never publish debug or unsigned builds as production releases.
+- Never commit keystores, signing credentials, encoded keys or generated release binaries. Debug CI must work without release secrets.
+- Debug CI artifacts and production GitHub Release assets are distinct; create release tags only after successful build, signature and version verification.
 - Preserve adaptive foreground/background and explicit monochrome launcher support.
 - CI and releases use the Gradle Wrapper; ordinary CI must work without release signing secrets.
 - Keep release procedures in `docs/RELEASING.md`.
