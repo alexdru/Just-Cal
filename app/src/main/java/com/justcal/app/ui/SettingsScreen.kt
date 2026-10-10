@@ -1,6 +1,12 @@
 package com.justcal.app.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.BringIntoViewSpec
+import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.platform.LocalDensity
+import com.justcal.app.ui.theme.CalLayout
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -28,7 +34,7 @@ import com.justcal.app.R
 import com.justcal.app.domain.*
 import com.justcal.app.ui.theme.CalSpacing
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSave: () -> Unit,
     onRetry: () -> Unit, onLab: () -> Unit, bottomBar: @Composable () -> Unit) {
@@ -42,115 +48,136 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSa
         }
     }
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.settings), style = MaterialTheme.typography.headlineLarge) }) },
+        topBar = { CalTopBar(maxWidth = CalLayout.readingWidth, title = { Text(stringResource(R.string.settings), style = MaterialTheme.typography.headlineLarge) }) },
         bottomBar = { Box(Modifier.imePadding()) { bottomBar() } },
         contentWindowInsets = WindowInsets.safeDrawing.union(WindowInsets.ime),
     ) { padding ->
         // Only the keyboard bounds the viewport. Content scrolls behind the floating controls;
         // end padding lets the final item settle above them.
-        Column(Modifier.fillMaxSize().padding(
-            start = padding.calculateStartPadding(direction), end = padding.calculateEndPadding(direction),
-            top = padding.calculateTopPadding(), bottom = imeBottom,
-        ).consumeWindowInsets(padding)
-            .verticalScroll(rememberScrollState()).padding(horizontal = CalSpacing.page)
-            .padding(top = 16.dp, bottom = (padding.calculateBottomPadding() - imeBottom).coerceAtLeast(0.dp) + 16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)) {
-            if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
-            SectionTitle(stringResource(R.string.profile))
-            Text(stringResource(R.string.profile_hint), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            OutlinedTextField(value = state.draft.displayName,
-                onValueChange = { onChange(state.draft.copy(displayName = it)) },
-                label = { Text(stringResource(R.string.display_name)) }, singleLine = true,
-                enabled = !state.loading && !state.busy, modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
-                isError = state.submitted && !state.draft.nameValid,
-                supportingText = { if (state.submitted && !state.draft.nameValid) Text(stringResource(R.string.name_error)) })
-            SectionTitle(stringResource(R.string.nutrition_settings))
-            OutlinedTextField(value = state.draft.goal, onValueChange = { onChange(state.draft.copy(goal = it)) },
-                label = { Text(stringResource(R.string.goal_field)) }, suffix = { Text(stringResource(R.string.kcal)) },
-                modifier = Modifier.fillMaxWidth(), singleLine = true, shape = MaterialTheme.shapes.medium,
-                enabled = !state.loading && !state.busy,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                isError = state.submitted && !state.draft.calorieGoalValid,
-                supportingText = { if (state.submitted && !state.draft.calorieGoalValid) Text(stringResource(R.string.goal_error)) })
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                TextButton(onClick = { showMacros = !showMacros }, modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(vertical = 8.dp)) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Text(stringResource(R.string.macro_goals), Modifier.weight(1f),
-                            style = MaterialTheme.typography.titleMedium)
-                        Box(Modifier.rotate(if (showMacros) 90f else 0f)) { CalIcon(R.drawable.ic_chevron) }
-                    }
-                }
-                Text(stringResource(R.string.macro_goals_hint), style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (showMacros) {
-                    MacroGoalField(R.string.protein, state.draft.proteinGoal, state.submitted && !state.draft.proteinGoalValid,
-                        !state.loading && !state.busy) { onChange(state.draft.copy(proteinGoal = it)) }
-                    MacroGoalField(R.string.fat, state.draft.fatGoal, state.submitted && !state.draft.fatGoalValid,
-                        !state.loading && !state.busy) { onChange(state.draft.copy(fatGoal = it)) }
-                    MacroGoalField(R.string.carbs, state.draft.carbsGoal, state.submitted && !state.draft.carbsGoalValid,
-                        !state.loading && !state.busy) { onChange(state.draft.copy(carbsGoal = it)) }
-                }
+        val overlaySpace = (padding.calculateBottomPadding() - imeBottom).coerceAtLeast(0.dp) + CalSpacing.medium
+        val overlayPx = with(LocalDensity.current) { overlaySpace.toPx() }
+        val defaultSpec = LocalBringIntoViewSpec.current
+        val focusSpec = remember(defaultSpec, overlayPx) {
+            object : BringIntoViewSpec {
+                override fun calculateScrollDistance(offset: Float, size: Float, containerSize: Float): Float =
+                    defaultSpec.calculateScrollDistance(offset, size, (containerSize - overlayPx).coerceAtLeast(0f))
             }
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                SectionTitle(stringResource(R.string.appearance))
-                Text(stringResource(R.string.brightness), style = MaterialTheme.typography.titleMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Appearance.entries.forEach { appearance ->
-                        val label = when (appearance) {
-                            Appearance.SYSTEM -> R.string.theme_system
-                            Appearance.LIGHT -> R.string.theme_light
-                            Appearance.DARK -> R.string.theme_dark
+        }
+        CompositionLocalProvider(LocalBringIntoViewSpec provides focusSpec) {
+            Column(Modifier.padding(
+                start = padding.calculateStartPadding(direction), end = padding.calculateEndPadding(direction),
+                top = padding.calculateTopPadding(), bottom = imeBottom,
+            ).calContent(CalLayout.readingWidth).consumeWindowInsets(padding)
+                .verticalScroll(rememberScrollState()).padding(horizontal = CalSpacing.page)
+                .padding(top = CalSpacing.medium, bottom = overlaySpace),
+                verticalArrangement = Arrangement.spacedBy(CalSpacing.section)) {
+                if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
+                Text(stringResource(R.string.settings_save_hint), style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                    SectionTitle(stringResource(R.string.profile))
+                    Text(stringResource(R.string.profile_hint), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    OutlinedTextField(value = state.draft.displayName,
+                        onValueChange = { onChange(state.draft.copy(displayName = it)) },
+                        label = { Text(stringResource(R.string.display_name)) }, singleLine = true,
+                        enabled = !state.loading && !state.busy, modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
+                        isError = state.submitted && !state.draft.nameValid,
+                        supportingText = { if (state.submitted && !state.draft.nameValid) Text(stringResource(R.string.name_error)) })
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                    SectionTitle(stringResource(R.string.nutrition_settings))
+                    OutlinedTextField(value = state.draft.goal, onValueChange = { onChange(state.draft.copy(goal = it)) },
+                        label = { Text(stringResource(R.string.goal_field)) }, suffix = { Text(stringResource(R.string.kcal)) },
+                        modifier = Modifier.fillMaxWidth(), singleLine = true, shape = MaterialTheme.shapes.medium,
+                        enabled = !state.loading && !state.busy,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        isError = state.submitted && !state.draft.calorieGoalValid,
+                        supportingText = { if (state.submitted && !state.draft.calorieGoalValid) Text(stringResource(R.string.goal_error)) })
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        TextButton(onClick = { showMacros = !showMacros }, modifier = Modifier.fillMaxWidth(),
+                            contentPadding = PaddingValues(vertical = 8.dp)) {
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Text(stringResource(R.string.macro_goals), Modifier.weight(1f),
+                                    style = MaterialTheme.typography.titleMedium)
+                                Box(Modifier.rotate(if (showMacros) 90f else 0f)) { CalIcon(R.drawable.ic_chevron) }
+                            }
                         }
-                        FilterChip(selected = state.draft.appearance == appearance,
-                            onClick = { onChange(state.draft.copy(appearance = appearance)) },
-                            label = { Text(stringResource(label)) }, enabled = !state.loading && !state.busy,
-                            modifier = Modifier.heightIn(min = 48.dp))
+                        Text(stringResource(R.string.macro_goals_hint), style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (showMacros) {
+                            MacroGoalField(R.string.protein, state.draft.proteinGoal, state.submitted && !state.draft.proteinGoalValid,
+                                !state.loading && !state.busy) { onChange(state.draft.copy(proteinGoal = it)) }
+                            MacroGoalField(R.string.fat, state.draft.fatGoal, state.submitted && !state.draft.fatGoalValid,
+                                !state.loading && !state.busy) { onChange(state.draft.copy(fatGoal = it)) }
+                            MacroGoalField(R.string.carbs, state.draft.carbsGoal, state.submitted && !state.draft.carbsGoalValid,
+                                !state.loading && !state.busy) { onChange(state.draft.copy(carbsGoal = it)) }
+                        }
                     }
                 }
-            }
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(stringResource(R.string.color_style), style = MaterialTheme.typography.titleMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ColorStyle.entries.forEach { style ->
-                        FilterChip(selected = state.draft.colorStyle == style,
-                            onClick = { onChange(state.draft.copy(colorStyle = style)) },
-                            label = { Text(stringResource(if (style == ColorStyle.JUST_CAL) R.string.color_just_cal else R.string.color_material_you)) },
-                            enabled = !state.loading && !state.busy, modifier = Modifier.heightIn(min = 48.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                    SectionTitle(stringResource(R.string.appearance))
+                    Text(stringResource(R.string.appearance_save_hint), style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.brightness), style = MaterialTheme.typography.titleMedium)
+                    Column(Modifier.selectableGroup()) {
+                        Appearance.entries.forEach { appearance ->
+                            val label = when (appearance) {
+                                Appearance.SYSTEM -> R.string.theme_system
+                                Appearance.LIGHT -> R.string.theme_light
+                                Appearance.DARK -> R.string.theme_dark
+                            }
+                            SingleChoice(stringResource(label), state.draft.appearance == appearance,
+                                enabled = !state.loading && !state.busy) { onChange(state.draft.copy(appearance = appearance)) }
+                        }
+                    }
+                    Text(stringResource(R.string.color_style), style = MaterialTheme.typography.titleMedium)
+                    Column(Modifier.selectableGroup()) {
+                        ColorStyle.entries.forEach { style ->
+                            SingleChoice(stringResource(if (style == ColorStyle.JUST_CAL) R.string.color_just_cal else R.string.color_material_you),
+                                state.draft.colorStyle == style, enabled = !state.loading && !state.busy) {
+                                onChange(state.draft.copy(colorStyle = style))
+                            }
+                        }
+                    }
+                    Text(stringResource(R.string.color_style_hint), style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (state.error) {
+                    Text(stringResource(R.string.storage_error), color = MaterialTheme.colorScheme.error)
+                    TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
+                    Box(Modifier.heightIn(min = 24.dp)) {
+                        if (state.saved) Text(stringResource(R.string.settings_saved), color = MaterialTheme.colorScheme.primary)
+                    }
+                    Button(onClick = { focus.clearFocus(); onSave() }, enabled = !state.loading && !state.busy,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                        Text(stringResource(if (state.busy) R.string.saving else R.string.save_changes))
                     }
                 }
-                Text(stringResource(R.string.color_style_hint), style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            LanguageSettings()
-            if (state.error) {
-                Text(stringResource(R.string.storage_error), color = MaterialTheme.colorScheme.error)
-                TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
-            }
-            if (state.saved) Text(stringResource(R.string.settings_saved), color = MaterialTheme.colorScheme.primary)
-            Button(onClick = { focus.clearFocus(); onSave() }, enabled = !state.loading && !state.busy,
-                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
-                Text(stringResource(if (state.busy) R.string.saving else R.string.save_changes))
-            }
-            HorizontalDivider()
-            Text(stringResource(R.string.privacy_title), style = MaterialTheme.typography.titleMedium)
-            Text(stringResource(R.string.privacy_description), style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onClick = { focus.clearFocus(); onLab() },
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Text(stringResource(R.string.local_ai_lab), Modifier.weight(1f),
-                            style = MaterialTheme.typography.titleMedium)
-                        CalIcon(R.drawable.ic_chevron)
+                LanguageSettings()
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
+                    Text(stringResource(R.string.privacy_title), style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.privacy_description), style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = { focus.clearFocus(); onLab() },
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Text(stringResource(R.string.local_ai_lab), Modifier.weight(1f),
+                                    style = MaterialTheme.typography.titleMedium)
+                                CalIcon(R.drawable.ic_chevron)
+                            }
+                        }
+                        Text(stringResource(R.string.lab_intro), style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
-                Text(stringResource(R.string.lab_intro), style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                AboutSettings()
             }
-            AboutSettings()
         }
     }
 }
@@ -221,14 +248,14 @@ private fun LanguageSettings() {
     }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         SectionTitle(stringResource(R.string.language))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.selectableGroup()) {
             listOf("" to R.string.language_system, "en" to R.string.language_english, "ru" to R.string.language_russian)
                 .forEach { (tag, label) ->
-                    FilterChip(selected = language == tag, onClick = {
+                    SingleChoice(stringResource(label), selected = language == tag) {
                         focus.clearFocus()
                         language = tag
                         AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
-                    }, label = { Text(stringResource(label)) }, modifier = Modifier.heightIn(min = 48.dp))
+                    }
                 }
         }
         Text(stringResource(R.string.language_hint), style = MaterialTheme.typography.bodyMedium,

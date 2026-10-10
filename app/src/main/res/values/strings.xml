@@ -125,4 +125,8 @@
     <string name="language_russian">Русский</string>
     <string name="language_hint">Language changes apply immediately.</string>
     <string name="nutrition_with_unit">%1$s %2$s</string>
+    <string name="scan_unavailable">Recognition is not available yet. Photos can only be reviewed. To log food, choose Add manually.</string>
+    <string name="settings_save_hint">Profile, goals and appearance apply when you save.</string>
+    <string name="appearance_save_hint">Brightness and palette apply when you save.</string>
+    <string name="macro_detail">P %1$s g · F %2$s g · C %3$s g</string>
 </resources>

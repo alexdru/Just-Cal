@@ -121,4 +121,8 @@
     <string name="language_russian">Русский</string>
     <string name="language_hint">Язык меняется сразу.</string>
     <string name="nutrition_with_unit">%1$s %2$s</string>
+    <string name="scan_unavailable">Распознавание пока недоступно. Фото можно только проверить. Для записи еды выберите «Добавить вручную».</string>
+    <string name="settings_save_hint">Профиль, цели и оформление применятся после сохранения.</string>
+    <string name="appearance_save_hint">Яркость и палитра применятся после сохранения.</string>
+    <string name="macro_detail">Б %1$s г · Ж %2$s г · У %3$s г</string>
 </resources>

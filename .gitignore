@@ -6,6 +6,9 @@ local.properties
 *.iml
 .DS_Store
 
+# Installed external skills; sources and hashes live in skills-lock.json
+.agents/skills/
+
 # Private signing material and local release staging
 *.jks
 *.keystore

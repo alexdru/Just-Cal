@@ -21,25 +21,24 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(state: HistoryState, onDay: (Long) -> Unit, onRetry: () -> Unit,
     bottomBar: @Composable () -> Unit) {
     var calendar by rememberSaveable { mutableStateOf(false) }
     val locale = LocalConfiguration.current.locales[0]
-    val formatter = remember(locale) { DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale) }
+    val direction = androidx.compose.ui.platform.LocalLayoutDirection.current
+    val formatter = remember(locale) { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale) }
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.history), style = MaterialTheme.typography.headlineLarge) }) },
+        topBar = { CalTopBar(title = { Text(stringResource(R.string.history), style = MaterialTheme.typography.headlineLarge) }) },
         bottomBar = bottomBar,
     ) { padding ->
-        LazyColumn(Modifier.fillMaxSize().consumeWindowInsets(padding),
+        LazyColumn(Modifier.padding(start = padding.calculateStartPadding(direction), end = padding.calculateEndPadding(direction))
+                .calContent().consumeWindowInsets(padding),
             contentPadding = PaddingValues(CalSpacing.page, padding.calculateTopPadding() + 16.dp,
                 CalSpacing.page, padding.calculateBottomPadding() + 24.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)) {
+            verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(stringResource(R.string.history_intro), style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                     FilledTonalButton(onClick = { calendar = true }, modifier = Modifier.heightIn(min = 48.dp)) {
                         CalIcon(R.drawable.ic_diary)
                         Spacer(Modifier.width(8.dp))
@@ -60,7 +59,7 @@ fun HistoryScreen(state: HistoryState, onDay: (Long) -> Unit, onRetry: () -> Uni
             }
             items(state.days, key = { it.dayEpoch }) { day ->
                 Column(Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = { onDay(day.dayEpoch) })
-                    .padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    .padding(vertical = CalSpacing.related), verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             val date = LocalDate.ofEpochDay(day.dayEpoch)
@@ -69,11 +68,9 @@ fun HistoryScreen(state: HistoryState, onDay: (Long) -> Unit, onRetry: () -> Uni
                             Text(pluralStringResource(R.plurals.entries_count, day.entriesCount, day.entriesCount),
                                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        CalIcon(R.drawable.ic_chevron)
+                        EnergyValue(day.totals.energyKcal)
                     }
-                    Text(stringResource(R.string.nutrition_with_unit, nutritionText(day.totals.energyKcal, 0), stringResource(R.string.kcal)),
-                        style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
-                    MacroSummary(day.totals, targets = state.settings)
+                    MacroDetail(day.totals)
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
             }

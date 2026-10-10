@@ -8,7 +8,7 @@ Just Cal is a single-module, offline Android application. Compose renders lifecy
 
 ## Design system
 
-[DESIGN.md](../DESIGN.md) is the visual source of truth, distinguishing existing tokens from proposed refinements. `ui/theme/Theme.kt` owns branded/dynamic color selection, `CalTypography`, `CalShapes`, `CalSpacing` and `CalMotion`; `ui/Components.kt` supplies shared nutrition, heading and icon presentation. `FloatingNavigation.kt` owns the deliberate floating-control geometry. The documentation does not introduce another runtime theme layer or change screen/state architecture. See [DESIGN_AUDIT.md](DESIGN_AUDIT.md) for evidence and the staged improvement roadmap.
+[DESIGN.md](../DESIGN.md) is the visual source of truth, distinguishing existing tokens from proposed refinements. `ui/theme/Theme.kt` owns branded/dynamic color selection, `CalTypography`, `CalShapes`, `CalSpacing` and `CalMotion`; `ui/Components.kt` supplies shared nutrition, heading and icon presentation. `FloatingNavigation.kt` owns the deliberate floating-control geometry. Stage 1 adds CalLayout content bounds (840 dp diary, 600 dp Settings), shared CalTopBar alignment, compact EnergyValue/MacroDetail presentation, and radio-row single-selection semantics in Settings. Settings reuses measured-overlay focus scrolling; persistence and transaction behavior are unchanged. The documentation does not introduce another runtime theme layer or change screen/state architecture. See [DESIGN_AUDIT.md](DESIGN_AUDIT.md) for evidence and the staged improvement roadmap.
 
 ## Navigation and the global action
 

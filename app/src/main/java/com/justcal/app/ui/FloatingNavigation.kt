@@ -63,9 +63,9 @@ fun FloatingNavigation(selected: MainTab, onSelect: (MainTab) -> Unit, onAdd: ((
                         )
                         Surface(shape = RoundedCornerShape(24.dp), color = background, contentColor = foreground) {
                             Column(
-                                Modifier.widthIn(min = minOf(80.dp, tabMaxWidth), max = tabMaxWidth)
+                                Modifier.widthIn(min = minOf(96.dp, tabMaxWidth), max = tabMaxWidth)
                                     .selectable(selected = active, role = Role.Tab) { onSelect(tab) }
-                                    .heightIn(min = 52.dp).padding(horizontal = 8.dp, vertical = 6.dp),
+                                    .heightIn(min = 52.dp).padding(horizontal = 4.dp, vertical = 6.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.spacedBy(2.dp),
                             ) {

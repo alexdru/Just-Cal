@@ -23,7 +23,6 @@ import com.justcal.app.ui.theme.CalMotion
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodayScreen(
     state: TodayState, onEdit: (Long) -> Unit,
@@ -32,34 +31,42 @@ fun TodayScreen(
 ) {
     var showGoal by rememberSaveable { mutableStateOf(false) }
     val locale = LocalConfiguration.current.locales[0]
+    val direction = androidx.compose.ui.platform.LocalLayoutDirection.current
     Scaffold(
         topBar = {
-            TopAppBar(
+            CalTopBar(
+                onBack = onBack,
                 title = {
                     Column {
-                        Text(stringResource(if (onBack == null) R.string.home else R.string.history), style = MaterialTheme.typography.headlineLarge)
-                        Text(state.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale)),
-                            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (onBack == null) {
+                            Text(stringResource(R.string.home), style = MaterialTheme.typography.headlineLarge)
+                            Text(state.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale)),
+                                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        } else {
+                            Text(state.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)),
+                                style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+                            Text(state.date.format(DateTimeFormatter.ofPattern("EEEE").withLocale(locale)),
+                                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                     }
                 },
-                navigationIcon = { onBack?.let { IconButton(onClick = it) { CalIcon(R.drawable.ic_back, stringResource(R.string.close)) } } },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
             )
         },
         bottomBar = bottomBar,
     ) { padding ->
         LazyColumn(
-            Modifier.fillMaxSize().consumeWindowInsets(padding),
+            Modifier.padding(start = padding.calculateStartPadding(direction), end = padding.calculateEndPadding(direction))
+                .calContent().consumeWindowInsets(padding),
             contentPadding = PaddingValues(
                 start = CalSpacing.page, end = CalSpacing.page,
-                top = padding.calculateTopPadding() + 20.dp,
+                top = padding.calculateTopPadding() + CalSpacing.dense,
                 bottom = padding.calculateBottomPadding() + 24.dp,
             ),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+            verticalArrangement = Arrangement.spacedBy(CalSpacing.medium),
         ) {
             item {
                 Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = MaterialTheme.shapes.extraLarge) {
-                    Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(Modifier.fillMaxWidth().padding(CalSpacing.page), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(stringResource(if (onBack == null) R.string.consumed else R.string.consumed_day), style = MaterialTheme.typography.labelLarge)
                         FlowRow(verticalArrangement = Arrangement.spacedBy(0.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(nutritionText(state.totals.energyKcal, 0), style = MaterialTheme.typography.displayLarge)
@@ -81,13 +88,15 @@ fun TodayScreen(
                         TextButton(
                             onClick = { showGoal = true },
                             contentPadding = PaddingValues(horizontal = 0.dp),
+                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onPrimaryContainer),
                         ) { Text(stringResource(R.string.goal, nutritionText(state.goalKcal.toBigDecimal(), 0))) }
                     }
                 }
             }
             item { MacroSummary(state.totals, targets = state.settings) }
             item {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalArrangement = Arrangement.spacedBy(CalSpacing.micro)) {
                     SectionTitle(stringResource(R.string.diary))
                     Text(androidx.compose.ui.res.pluralStringResource(R.plurals.entries_count, state.entries.size, state.entries.size), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -100,10 +109,9 @@ fun TodayScreen(
                 }
             }
             if (!state.loading && !state.error && state.entries.isEmpty()) item {
-                Column(Modifier.fillMaxWidth().padding(vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(stringResource(R.string.empty_title), style = MaterialTheme.typography.headlineMedium)
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
+                    Text(stringResource(R.string.empty_title), style = MaterialTheme.typography.titleMedium)
                     Text(stringResource(R.string.empty_message), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(stringResource(R.string.local_note), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             items(state.entries, key = { it.id }) { entry ->
@@ -119,19 +127,17 @@ private fun FoodRow(entry: DiaryEntry, portion: ConsumedNutrition, onClick: () -
     val weight = java.math.BigDecimal.valueOf(entry.eatenGramsHundredths, 2).stripTrailingZeros()
     Column {
         Row(
-            Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick).padding(vertical = 12.dp),
+            Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick).padding(vertical = CalSpacing.related),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(CalSpacing.micro)) {
                 Text(entry.name, style = MaterialTheme.typography.titleMedium)
                 Text(stringResource(R.string.nutrition_with_unit,
                     nutritionText(weight, weight.scale().coerceAtLeast(0)), stringResource(R.string.grams)),
                     style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(stringResource(R.string.portion_detail, nutritionText(portion.energyKcal, 0),
-                    nutritionText(portion.proteinGrams, 1), nutritionText(portion.fatGrams, 1), nutritionText(portion.carbsGrams, 1)),
-                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                MacroDetail(portion)
             }
-            CalIcon(R.drawable.ic_chevron)
+            EnergyValue(portion.energyKcal, MaterialTheme.typography.titleMedium)
         }
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }

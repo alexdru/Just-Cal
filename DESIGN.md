@@ -80,8 +80,11 @@ rounded:
   navigation-shell: 32px
   navigation-selection: 24px
 spacing:
+  micro: 4px
   small: 8px
+  related: 12px
   medium: 16px
+  dense: 20px
   page: 24px
   section: 32px
 components:
@@ -153,12 +156,13 @@ The identity is the existing evergreen/lime leaf, warm neutral canvas, confident
 number, quiet macro summary and compact floating navigation. Distinction comes from
 composition and useful information, not additional decoration.
 
-**Status:** documentation baseline established on 2026-10-10 against app 0.4.0.
-Frontmatter records existing implementation values and component mappings, not a
-newly implemented theme. The direction formalizes the product brief. All items
-explicitly marked **Proposed** require design review before UI implementation.
-This milestone does not authorize a screen rewrite. See
-[the evidence, audit and roadmap](docs/DESIGN_AUDIT.md).
+**Status:** Stage 1 implemented on 2026-10-10 in app 0.5.0, following the approved
+redesign request. Frontmatter records implemented tokens and existing component
+mappings. Remaining items explicitly marked **Proposed** are future refinements.
+Stage 1 covers shared foundations, Home, Diary, Day Detail, Settings and Add Food
+capability disclosure. Local AI Lab is excluded from this implementation and
+verification. See [the baseline audit](docs/DESIGN_AUDIT.md) and
+[Stage 1 verification](docs/DESIGN_STAGE_1.md).
 
 ### Product truth
 
@@ -247,54 +251,52 @@ bright as well as dark scenes.
 
 **Proposed:** name component aliases for calorie surface, metadata, navigation
 selection and camera controls in the existing theme layer if repeated use warrants
-them. Do not add another color store or a second theme framework. Check the goal
-TextButton's primary foreground on primaryContainer under varied dynamic palettes;
-do not infer contrast merely from semantic naming.
+them. Do not add another color store or a second theme framework. The goal
+TextButton now uses onPrimaryContainer on the calorie surface; retain palette
+checks rather than inferring all contrast from semantic naming.
 
 ## Typography
 
 Keep platform sans-serif rendering and English/Cyrillic coverage. No downloaded
-font or new brand typeface. The eight YAML styles are explicit CalTypography
-overrides. Other Material styles currently inherit library defaults, including
-headlineSmall, bodySmall and labelSmall.
+font or new brand typeface. The eight YAML styles plus bodySmall and labelSmall are explicit CalTypography
+overrides. Other Material styles continue to inherit library defaults, including
+headlineSmall.
 
 | Product role | Existing style and use | Direction |
 | --- | --- | --- |
 | Calorie anchor | displayLarge, 64/72 sp, bold | Dominant number; unit subordinate |
 | Root screen title | headlineLarge, 32/40 sp, bold | One title per page |
-| Empty-state emphasis / history energy | headlineMedium, 28/36 sp | Proposed: reduce empty-state competition |
+| Empty-state emphasis | titleMedium, 16/24 sp | Quiet body copy below the diary heading |
+| History energy | titleLarge, 22/28 sp | Trailing aligned amount with subordinate kcal unit |
 | Section heading / macro amount | titleLarge, 22/28 sp | Preserve macro readability, quieter than calories |
 | Food name / setting subgroup | titleMedium, 16/24 sp | Scan-friendly medium emphasis |
 | Main explanation | bodyLarge, 16/24 sp | Short, useful copy |
 | Date / units / helper text | bodyMedium, 14/20 sp | Secondary color, readable contrast |
 | Action / summary label | labelLarge, 14/20 sp | Concise action or context |
-| Navigation label / small metadata | inherited labelSmall / bodySmall | Proposed: explicitly formalize only after rendered review |
+| Navigation label / small metadata | explicit labelSmall / bodySmall | 11/16 sp navigation; 12/16 sp small metadata |
 
 The large number has -2 sp tracking; root headline has -0.7 sp. Do not spread those
 tracking choices to body text. Avoid arbitrary per-screen font sizes/weights.
 
-**Proposed:** introduce semantic metric and compact-summary aliases, using the
-existing scale first. Evaluate tabular numeral `tnum` support on the actual
-platform font for changing values; it is not configured today and must not be
-claimed as implemented. Align number baselines and trailing totals. Keep locale
-formatting and units explicit, preserve nullable macro targets, and allow lines to
-grow. Do not shrink text to rescue a fixed-height container.
+**Implemented:** the calorie anchor, macro amounts and shared EnergyValue /
+MacroDetail request tabular numerals (`tnum`) from the platform font. EnergyValue
+uses titleLarge for days and titleMedium for food, with a subordinate kcal unit
+and trailing alignment. Platform font feature support determines numeral rendering;
+no font dependency is added. bodySmall (12/16 sp) and labelSmall (11/16 sp, medium)
+are explicit. Locale formatting, explicit units and nullable macro goals remain.
+Text grows rather than shrinking to fit a fixed-height container.
 
 ## Layout
 
 ### Implemented spacing and rhythm
 
-CalSpacing defines small 8 dp, medium 16 dp, page 24 dp and section 32 dp.
-Current screens also contain local 4, 6, 12 and 20 dp values. These are real local
-values, not yet a coherent shared scale. Use 24 dp content margins as the baseline;
-native app bars currently have their own default insets.
-
-**Proposed:** formalize 4 / 8 / 12 / 16 / 20 / 24 / 32 dp as named roles where useful:
-4 micro, 8 inline, 12 related controls, 16 group, 20 dense-section internals,
-24 page, 32 section. Reserve 6 dp for the existing navigation geometry.
-Group title, explanation and input more closely than adjacent sections.
-Align root titles and content to a reviewed common axis; preserve space for
-back affordances on child screens. This is not a blanket padding replacement.
+CalSpacing formalizes 4 micro / 8 small (inline) / 12 related / 16 medium
+(group) / 20 dense / 24 page / 32 section dp. Use these roles when they express
+composition; local values are not mechanically replaced. Navigation retains its
+6 dp geometry exception. Settings uses 12 dp within related groups and 32 dp
+between sections; diary content uses a denser rhythm. CalTopBar aligns root
+titles to the 24 dp content axis and preserves the back affordance on child
+screens. Shapes and palettes are unchanged.
 
 ### Insets and floating controls
 
@@ -314,11 +316,12 @@ Design for available window dimensions, including short landscape and split scre
 rather than a device model. Preserve the pill and separate FAB, destination order,
 saved stacks, date context and accessible targets.
 
-**Proposed:** constrain ordinary text/form content to a reviewed reading width
-(start evaluation at 600 dp) and bound summary/list composition (start at 840 dp).
-These are design candidates, not implemented breakpoints or mandatory platform
-values. On expanded windows, a supporting summary/list or Diary/Day Detail
-composition may use existing Navigation 3 concepts after a separate review;
+**Implemented in Stage 1:** CalLayout / calContent center Home, Diary and Day
+Detail in a maximum 840 dp viewport, and Settings in a maximum 600 dp reading
+viewport. Page margins remain inside these bounds; safe horizontal insets are
+outside. These are content constraints, not navigation breakpoints. Phone and
+short landscape use the same scrollable composition. Other flows retain their
+existing layout. Supporting panes remain a future proposal requiring review;
 do not introduce panes solely to occupy width. Respect hinges and keep controls
 within reachable regions. Photo Review already switches to side-by-side image
 and actions when width exceeds height; preserve full-image Fit behavior.
@@ -337,11 +340,12 @@ and actions when width exceeds height; preserve full-image Fit behavior.
 | Photo Review | Verify the image and continue | Uncropped image → concise guidance → primary confirmation → secondary retake/reselect |
 | Local AI Lab | Inspect model/runtime/input/output | Dense functional sections, explicit state, raw/parsed output and measured metrics; no diary action |
 
-**Proposed refinements:** make historical date identity stronger than the generic
-“Diary” title; reduce repeated introductory/empty-state prose; make package-photo
-guidance about label readability more useful than pixel dimensions; keep debugging
-metadata primarily in Lab. Do not implement recognition, charts or entry creation
-as part of these presentation refinements.
+**Implemented:** Day Detail leads with the selected localized date and weekday;
+Home keeps the root title and full date. Empty states use quieter typography.
+Diary uses compact date/count + trailing energy rows with secondary macros.
+Food rows separate name, eaten weight, macro detail and trailing energy.
+**Proposed for later milestones:** photo-review legibility guidance and metadata
+refinement. Recognition and charts are not implemented.
 
 ## Elevation & Depth
 
@@ -375,8 +379,9 @@ Keep the content-sized, horizontally centered three-destination pill with a
 transparent full-width host. The FAB is a separate action above/right; reserve
 its 56 dp row when hidden in Settings. Current host uses 16 dp horizontal and
 12 dp vertical padding, 12 dp row gap, 6 dp pill padding, 24 dp icons, tabs with
-at least 52 dp height and nominal widths constrained between 80 and 120 dp
-within available width.
+at least 52 dp height and nominal widths constrained between 96 and 120 dp
+within available width (narrow windows may reduce the minimum). Tabs use 4 dp
+horizontal padding to leave room for Russian labels and enlarged text.
 
 The active fill is primary at 10% alpha over the navigation surface; active icon
 and label use primary, with a filled icon. Inactive item backgrounds are
@@ -408,11 +413,17 @@ submission; errors identify the field/problem and recovery; entered drafts survi
 recoverable failure. Do not display missing macro goals as zero. Recognition output
 must remain untrusted and reviewable before any future diary integration.
 
-**Proposed:** represent exclusive brightness/palette/language/backend choices with
-single-selection semantics (for example native radio rows or a suitable segmented
-control), with non-color selected indication. Current FilterChips expose checkbox
-semantics. Settings currently saves appearance/goals/name together but changes
-language immediately; make that boundary clear before changing save behavior.
+**Implemented for Settings:** brightness, palette and language use selectableGroup
+with Role.RadioButton rows and visible native radio indicators. Entire rows are
+single targets with 48 dp minimum height. Profile/goals/appearance remain drafts
+until Save; nearby helper text states this. Language remains immediate, in a
+separate section after Save. Save feedback reserves a stable slot. Settings focus
+scrolling subtracts the measured floating-control overlay from available space.
+Local AI Lab backend selection is outside Stage 1 and remains unchanged.
+
+Add Food discloses automatic recognition is unavailable before scan selection,
+including the source-choice sheet. Package, meal and manual actions remain in
+the established order; manual logging remains directly accessible.
 
 ### Motion and performance
 

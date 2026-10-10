@@ -30,6 +30,10 @@ fun AddFoodLauncher(
                 Text(stringResource(if (mode == null) R.string.add_food else mode.label()),
                     Modifier.padding(vertical = 10.dp), style = MaterialTheme.typography.headlineSmall)
             }
+            Text(stringResource(R.string.scan_unavailable),
+                Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (mode == null) {
                 LauncherAction(R.drawable.ic_package, R.string.scan_package, R.string.scan_package_hint) { onMode(ScanMode.PACKAGE) }
                 LauncherAction(R.drawable.ic_meal, R.string.scan_meal, R.string.scan_meal_hint) { onMode(ScanMode.MEAL) }

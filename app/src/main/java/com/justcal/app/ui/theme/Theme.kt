@@ -26,11 +26,19 @@ object CalMotion {
 }
 
 object CalSpacing {
+    val micro = 4.dp
     val small = 8.dp
+    val related = 12.dp
     val medium = 16.dp
+    val dense = 20.dp
     val page = 24.dp
     val section = 32.dp
 }
+object CalLayout {
+    val readingWidth = 600.dp
+    val diaryWidth = 840.dp
+}
+
 // Green leaf identity: evergreen primary, lime containers and warm neutral surfaces.
 internal val LightColors = lightColorScheme(
     primary = Color(0xFF244D32), onPrimary = Color.White,
@@ -67,13 +75,15 @@ internal val DarkColors = darkColorScheme(
     inversePrimary = Color(0xFF244D32), surfaceTint = Color(0xFFB3D599),
 )
 val CalTypography = Typography(
-    displayLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontWeight = FontWeight.Bold, fontSize = 64.sp, lineHeight = 72.sp, letterSpacing = (-2).sp),
+    displayLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontWeight = FontWeight.Bold, fontSize = 64.sp, lineHeight = 72.sp, letterSpacing = (-2).sp, fontFeatureSettings = "tnum"),
     headlineLarge = TextStyle(fontWeight = FontWeight.Bold, fontSize = 32.sp, lineHeight = 40.sp, letterSpacing = (-0.7).sp),
     headlineMedium = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 28.sp, lineHeight = 36.sp),
     titleLarge = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 22.sp, lineHeight = 28.sp),
     titleMedium = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 16.sp, lineHeight = 24.sp),
     bodyLarge = TextStyle(fontSize = 16.sp, lineHeight = 24.sp),
     bodyMedium = TextStyle(fontSize = 14.sp, lineHeight = 20.sp),
+    bodySmall = TextStyle(fontSize = 12.sp, lineHeight = 16.sp),
+    labelSmall = TextStyle(fontWeight = FontWeight.Medium, fontSize = 11.sp, lineHeight = 16.sp),
     labelLarge = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 14.sp, lineHeight = 20.sp),
 )
 private val CalShapes = Shapes(
