@@ -163,7 +163,7 @@ adb install Just-Cal-vX.Y.Z.apk
 adb install -r Just-Cal-vNEXT.apk
 ```
 
-Check Settings → About and confirm the diary survives the update. Debug builds have a different signing identity; they cannot be updated directly with the release key. Use a separate test device/profile if existing debug data matters.
+Check Settings → About and confirm the diary survives the update. Debug builds use application ID `com.justcal.app.debug`, label `Just Cal Debug`, a `-debug` version suffix and the standard Android debug key. Release retains `com.justcal.app`, label `Just Cal` and the production signing key. Both variants can be installed side by side with separate diaries/settings; their data is not shared or migrated automatically. Debug installations made before the `.debug` suffix used the production application ID and cannot be updated with the release key; preserve any needed old debug data before uninstalling that legacy installation.
 
 ## Trust boundary and remaining risks
 
