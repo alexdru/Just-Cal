@@ -15,7 +15,7 @@
     <string name="edit_food">Edit food</string>
     <string name="food_name">Food name</string>
     <string name="food_hint">e.g. Greek yogurt</string>
-    <string name="per_100g">Nutrition per 100 g</string>
+    <string name="per_100g">Nutrition per 100 g</string>
     <string name="energy">Calories</string>
     <string name="amount">Amount eaten</string>
     <string name="portion_preview">Your portion</string>
@@ -102,7 +102,7 @@
     <string name="retake">Retake</string>
     <string name="choose_another">Choose another</string>
     <string name="photo_ready">Photo ready</string>
-    <string name="photo_ready_message">Your photo is ready. On-device recognition is coming in a later update; nothing has been added to your diary.</string>
+    <string name="photo_ready_message">Photo checked. Recognition is not available yet; nothing has been added to your diary.</string>
     <string name="done">Done</string>
     <string name="image_dimensions">%1$d × %2$d px</string>
     <string name="app_license" translatable="false">GPL-3.0-or-later</string>
@@ -128,5 +128,11 @@
     <string name="scan_unavailable">Recognition is not available yet. Photos can only be reviewed. To log food, choose Add manually.</string>
     <string name="settings_save_hint">Profile, goals and appearance apply when you save.</string>
     <string name="appearance_save_hint">Brightness and palette apply when you save.</string>
-    <string name="macro_detail">P %1$s g · F %2$s g · C %3$s g</string>
+    <string name="macro_detail">P %1$s g · F %2$s g · C %3$s g</string>
+    <string name="review_package_guidance">Check that the full nutrition label is sharp, readable and free of glare.</string>
+    <string name="review_meal_guidance">Check that the whole meal is visible and the photo is sharp.</string>
+    <string name="review_no_recognition">Photo review only. Recognition is not available yet; this will not log food.</string>
+    <string name="capturing_photo">Taking photo…</string>
+    <string name="expanded">Expanded</string>
+    <string name="collapsed">Collapsed</string>
 </resources>

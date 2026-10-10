@@ -156,13 +156,15 @@ The identity is the existing evergreen/lime leaf, warm neutral canvas, confident
 number, quiet macro summary and compact floating navigation. Distinction comes from
 composition and useful information, not additional decoration.
 
-**Status:** Stage 1 implemented on 2026-10-10 in app 0.5.0, following the approved
-redesign request. Frontmatter records implemented tokens and existing component
+**Status:** Stages 1 and 2 implemented on 2026-10-10 (apps 0.5.0 and 0.6.0),
+following the approved redesign requests. Frontmatter records implemented tokens and existing component
 mappings. Remaining items explicitly marked **Proposed** are future refinements.
 Stage 1 covers shared foundations, Home, Diary, Day Detail, Settings and Add Food
-capability disclosure. Local AI Lab is excluded from this implementation and
-verification. See [the baseline audit](docs/DESIGN_AUDIT.md) and
-[Stage 1 verification](docs/DESIGN_STAGE_1.md).
+capability disclosure. Stage 2 refines manual entry, camera and photo review,
+including focus, validation and adaptive form behavior. Local AI Lab is excluded
+from both implementations and verification. See [the baseline audit](docs/DESIGN_AUDIT.md),
+[Stage 1 verification](docs/DESIGN_STAGE_1.md) and
+[Stage 2 verification](docs/DESIGN_STAGE_2.md).
 
 ### Product truth
 
@@ -306,8 +308,11 @@ behind controls, with end padding measured from the entire control host plus a
 content gap. Last items and focused inputs must be able to settle unobstructed.
 Do not interpret a mid-scroll overlap alone as a defect.
 
-Food-editor confirmation remains reachable above IME/navigation bars. Retain its
-BringIntoView behavior. Apply the same focus-clearance principle to other forms.
+Food-editor confirmation remains above IME/navigation bars in ordinary windows.
+When the visible height above IME falls below 280 dp, the editor temporarily hides
+its app bar and confirmation to leave room for the enlarged active field. IME
+Done or Back restores both. Retain overlay-aware BringIntoView behavior and apply
+the same focus-clearance principle to other forms.
 Avoid double-applied insets, fixed bottom spacers and clipping behind system bars.
 
 ### Adaptive direction
@@ -321,7 +326,11 @@ Detail in a maximum 840 dp viewport, and Settings in a maximum 600 dp reading
 viewport. Page margins remain inside these bounds; safe horizontal insets are
 outside. These are content constraints, not navigation breakpoints. Phone and
 short landscape use the same scrollable composition. Other flows retain their
-existing layout. Supporting panes remain a future proposal requiring review;
+existing layout except the Stage 2 flows: editor and image-source fallback content
+use the 600 dp reading bound; Photo Review uses 600 dp in portrait and 840 dp in
+landscape. Portrait review gives half of its body to the Fit image and half to
+scrollable guidance/actions, retaining image geometry after confirmation.
+Supporting panes remain a future proposal requiring review;
 do not introduce panes solely to occupy width. Respect hinges and keep controls
 within reachable regions. Photo Review already switches to side-by-side image
 and actions when width exceeds height; preserve full-image Fit behavior.
@@ -344,8 +353,11 @@ and actions when width exceeds height; preserve full-image Fit behavior.
 Home keeps the root title and full date. Empty states use quieter typography.
 Diary uses compact date/count + trailing energy rows with secondary macros.
 Food rows separate name, eaten weight, macro detail and trailing energy.
-**Proposed for later milestones:** photo-review legibility guidance and metadata
-refinement. Recognition and charts are not implemented.
+**Implemented in Stage 2:** package review asks for the full, sharp nutrition
+label without glare; meal review asks for the complete meal. Pixel dimensions no
+longer occupy consumer hierarchy. Capability disclosure precedes confirmation;
+confirmation checks the photo and never creates a diary entry. Recognition and
+charts are not implemented.
 
 ## Elevation & Depth
 
@@ -406,6 +418,17 @@ Use native OutlinedTextField labels, units, errors and keyboard semantics.
 Editor has a 60 dp minimum confirmation; Settings Save uses 56 dp; review actions
 use 48 dp minima. These differences are current choices, not proof that every
 button needs the same height. Preserve supported content growth.
+
+**Implemented in Stage 2:** the editor groups name, per-100-g inputs and consumed
+amount/preview with 32 dp section and 12 dp related spacing. Nutrition fields use
+two columns only when each has at least 160 dp times font scale; otherwise they
+stack. Explicit IME order is name → calories → protein → fat → carbs → amount;
+Done dismisses focus. Failed submission focuses the first invalid field, with
+localized error semantics and polite error announcements. The portion preview
+uses tabular headlineLarge energy and compact MacroDetail. Values and units stay
+together in shared macro detail. Settings macro disclosure exposes localized
+expanded/collapsed state. Camera retains its native icon targets and a contrasting
+black/white 88 dp shutter composition; busy capture exposes a taking-photo state.
 
 Define each applicable state: default, pressed, focus, selected, disabled,
 loading, empty, error, submitting and success. Busy actions prevent duplicate

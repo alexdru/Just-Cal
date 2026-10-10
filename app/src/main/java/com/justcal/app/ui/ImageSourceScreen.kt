@@ -27,6 +27,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.justcal.app.R
 import com.justcal.app.camera.*
+import com.justcal.app.ui.theme.CalLayout
+import com.justcal.app.ui.theme.CalSpacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,10 +69,10 @@ fun ImageSourceScreen(
     }
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(stringResource(request.mode.label())) },
+            TopAppBar(title = { Text(stringResource(request.mode.label()), style = MaterialTheme.typography.titleLarge) },
                 navigationIcon = { IconButton(onClick = onBack) { CalIcon(R.drawable.ic_back, stringResource(R.string.close)) } },
                 actions = {
-                    TextButton(onClick = { choose() }, enabled = !state.busy) { Text(stringResource(R.string.choose_photo)) }
+                    IconButton(onClick = { choose() }, enabled = !state.busy) { CalIcon(R.drawable.ic_photo, stringResource(R.string.choose_photo)) }
                 })
         },
     ) { padding ->
@@ -82,10 +84,10 @@ fun ImageSourceScreen(
             }
             source == ImageSource.CAMERA && granted && !cameraError && !state.error -> {
                 CameraCapture(images, { onImage(it, ImageSource.CAMERA) }, { cameraError = true },
-                    Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()))
+                    Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()).windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)))
             }
             else -> Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)
-                .verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                .calContent(CalLayout.readingWidth).verticalScroll(rememberScrollState()).padding(CalSpacing.page), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 if (state.error) Text(stringResource(R.string.image_error))
                 else if (cameraError) Text(stringResource(R.string.camera_error))
                 else if (source == ImageSource.CAMERA && !granted) {

@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -36,6 +37,7 @@ fun CameraCapture(
 ) {
     val context = LocalContext.current
     val captureLabel = stringResource(R.string.capture_photo)
+    val capturingLabel = stringResource(R.string.capturing_photo)
     val view = LocalView.current
     val owner = LocalLifecycleOwner.current
     val lifecycleState by owner.lifecycle.currentStateAsState()
@@ -134,8 +136,9 @@ fun CameraCapture(
             colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
             contentPadding = PaddingValues(8.dp),
             modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(24.dp)
-                .size(80.dp).border(3.dp, Color.White, CircleShape).padding(6.dp)
-                .semantics { contentDescription = captureLabel },
+                .size(88.dp).background(Color.Black, CircleShape).padding(4.dp)
+                .border(3.dp, Color.White, CircleShape).padding(6.dp)
+                .semantics { contentDescription = captureLabel; if (takingPhoto) stateDescription = capturingLabel },
         ) {
             if (takingPhoto) CircularProgressIndicator(Modifier.size(28.dp), color = Color.Black)
         }

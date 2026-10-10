@@ -15,7 +15,7 @@
     <string name="edit_food">Изменить запись</string>
     <string name="food_name">Название продукта</string>
     <string name="food_hint">Например, греческий йогурт</string>
-    <string name="per_100g">Пищевая ценность на 100 г</string>
+    <string name="per_100g">Пищевая ценность на 100 г</string>
     <string name="energy">Калории</string>
     <string name="amount">Съеденный вес</string>
     <string name="portion_preview">Ваша порция</string>
@@ -102,7 +102,7 @@
     <string name="retake">Переснять</string>
     <string name="choose_another">Выбрать другое</string>
     <string name="photo_ready">Фото готово</string>
-    <string name="photo_ready_message">Фото подготовлено. Распознавание на устройстве появится в следующем обновлении; в дневник ничего не добавлено.</string>
+    <string name="photo_ready_message">Фото проверено. Распознавание пока недоступно; в дневник ничего не добавлено.</string>
     <string name="done">Готово</string>
     <string name="image_dimensions">%1$d × %2$d пикс.</string>
     <string name="app_license_notice">Copyright © 2026 alexdru и участники проекта. Свободное ПО; распространение и изменение разрешены по GPL v3 или более поздней версии. Без гарантий. Лицензия доступна в репозитории исходного кода (LICENSE).</string>
@@ -124,5 +124,11 @@
     <string name="scan_unavailable">Распознавание пока недоступно. Фото можно только проверить. Для записи еды выберите «Добавить вручную».</string>
     <string name="settings_save_hint">Профиль, цели и оформление применятся после сохранения.</string>
     <string name="appearance_save_hint">Яркость и палитра применятся после сохранения.</string>
-    <string name="macro_detail">Б %1$s г · Ж %2$s г · У %3$s г</string>
+    <string name="macro_detail">Б %1$s г · Ж %2$s г · У %3$s г</string>
+    <string name="review_package_guidance">Проверьте, что вся таблица пищевой ценности в кадре, текст чёткий и без бликов.</string>
+    <string name="review_meal_guidance">Проверьте, что всё блюдо в кадре и фото чёткое.</string>
+    <string name="review_no_recognition">Только проверка фото. Распознавание пока недоступно; запись в дневнике не появится.</string>
+    <string name="capturing_photo">Съёмка…</string>
+    <string name="expanded">Развёрнуто</string>
+    <string name="collapsed">Свёрнуто</string>
 </resources>

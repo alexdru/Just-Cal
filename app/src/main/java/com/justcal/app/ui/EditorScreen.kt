@@ -12,6 +12,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -23,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.justcal.app.R
 import com.justcal.app.domain.*
 import com.justcal.app.ui.theme.CalSpacing
+import com.justcal.app.ui.theme.CalLayout
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -32,96 +41,127 @@ fun EditorScreen(
 ) {
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
     val focus = LocalFocusManager.current
+    val fieldFocus = remember { FoodField.entries.associateWith { FocusRequester() } }
+    var validateFocus by remember { mutableStateOf(false) }
+    LaunchedEffect(validateFocus, state.errors) {
+        if (validateFocus) {
+            FoodField.entries.firstOrNull { it in state.errors }?.let { fieldFocus.getValue(it).requestFocus() }
+            validateFocus = false
+        }
+    }
     val direction = LocalLayoutDirection.current
     val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
-    Scaffold(
-        contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(stringResource(if (editing) R.string.edit_food else R.string.add_food), style = MaterialTheme.typography.titleLarge)
-                        state.dayEpoch?.let {
-                            val locale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
-                            Text(java.time.LocalDate.ofEpochDay(it).format(
-                                java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM).withLocale(locale)),
-                                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    BoxWithConstraints {
+        // Short windows cannot fit the app bar, enlarged field and pinned action above the IME.
+        // IME Done / Back restores the chrome; keep the editing viewport unobstructed meanwhile.
+        val compactIme = imeBottom > 0.dp && (maxHeight - imeBottom < 280.dp)
+        Scaffold(
+            contentWindowInsets = WindowInsets.safeDrawing,
+            topBar = {
+                if (!compactIme) TopAppBar(
+                    title = {
+                        Column {
+                            Text(stringResource(if (editing) R.string.edit_food else R.string.add_food), style = MaterialTheme.typography.titleLarge)
+                            state.dayEpoch?.let {
+                                val locale = LocalConfiguration.current.locales[0]
+                                Text(java.time.LocalDate.ofEpochDay(it).format(
+                                    java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM).withLocale(locale)),
+                                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    },
+                    navigationIcon = { IconButton(onClick = onBack) { CalIcon(R.drawable.ic_back, stringResource(R.string.close)) } },
+                    actions = {
+                        if (editing && !state.missing) IconButton(onClick = { confirmDelete = true }, enabled = !state.busy && !state.loading) {
+                            CalIcon(R.drawable.ic_delete, stringResource(R.string.delete_food))
+                        }
+                    },
+                )
+            },
+            bottomBar = {
+                if (!compactIme) Box(
+                    Modifier.fillMaxWidth()
+                        .windowInsetsPadding(
+                            WindowInsets.navigationBars.union(WindowInsets.ime)
+                                .union(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
+                        )
+                        .wrapContentWidth(Alignment.CenterHorizontally).widthIn(max = CalLayout.readingWidth).fillMaxWidth()
+                        .padding(horizontal = CalSpacing.page, vertical = CalSpacing.related),
+                ) {
+                    Button(
+                        onClick = { focus.clearFocus(); validateFocus = true; onSave() },
+                        enabled = !state.busy && !state.loading && !state.missing,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 60.dp),
+                    ) {
+                        Text(stringResource(if (state.busy) R.string.saving else if (editing) R.string.save_changes else R.string.save_food))
+                    }
+                }
+            },
+        ) { padding ->
+            val buttonSpace = (padding.calculateBottomPadding() - imeBottom).coerceAtLeast(0.dp) + 16.dp
+            val buttonSpacePx = with(LocalDensity.current) { buttonSpace.toPx() }
+            val defaultBringIntoView = LocalBringIntoViewSpec.current
+            val bringIntoView = remember(defaultBringIntoView, buttonSpacePx) {
+                object : BringIntoViewSpec {
+                    override fun calculateScrollDistance(offset: Float, size: Float, containerSize: Float): Float =
+                        defaultBringIntoView.calculateScrollDistance(
+                            offset, size, (containerSize - buttonSpacePx).coerceAtLeast(0f),
+                        )
+                }
+            }
+            // Focus scrolling clears the action overlay without clipping content behind it.
+            CompositionLocalProvider(LocalBringIntoViewSpec provides bringIntoView) {
+                Column(
+                    // Keep the viewport behind the floating button; reserve its height at the scroll end.
+                    Modifier.fillMaxSize().padding(
+                        start = padding.calculateStartPadding(direction), end = padding.calculateEndPadding(direction),
+                        top = padding.calculateTopPadding(), bottom = imeBottom,
+                    ).consumeWindowInsets(padding).calContent(CalLayout.readingWidth)
+                        .verticalScroll(rememberScrollState()).padding(horizontal = CalSpacing.page)
+                        .padding(top = 16.dp, bottom = buttonSpace),
+                    verticalArrangement = Arrangement.spacedBy(CalSpacing.section),
+                ) {
+                    if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
+                    if (state.missing) Text(stringResource(R.string.missing_entry), color = MaterialTheme.colorScheme.error)
+                    if (state.storageError) {
+                        Text(stringResource(R.string.storage_error), color = MaterialTheme.colorScheme.error)
+                        if (editing) TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+                    }
+                    val input: @Composable (FoodField, Modifier) -> Unit = { field, modifier ->
+                        FoodInputField(field, state, onChange, modifier.focusRequester(fieldFocus.getValue(field)),
+                            done = field == FoodField.AMOUNT,
+                            onNext = { FoodField.entries.getOrNull(field.ordinal + 1)?.let { fieldFocus.getValue(it).requestFocus() } })
+                    }
+                    input(FoodField.NAME, Modifier.fillMaxWidth())
+                    Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                        SectionTitle(stringResource(R.string.per_100g))
+                        BoxWithConstraints {
+                            val twoColumns = maxWidth >= (320.dp * LocalConfiguration.current.fontScale + CalSpacing.related)
+                            Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                                listOf(FoodField.ENERGY to FoodField.PROTEIN, FoodField.FAT to FoodField.CARBS).forEach { (first, second) ->
+                                    if (twoColumns) Row(horizontalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                                        input(first, Modifier.weight(1f))
+                                        input(second, Modifier.weight(1f))
+                                    } else {
+                                        input(first, Modifier.fillMaxWidth())
+                                        input(second, Modifier.fillMaxWidth())
+                                    }
+                                }
+                            }
                         }
                     }
-                },
-                navigationIcon = { IconButton(onClick = onBack) { CalIcon(R.drawable.ic_back, stringResource(R.string.close)) } },
-                actions = {
-                    if (editing && !state.missing) IconButton(onClick = { confirmDelete = true }, enabled = !state.busy && !state.loading) {
-                        CalIcon(R.drawable.ic_delete, stringResource(R.string.delete_food))
-                    }
-                },
-            )
-        },
-        bottomBar = {
-            Box(
-                Modifier.fillMaxWidth()
-                    .windowInsetsPadding(
-                        WindowInsets.navigationBars.union(WindowInsets.ime)
-                            .union(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
-                    )
-                    .padding(horizontal = CalSpacing.page, vertical = 12.dp),
-            ) {
-                Button(
-                    onClick = { focus.clearFocus(); onSave() },
-                    enabled = !state.busy && !state.loading && !state.missing,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 60.dp),
-                ) {
-                    Text(stringResource(if (state.busy) R.string.saving else if (editing) R.string.save_changes else R.string.save_food))
-                }
-            }
-        },
-    ) { padding ->
-        val buttonSpace = (padding.calculateBottomPadding() - imeBottom).coerceAtLeast(0.dp) + 16.dp
-        val buttonSpacePx = with(LocalDensity.current) { buttonSpace.toPx() }
-        val defaultBringIntoView = LocalBringIntoViewSpec.current
-        val bringIntoView = remember(defaultBringIntoView, buttonSpacePx) {
-            object : BringIntoViewSpec {
-                override fun calculateScrollDistance(offset: Float, size: Float, containerSize: Float): Float =
-                    defaultBringIntoView.calculateScrollDistance(
-                        offset, size, (containerSize - buttonSpacePx).coerceAtLeast(0f),
-                    )
-            }
-        }
-        // Focus scrolling clears the action overlay without clipping content behind it.
-        CompositionLocalProvider(LocalBringIntoViewSpec provides bringIntoView) {
-            Column(
-                // Keep the viewport behind the floating button; reserve its height at the scroll end.
-                Modifier.fillMaxSize().padding(
-                    start = padding.calculateStartPadding(direction), end = padding.calculateEndPadding(direction),
-                    top = padding.calculateTopPadding(), bottom = imeBottom,
-                ).consumeWindowInsets(padding)
-                    .verticalScroll(rememberScrollState()).padding(horizontal = CalSpacing.page)
-                    .padding(top = 16.dp, bottom = buttonSpace),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-            ) {
-                if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
-                if (state.missing) Text(stringResource(R.string.missing_entry), color = MaterialTheme.colorScheme.error)
-                if (state.storageError) {
-                    Text(stringResource(R.string.storage_error), color = MaterialTheme.colorScheme.error)
-                    if (editing) TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
-                }
-                FoodInputField(FoodField.NAME, state, onChange, Modifier.fillMaxWidth())
-                SectionTitle(stringResource(R.string.per_100g))
-                FoodInputField(FoodField.ENERGY, state, onChange, Modifier.fillMaxWidth())
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp), maxItemsInEachRow = 2) {
-                    FoodInputField(FoodField.PROTEIN, state, onChange, Modifier.weight(1f).widthIn(min = 140.dp))
-                    FoodInputField(FoodField.FAT, state, onChange, Modifier.weight(1f).widthIn(min = 140.dp))
-                    FoodInputField(FoodField.CARBS, state, onChange, Modifier.fillMaxWidth())
-                }
-                FoodInputField(FoodField.AMOUNT, state, onChange, Modifier.fillMaxWidth(), done = true)
-                Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = MaterialTheme.shapes.large) {
-                    Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(stringResource(R.string.portion_preview), style = MaterialTheme.typography.labelLarge)
-                        state.preview?.let { nutrition ->
-                            Text(stringResource(R.string.nutrition_with_unit, nutritionText(nutrition.energyKcal, 0), stringResource(R.string.kcal)),
-                                style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
-                            MacroSummary(nutrition)
-                        } ?: Text(stringResource(R.string.preview_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                        input(FoodField.AMOUNT, Modifier.fillMaxWidth())
+                        Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = MaterialTheme.shapes.large) {
+                            Column(Modifier.fillMaxWidth().padding(CalSpacing.dense), verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                                Text(stringResource(R.string.portion_preview), style = MaterialTheme.typography.labelLarge)
+                                state.preview?.let { nutrition ->
+                                    Text(stringResource(R.string.nutrition_with_unit, nutritionText(nutrition.energyKcal, 0), stringResource(R.string.kcal)),
+                                        style = MaterialTheme.typography.headlineLarge.copy(fontFeatureSettings = "tnum"), color = MaterialTheme.colorScheme.primary)
+                                    MacroDetail(nutrition)
+                                } ?: Text(stringResource(R.string.preview_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
                     }
                 }
             }
@@ -139,7 +179,7 @@ fun EditorScreen(
 @Composable
 private fun FoodInputField(
     field: FoodField, state: EditorState, onChange: (FoodField, String) -> Unit,
-    modifier: Modifier = Modifier, done: Boolean = false,
+    modifier: Modifier = Modifier, done: Boolean = false, onNext: () -> Unit,
 ) {
     val focus = LocalFocusManager.current
     val label = when (field) {
@@ -154,16 +194,17 @@ private fun FoodInputField(
         InputError.POSITIVE -> R.string.error_positive; InputError.TOO_LARGE -> R.string.error_large
         null -> null
     }
+    val errorMessage = errorString?.let { stringResource(it) }
     OutlinedTextField(
         value = state.draft.value(field), onValueChange = { onChange(field, it) },
-        modifier = modifier, enabled = !state.busy && !state.loading && !state.missing,
+        modifier = modifier.semantics { errorMessage?.let { error(it) } }, enabled = !state.busy && !state.loading && !state.missing,
         label = { Text(stringResource(label)) }, singleLine = true, isError = error != null,
         shape = MaterialTheme.shapes.medium,
         placeholder = if (field == FoodField.NAME) ({ Text(stringResource(R.string.food_hint)) }) else null,
         suffix = if (field == FoodField.NAME) null else ({
             Text(stringResource(if (field == FoodField.ENERGY) R.string.kcal else R.string.grams))
         }),
-        supportingText = if (errorString != null) ({ Text(stringResource(errorString)) })
+        supportingText = if (errorMessage != null) ({ Text(errorMessage, Modifier.semantics { liveRegion = LiveRegionMode.Polite }) })
             else if (field == FoodField.AMOUNT) ({ Text(stringResource(R.string.amount_helper)) }) else null,
         keyboardOptions = KeyboardOptions(
             keyboardType = if (field == FoodField.NAME) KeyboardType.Text else KeyboardType.Decimal,
@@ -171,7 +212,7 @@ private fun FoodInputField(
             imeAction = if (done) ImeAction.Done else ImeAction.Next,
         ),
         keyboardActions = KeyboardActions(
-            onNext = { focus.moveFocus(androidx.compose.ui.focus.FocusDirection.Next) },
+            onNext = { onNext() },
             onDone = { focus.clearFocus() },
         ),
     )

@@ -26,6 +26,8 @@ import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -42,6 +44,7 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSa
     val direction = LocalLayoutDirection.current
     val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
     var showMacros by rememberSaveable { mutableStateOf(false) }
+    val macroExpansion = stringResource(if (showMacros) R.string.expanded else R.string.collapsed)
     LaunchedEffect(state.loading) {
         if (!state.loading && listOf(state.draft.proteinGoal, state.draft.fatGoal, state.draft.carbsGoal).any { it.isNotBlank() }) {
             showMacros = true
@@ -96,7 +99,7 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSa
                         isError = state.submitted && !state.draft.calorieGoalValid,
                         supportingText = { if (state.submitted && !state.draft.calorieGoalValid) Text(stringResource(R.string.goal_error)) })
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        TextButton(onClick = { showMacros = !showMacros }, modifier = Modifier.fillMaxWidth(),
+                        TextButton(onClick = { showMacros = !showMacros }, modifier = Modifier.fillMaxWidth().semantics { stateDescription = macroExpansion },
                             contentPadding = PaddingValues(vertical = 8.dp)) {
                             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                                 Text(stringResource(R.string.macro_goals), Modifier.weight(1f),

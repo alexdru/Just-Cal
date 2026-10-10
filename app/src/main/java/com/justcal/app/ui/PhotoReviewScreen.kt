@@ -15,6 +15,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.*
+import com.justcal.app.ui.theme.CalLayout
+import com.justcal.app.ui.theme.CalSpacing
 import androidx.lifecycle.ViewModel
 import com.justcal.app.R
 import com.justcal.app.camera.*
@@ -61,24 +64,30 @@ fun PhotoReviewScreen(
     ) { padding ->
         BoxWithConstraints(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)) {
             val landscape = maxWidth > maxHeight
-            val maxActionsHeight = maxHeight * 0.6f
+            val maxActionsHeight = maxHeight * 0.5f
             val preview: @Composable (Modifier) -> Unit = { modifier ->
                 Box(modifier, contentAlignment = Alignment.Center) {
                     bitmap?.let {
                         Image(it.asImageBitmap(), stringResource(R.string.photo_description),
-                            Modifier.fillMaxSize().padding(8.dp), contentScale = ContentScale.Fit)
+                            Modifier.fillMaxSize().padding(CalSpacing.small), contentScale = ContentScale.Fit)
                     }
                     if (bitmap == null && !failed) CircularProgressIndicator()
                 }
             }
             val actions: @Composable (Modifier) -> Unit = { modifier ->
-                Column(modifier.verticalScroll(rememberScrollState()).padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(modifier.verticalScroll(rememberScrollState()).padding(CalSpacing.page),
+                    verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                     Text(stringResource(if (verified) R.string.photo_ready else R.string.review_photo),
-                        style = MaterialTheme.typography.titleLarge)
-                    Text(stringResource(R.string.image_dimensions, image.width, image.height),
-                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    if (failed) Text(stringResource(R.string.image_error), color = MaterialTheme.colorScheme.error)
+                        Modifier.semantics { heading(); liveRegion = LiveRegionMode.Polite },
+                        style = MaterialTheme.typography.titleMedium)
+                    if (!verified) {
+                        Text(stringResource(if (image.request.mode == ScanMode.PACKAGE) R.string.review_package_guidance else R.string.review_meal_guidance),
+                            style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.review_no_recognition),
+                            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    if (failed) Text(stringResource(R.string.image_error),
+                        Modifier.semantics { liveRegion = LiveRegionMode.Polite }, color = MaterialTheme.colorScheme.error)
                     if (verified) {
                         Text(stringResource(R.string.photo_ready_message))
                         Button(onClick = onBack, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
@@ -101,12 +110,12 @@ fun PhotoReviewScreen(
                     }
                 }
             }
-            if (landscape) Row(Modifier.fillMaxSize()) {
+            if (landscape) Row(Modifier.calContent(CalLayout.diaryWidth)) {
                 preview(Modifier.weight(1f).fillMaxHeight())
                 actions(Modifier.weight(1f).fillMaxHeight())
-            } else Column(Modifier.fillMaxSize()) {
+            } else Column(Modifier.calContent(CalLayout.readingWidth)) {
                 preview(Modifier.weight(1f).fillMaxWidth())
-                actions(Modifier.fillMaxWidth().heightIn(max = maxActionsHeight))
+                actions(Modifier.fillMaxWidth().height(maxActionsHeight))
             }
         }
     }

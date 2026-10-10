@@ -73,7 +73,7 @@ class CameraFlowTest {
         click(R.string.use_photo)
         compose.onNodeWithText(label(R.string.photo_ready)).assertExists()
         click(R.string.done)
-        compose.onNodeWithText(full).assertExists()
+        compose.onNodeWithText(medium).assertExists()
         compose.waitUntil(5000) {
             cache.listFiles().orEmpty().all { it.name in previousFiles }
         }

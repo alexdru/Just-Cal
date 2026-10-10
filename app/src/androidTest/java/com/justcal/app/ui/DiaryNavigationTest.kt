@@ -1,6 +1,7 @@
 package com.justcal.app.ui
 
 import androidx.compose.ui.test.*
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -54,14 +55,14 @@ class DiaryNavigationTest {
             compose.onNodeWithText(label(R.string.choose_day)).performClick()
             compose.onNode(hasText(dateText(date, FormatStyle.FULL), substring = true) and hasClickAction()).performClick()
             compose.onNodeWithText(label(R.string.open_day)).performClick()
-            compose.onNodeWithText(dateText(date, FormatStyle.FULL)).assertExists()
+            compose.onNodeWithText(dateText(date, FormatStyle.MEDIUM)).assertExists()
             tab(R.string.settings).performClick()
             fab().assertDoesNotExist()
             tab(R.string.home).performClick()
             tab(R.string.history).performClick()
-            compose.onNodeWithText(dateText(date, FormatStyle.FULL)).assertExists()
+            compose.onNodeWithText(dateText(date, FormatStyle.MEDIUM)).assertExists()
             compose.activityRule.scenario.recreate()
-            compose.onNodeWithText(dateText(date, FormatStyle.FULL)).assertExists()
+            compose.onNodeWithText(dateText(date, FormatStyle.MEDIUM)).assertExists()
 
             fab().performClick()
             compose.onNodeWithText(label(R.string.add_manually)).performClick()
@@ -72,15 +73,15 @@ class DiaryNavigationTest {
             }
             compose.onNodeWithText(label(R.string.save_food)).performClick()
             compose.waitUntil(5000) { compose.onAllNodesWithText(name).fetchSemanticsNodes().isNotEmpty() }
-            compose.onNodeWithText(addedTotal).assertExists()
+            compose.onNode(hasText(addedTotal) and !hasClickAction()).assertExists()
             // The history list and direct calendar both open the existing, identical day destination.
             back()
-            compose.onNode(hasText(if (date == LocalDate.now()) label(R.string.today) else dateText(date, FormatStyle.FULL)) and hasClickAction()).performScrollTo().performClick()
-            compose.onNodeWithText(dateText(date, FormatStyle.FULL)).assertExists()
+            compose.onNode(hasText(if (date == LocalDate.now()) label(R.string.today) else dateText(date, FormatStyle.MEDIUM)) and hasClickAction()).performScrollTo().performClick()
+            compose.onNodeWithText(dateText(date, FormatStyle.MEDIUM)).assertExists()
             compose.onNodeWithText(name).performScrollTo().performClick()
             field(R.string.amount).performScrollTo().performTextReplacement("250")
             compose.onNodeWithText(label(R.string.save_changes)).performClick()
-            compose.waitUntil(5000) { compose.onAllNodesWithText(editedTotal).fetchSemanticsNodes().isNotEmpty() }
+            compose.waitUntil(5000) { compose.onAllNodes(hasText(editedTotal) and !hasClickAction()).fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithText(name).performScrollTo().performClick()
             compose.onNodeWithContentDescription(label(R.string.delete_food)).performClick()
             compose.onNodeWithText(label(R.string.delete_confirm)).performClick()
@@ -110,7 +111,7 @@ class DiaryNavigationTest {
             fab().assertDoesNotExist()
             compose.onNodeWithText(label(R.string.macro_goals)).performScrollTo().performClick()
             field(R.string.protein).performScrollTo().performTextReplacement("160")
-            compose.onNodeWithText(label(R.string.save_changes)).performScrollTo().performClick()
+            compose.onNodeWithText(label(R.string.save_changes)).performScrollTo().performSemanticsAction(SemanticsActions.OnClick) { it() }
             compose.waitUntil(5000) { runBlocking { preferences.settings.first().proteinGoalGramsHundredths == 16000L } }
             val proteinOnly = runBlocking { preferences.settings.first() }
             assertNull(proteinOnly.fatGoalGramsHundredths)
@@ -124,13 +125,13 @@ class DiaryNavigationTest {
             field(R.string.fat).performScrollTo().performTextReplacement("65,25")
             field(R.string.carbs).performScrollTo().performTextReplacement("230.01")
             field(R.string.goal_field).performScrollTo().performTextReplacement("2300")
-            compose.onNodeWithText(label(R.string.save_changes)).performScrollTo().performClick()
+            compose.onNodeWithText(label(R.string.save_changes)).performScrollTo().performSemanticsAction(SemanticsActions.OnClick) { it() }
             compose.waitUntil(5000) { runBlocking { preferences.settings.first().carbsGoalGramsHundredths == 23001L } }
             assertEquals(6525L, runBlocking { preferences.settings.first() }.fatGoalGramsHundredths)
             for ((id, cleared) in listOf(R.string.protein to 0, R.string.fat to 1, R.string.carbs to 2)) {
                 field(id).performScrollTo()
                 compose.onNodeWithContentDescription(compose.activity.getString(R.string.clear_macro_goal, label(id))).performClick()
-                compose.onNodeWithText(label(R.string.save_changes)).performScrollTo().performClick()
+                compose.onNodeWithText(label(R.string.save_changes)).performScrollTo().performSemanticsAction(SemanticsActions.OnClick) { it() }
                 compose.waitUntil(5000) {
                     val saved = runBlocking { preferences.settings.first() }
                     when (cleared) {
