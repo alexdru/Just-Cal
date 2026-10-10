@@ -6,6 +6,10 @@ The root `version.properties` is the explicit application version source for Gra
 
 Just Cal is a single-module, offline Android application. Compose renders lifecycle-aware StateFlow screen state owned by Hilt ViewModels. Room implementation details stay behind DiaryRepository; deterministic nutrition calculation and input validation belong to domain code.
 
+## Design system
+
+[DESIGN.md](../DESIGN.md) is the visual source of truth, distinguishing existing tokens from proposed refinements. `ui/theme/Theme.kt` owns branded/dynamic color selection, `CalTypography`, `CalShapes`, `CalSpacing` and `CalMotion`; `ui/Components.kt` supplies shared nutrition, heading and icon presentation. `FloatingNavigation.kt` owns the deliberate floating-control geometry. The documentation does not introduce another runtime theme layer or change screen/state architecture. See [DESIGN_AUDIT.md](DESIGN_AUDIT.md) for evidence and the staged improvement roadmap.
+
 ## Navigation and the global action
 
 Home, Diary and Settings each have a saved Navigation 3 back stack, including entry-scoped ViewModels and saveable UI state. Switching destinations preserves the other stacks. Back pops the current stack; Back at a secondary root returns to Home. NavDisplay handles transitions and predictive back.

@@ -122,6 +122,11 @@ Users must be able to review and correct recognized values before they are added
 
 ## UI
 
+- `DESIGN.md` is the visual source of truth; read it before implementing UI changes.
+- Follow its established tokens and composition principles. Proposed refinements remain subject to design approval.
+- Use relevant design skills when appropriate, and validate major UI changes visually on a device or emulator.
+- Do not introduce arbitrary visual patterns that conflict with the approved design system.
+
 Optimize for fast calorie logging and low interaction count.
 
 Use Material 3 and Jetpack Compose.
