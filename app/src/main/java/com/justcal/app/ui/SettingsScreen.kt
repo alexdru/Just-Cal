@@ -39,7 +39,8 @@ import com.justcal.app.ui.theme.CalSpacing
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSave: () -> Unit,
-    onRetry: () -> Unit, onLab: () -> Unit, bottomBar: @Composable () -> Unit) {
+    onRetry: () -> Unit, onLab: () -> Unit, bottomBar: @Composable () -> Unit,
+    onBackup: () -> Unit = {}, onDiagnostics: () -> Unit = {}) {
     val focus = LocalFocusManager.current
     val direction = LocalLayoutDirection.current
     val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
@@ -161,6 +162,23 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSa
                     }
                 }
                 LanguageSettings()
+                Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
+                    SectionTitle(stringResource(R.string.data_backup))
+                    TextButton(onClick = { focus.clearFocus(); onBackup() },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(R.string.data_backup), Modifier.weight(1f))
+                            CalIcon(R.drawable.ic_chevron)
+                        }
+                    }
+                    TextButton(onClick = { focus.clearFocus(); onDiagnostics() },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(R.string.ocr_diagnostics), Modifier.weight(1f))
+                            CalIcon(R.drawable.ic_chevron)
+                        }
+                    }
+                }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
                     Text(stringResource(R.string.privacy_title), style = MaterialTheme.typography.titleMedium)

@@ -361,6 +361,42 @@ confirmation in the existing editor, with quiet review guidance, model confidenc
 expandable raw text and an independently editable consumed amount. No new card or
 visual token is introduced. Charts and visual meal estimation are not implemented.
 
+### Data & Backup and OCR Diagnostics
+
+Settings opens two separate child destinations using the existing Navigation 3 stack.
+Both retain CalTopBar, semantic colors, the 600 dp reading bound, safe insets and
+scrollable flat sections. Backup actions lead with export/import; merge is the
+default confirmation, while replacement uses a separate warning and acknowledgement.
+Recovery export remains visible when available. Busy, failure and completion are
+explicit textual states.
+
+Diagnostics uses compact related views for overview, scan history, performance,
+recognition errors and retailer/brand groups. Dense rows and quiet metadata replace
+decorative dashboard cards. Details disclose captured fields and missing values;
+filtering, sorting and selection support report review. Tabs and horizontal swipes
+share one Compose Pager state. Shared Save/Share actions are pinned at the bottom in
+a transparent host, using the editor's measured inset/overlay geometry. Save is
+filled, Share is tonal; both have 56 dp minimum height and stack when width or font
+scale requires it. The list viewport extends behind the host and navigation area;
+end padding and focus scrolling clear the full measured host plus a content gap.
+Short windows hide the actions while IME is open, restoring them when editing ends.
+
+Overview leads with the total scan count using headlineLarge and primary color,
+then flat status rows, local retention disclosure and the destructive clear action.
+Expressive emphasis comes from information priority, size and semantic color, without
+decorative cards or extra theme tokens. Details use a native ModalBottomSheet:
+result and duration first, then stage metrics and parsed fields. Raw text and
+model/runtime revisions and hashes are disclosed on demand. The sheet uses native
+safe/IME insets and a reachable close action. Existing branded/dynamic colors,
+typography, shapes and Navigation 3 behavior remain intact. The installed stable
+Material3 1.4.0 does not expose separate Expressive button/motion APIs; no experimental
+dependency is introduced.
+
+Detailed local capture remains the default. Clearing history and sensitive report
+content use explicit dialogs. Statistics always expose sample counts and do not
+imply accuracy or verification from unchanged fields/confidence. No new visual
+tokens are introduced.
+
 ## Elevation & Depth
 
 Use surface tone, whitespace and typography first. Main reading surfaces are flat.

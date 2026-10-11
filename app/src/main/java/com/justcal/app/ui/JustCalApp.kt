@@ -26,6 +26,8 @@ import kotlinx.serialization.Serializable
 @Serializable data class ImageAcquisition(val request: ScanRequest, val source: ImageSource) : NavKey
 @Serializable data class PhotoReview(val image: PreparedImage) : NavKey
 @Serializable data object LocalAiLab : NavKey
+@Serializable data object DataBackup : NavKey
+@Serializable data object OcrDiagnostics : NavKey
 
 @Serializable data class DiaryDate(val dayEpoch: Long) : NavKey
 @Serializable data class FoodEditor(
@@ -76,6 +78,8 @@ fun JustCalApp() {
                             MainScreen(
                                 root, settingsViewModel, onSelect = selectTab, onAdd = addFood,
                                 onLab = { if (stack.lastOrNull() == root) stack.add(LocalAiLab) },
+                                onBackup = { if (stack.lastOrNull() == root) stack.add(DataBackup) },
+                                onDiagnostics = { if (stack.lastOrNull() == root) stack.add(OcrDiagnostics) },
                                 onEdit = { id ->
                                     if (stack.lastOrNull() == root) stack.add(FoodEditor(id = id, origin = tab))
                                 },
@@ -102,6 +106,14 @@ fun JustCalApp() {
                                             }
                                         })
                                 })
+                        }
+                        entry<DataBackup> { route ->
+                            DiaryBackupScreen(hiltViewModel<DiaryBackupViewModel>(),
+                                onBack = { if (stack.lastOrNull() == route) stack.removeLastOrNull() })
+                        }
+                        entry<OcrDiagnostics> { route ->
+                            OcrDiagnosticsScreen(hiltViewModel<OcrDiagnosticsViewModel>(),
+                                onBack = { if (stack.lastOrNull() == route) stack.removeLastOrNull() })
                         }
                         entry<LocalAiLab> { route ->
                             val viewModel = hiltViewModel<LocalAiLabViewModel>()
@@ -223,7 +235,8 @@ fun JustCalApp() {
 @Composable
 private fun MainScreen(
     tab: MainTab, settingsViewModel: SettingsViewModel,
-    onSelect: (MainTab) -> Unit, onAdd: () -> Unit, onLab: () -> Unit, onEdit: (Long) -> Unit, onDay: (Long) -> Unit,
+    onSelect: (MainTab) -> Unit, onAdd: () -> Unit, onLab: () -> Unit,
+    onBackup: () -> Unit, onDiagnostics: () -> Unit, onEdit: (Long) -> Unit, onDay: (Long) -> Unit,
 ) {
     val bar: @Composable () -> Unit = {
         FloatingNavigation(tab, onSelect, onAdd = onAdd.takeUnless { tab == MainTab.SETTINGS })
@@ -243,7 +256,8 @@ private fun MainScreen(
         MainTab.SETTINGS -> {
             val state by settingsViewModel.state.collectAsStateWithLifecycle()
             SettingsScreen(state, settingsViewModel::change,
-                settingsViewModel::save, settingsViewModel::retry, onLab = onLab, bottomBar = bar)
+                settingsViewModel::save, settingsViewModel::retry, onLab = onLab, bottomBar = bar,
+                onBackup = onBackup, onDiagnostics = onDiagnostics)
         }
     }
 }

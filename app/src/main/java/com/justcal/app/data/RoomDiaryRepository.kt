@@ -12,7 +12,8 @@ class RoomDiaryRepository @Inject constructor(private val dao: DiaryDao) : Diary
     override suspend fun save(entry: DiaryEntry): Long {
         val entity = DiaryEntryEntity.from(entry)
         if (entry.id == 0L) return dao.insert(entity)
-        check(dao.update(entity) == 1) { "The entry no longer exists" }
+        val original = checkNotNull(dao.get(entry.id)) { "The entry no longer exists" }
+        check(dao.update(entity.copy(portableId = original.portableId)) == 1) { "The entry no longer exists" }
         return entry.id
     }
     override suspend fun delete(id: Long) = dao.delete(id)

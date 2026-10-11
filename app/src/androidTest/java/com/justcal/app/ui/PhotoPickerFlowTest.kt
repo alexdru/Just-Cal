@@ -26,7 +26,7 @@ class PhotoPickerFlowTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
     private val automation get() = InstrumentationRegistry.getInstrumentation().uiAutomation
     private fun label(id: Int) = compose.activity.getString(id)
-    private fun click(id: Int) = compose.onNodeWithText(label(id)).performClick()
+    private fun click(id: Int) = compose.onNode(hasText(label(id)) and hasClickAction()).performClick()
 
     private fun fixture(color: Int, labelText: Boolean = false): Uri {
         val resolver = compose.activity.contentResolver
@@ -92,7 +92,7 @@ class PhotoPickerFlowTest {
             click(R.string.choose_day)
             val fullDate = date.format(java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.FULL)
                 .withLocale(compose.activity.resources.configuration.locales[0]))
-            compose.onNode(hasText(fullDate, substring = true) and hasClickAction()).performClick()
+            compose.onNode(hasText(fullDate, substring = true, ignoreCase = true) and hasClickAction()).performClick()
             click(R.string.open_day)
             compose.onNodeWithContentDescription(label(R.string.add_food)).performClick()
             click(R.string.scan_package)

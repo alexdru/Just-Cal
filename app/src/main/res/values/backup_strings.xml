@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="data_backup">Data &amp; Backup</string>
+    <string name="backup_description">Portable diary backup. Food names, dates, amounts and nutrition are included; OCR diagnostics and settings are excluded. Keep the file private.</string>
+    <string name="export_diary">Export diary</string>
+    <string name="import_diary">Import diary</string>
+    <string name="merge_diary">Merge entries</string>
+    <string name="replace_all">Replace all diary entries</string>
+    <string name="backup_cancel">Cancel</string>
+    <string name="backup_preview">Entries in backup: %1$d</string>
+    <string name="backup_merge_hint">Merge preserves existing entries. Identical entries are skipped; conflicting entries are reported and never overwrite your diary.</string>
+    <string name="replace_warning">Replace your entire diary? Entries in backup: %1$d. A private recovery backup is saved first. Export the recovery backup from this screen and import it to restore your previous diary.</string>
+    <string name="replace_acknowledge">I understand that all current diary entries will be replaced.</string>
+    <string name="backup_result">Imported: %1$d · Skipped: %2$d · Conflicting: %3$d</string>
+    <string name="backup_error">The operation failed. Check that the backup is valid, its format is supported and the document is accessible. Your existing diary is preserved if import fails.</string>
+    <string name="backup_exported">Backup saved</string>
+    <string name="recovery_description">A recovery backup from the most recent replacement is available. Save it before another replacement.</string>
+    <string name="export_recovery">Export recovery backup</string>
+</resources>

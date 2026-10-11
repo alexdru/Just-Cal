@@ -1,5 +1,7 @@
 # Offline package-label OCR
 
+Persistent opt-in content diagnostics, measured scan history and structured local reports are described in [OCR_DIAGNOSTICS.md](OCR_DIAGNOSTICS.md). The diagnostic instrumentation does not change model weights, preprocessing or nutrition calculations.
+
 ## Production flow and boundary
 
 Scan package → CameraX / Photo Picker → Photo Review → Use photo → local OCR →

@@ -38,6 +38,7 @@ class EditorViewModel @AssistedInject constructor(
     @Assisted("entryId") private val entryId: Long?,
     @Assisted("dayEpoch") private val dayEpoch: Long? = null,
     @Assisted("scan") private val scan: PackageScanPrefill? = null,
+    private val diagnostics: com.justcal.app.diagnostics.OcrDiagnosticsRepository? = null,
 ) : ViewModel() {
     private var original: DiaryEntry? = null
     private fun restoredDraft() = FoodField.entries.fold(scan?.label?.draft() ?: FoodDraft()) { draft, field ->
@@ -108,6 +109,7 @@ class EditorViewModel @AssistedInject constructor(
                     source = original?.source ?: if (scan != null) EntrySource.PACKAGE_SCAN else EntrySource.MANUAL,
                 )
                 repository.save(entry)
+                scan?.let { diagnostics?.corrections(it, state.value.draft) }
                 mutableState.update { it.copy(busy = false, completed = true) }
             } catch (error: Exception) {
                 if (error is CancellationException) throw error

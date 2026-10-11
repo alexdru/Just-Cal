@@ -70,6 +70,12 @@ Room persists individual food entries: original nutrition per 100 g and consumed
 
 Portions and daily totals are derived with exact BigDecimal arithmetic, rounded only for presentation. There is no persisted Day entity or mutable daily-total cache. Adding, editing or deleting an entry updates Room flows and the affected summaries.
 
+## Diary backup and local OCR diagnostics
+
+DiaryBackupRepository snapshots and imports Room records through the versioned serializer and DiaryImportValidator. A unique portable UUID is independent of the local Room primary key; the additive 1→2 migration preserves existing records. Preview precedes transactional merge; conflicts never overwrite data. Explicit replacement writes a durable recovery snapshot before the transaction deletes records. SAF owns document destinations; no storage permissions or network services are added. See [DATA_BACKUP.md](DATA_BACKUP.md).
+
+OCR diagnostics are isolated from diary persistence in a separate private Room database. Per-attempt instrumentation uses existing native stage timings and monotonic parsing/total measurements. Diagnostic write failures do not fail diary saves or OCR. Detailed local content is captured by default for new scans; historical basic records are retained without reconstructing missing details. Original photos and private paths are not captured. Report exports exclude detailed personal content by default and require explicit inclusion. Correction tracking links explicit editor changes to the original scan; portions remain user adjustments and unchanged values are not ground truth. Local AI Lab is unchanged. Structured ZIP reports are explicitly saved through SAF or shared through a scoped FileProvider URI. See [OCR_DIAGNOSTICS.md](OCR_DIAGNOSTICS.md).
+
 ## Settings and local profile
 
 GoalPreferences owns the existing DataStore preferences file. It atomically saves optional local display name, calorie target, independently optional protein/fat/carbohydrate targets, brightness (System/Light/Dark) and color style (Just Cal/Material You). Existing appearance and nutrition keys are retained; the additive color_style key defaults to Just Cal when absent or unrecognized. There are no accounts, authentication or cloud profiles.

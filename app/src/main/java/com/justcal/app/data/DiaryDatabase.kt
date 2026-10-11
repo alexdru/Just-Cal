@@ -3,8 +3,11 @@ package com.justcal.app.data
 import androidx.room.*
 import com.justcal.app.domain.*
 import kotlinx.coroutines.flow.Flow
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+import java.util.UUID
 
-@Entity(tableName = "diary_entries", indices = [Index("dayEpoch")])
+@Entity(tableName = "diary_entries", indices = [Index("dayEpoch"), Index(value = ["portableId"], unique = true)])
 data class DiaryEntryEntity(
     @PrimaryKey(autoGenerate = true) val id: Long,
     val name: String,
@@ -16,6 +19,7 @@ data class DiaryEntryEntity(
     val dayEpoch: Long,
     val createdAtMillis: Long,
     val source: String,
+    @ColumnInfo(defaultValue = "''") val portableId: String = UUID.randomUUID().toString(),
 ) {
     fun toDomain() = DiaryEntry(id, name,
         NutritionPer100g(energyKcalHundredths, proteinGramsHundredths, fatGramsHundredths, carbsGramsHundredths),
@@ -37,6 +41,10 @@ interface DiaryDao {
     fun observeAll(): Flow<List<DiaryEntryEntity>>
     @Query("SELECT * FROM diary_entries WHERE id = :id")
     suspend fun get(id: Long): DiaryEntryEntity?
+    @Query("SELECT * FROM diary_entries ORDER BY dayEpoch, createdAtMillis, id")
+    suspend fun getAll(): List<DiaryEntryEntity>
+    @Query("DELETE FROM diary_entries")
+    suspend fun deleteAll()
     @Insert
     suspend fun insert(entry: DiaryEntryEntity): Long
     @Update
@@ -45,7 +53,21 @@ interface DiaryDao {
     suspend fun delete(id: Long)
 }
 
-@Database(entities = [DiaryEntryEntity::class], version = 1, exportSchema = true)
+@Database(entities = [DiaryEntryEntity::class], version = 2, exportSchema = true)
 abstract class DiaryDatabase : RoomDatabase() {
     abstract fun diaryDao(): DiaryDao
+
+    companion object {
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE diary_entries ADD COLUMN portableId TEXT NOT NULL DEFAULT ''")
+                // Random UUIDs are generated once in-place; all existing rows and local IDs survive.
+                db.execSQL("""UPDATE diary_entries SET portableId =
+                    lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' ||
+                    substr(lower(hex(randomblob(2))), 2) || '-a' ||
+                    substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6)))""")
+                db.execSQL("CREATE UNIQUE INDEX index_diary_entries_portableId ON diary_entries(portableId)")
+            }
+        }
+    }
 }

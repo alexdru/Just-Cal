@@ -1,11 +1,12 @@
 package com.justcal.app.ui
 
-import android.util.Log
+import android.os.SystemClock
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.justcal.app.camera.*
 import com.justcal.app.ocr.*
+import com.justcal.app.diagnostics.OcrDiagnosticSession
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
@@ -21,6 +22,7 @@ class PhotoReviewViewModel @Inject constructor(
     val images: ImagePreprocessor,
     private val engine: PackageOcrEngine,
     private val savedState: SavedStateHandle,
+    private val diagnostics: OcrDiagnosticSession,
 ) : ViewModel() {
     private var owned: PreparedImage? = null
     private val restored = savedState.get<String>("ocrReview")?.let {
@@ -37,17 +39,25 @@ class PhotoReviewViewModel @Inject constructor(
         if (state.value.busy || state.value.prefill != null || image.request.mode != ScanMode.PACKAGE) return
         mutableState.value = PackageReviewState(busy = true)
         savedState["ocrStarted"] = true
+        val attempt = diagnostics.begin(image)
         viewModelScope.launch {
+            var stage = "OCR_RECOGNITION_FAILURE"
             try {
                 val result = engine.recognize(images.verify(image))
                 check(result.lines.isNotEmpty()) { "No readable text found" }
-                val prefill = PackageScanPrefill.from(result)
+                stage = "NUTRITION_PARSER_FAILURE"
+                val parseStarted = SystemClock.elapsedRealtime()
+                val prefill = PackageScanPrefill.from(result).copy(diagnosticSessionId = attempt.id)
+                attempt.success(result, prefill, SystemClock.elapsedRealtime() - parseStarted)
                 savedState["ocrReview"] = Json.encodeToString(prefill)
                 savedState["ocrStarted"] = false
                 mutableState.value = PackageReviewState(prefill = prefill)
-            } catch (cancelled: CancellationException) { throw cancelled }
-            catch (error: Exception) {
-                Log.e("PackageOCR", "Package recognition failed", error)
+            } catch (cancelled: CancellationException) {
+                attempt.failure(true, "RECOGNITION_CANCELLED")
+                throw cancelled
+            } catch (error: Exception) {
+                attempt.failure(false, "$stage:${error.javaClass.simpleName.take(80)}")
+                // Native exceptions may contain model/private paths; never send them to Logcat.
                 mutableState.value = PackageReviewState(failed = true)
             }
         }

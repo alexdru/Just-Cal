@@ -53,7 +53,7 @@ class DiaryNavigationTest {
             back()
 
             compose.onNodeWithText(label(R.string.choose_day)).performClick()
-            compose.onNode(hasText(dateText(date, FormatStyle.FULL), substring = true) and hasClickAction()).performClick()
+            compose.onNode(hasText(dateText(date, FormatStyle.FULL), substring = true, ignoreCase = true) and hasClickAction()).performClick()
             compose.onNodeWithText(label(R.string.open_day)).performClick()
             compose.onNodeWithText(dateText(date, FormatStyle.MEDIUM)).assertExists()
             tab(R.string.settings).performClick()

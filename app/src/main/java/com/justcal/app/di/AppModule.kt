@@ -17,7 +17,8 @@ import javax.inject.Singleton
 object AppModule {
     @Provides @Singleton
     fun database(@ApplicationContext context: Context): DiaryDatabase =
-        Room.databaseBuilder(context, DiaryDatabase::class.java, "just-cal.db").build()
+        Room.databaseBuilder(context, DiaryDatabase::class.java, "just-cal.db")
+            .addMigrations(DiaryDatabase.MIGRATION_1_2).build()
     @Provides fun dao(database: DiaryDatabase): DiaryDao = database.diaryDao()
     @Provides @Singleton fun repository(dao: DiaryDao): DiaryRepository = RoomDiaryRepository(dao)
     @Provides fun packageOcr(engine: com.justcal.app.ocr.PaddlePackageOcrEngine): com.justcal.app.ocr.PackageOcrEngine = engine

@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
     val rawText: String,
     val confidence: Float,
     val metrics: OcrMetrics,
+    val diagnosticSessionId: String? = null,
 ) {
     companion object {
         fun from(result: PackageOcrResult) = PackageScanPrefill(
