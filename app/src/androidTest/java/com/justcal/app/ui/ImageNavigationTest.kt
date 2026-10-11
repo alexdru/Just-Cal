@@ -16,6 +16,32 @@ class ImageNavigationTest {
     private fun click(id: Int) = compose.onNodeWithText(label(id)).performClick()
     private fun fab() = compose.onNodeWithContentDescription(label(R.string.add_food))
 
+    @Test fun newManualEntryFocusesNameOnceAndKeepsAmountEmpty() {
+        fab().performClick()
+        click(R.string.add_manually)
+        val name = compose.onNode(hasText(label(R.string.food_name)) and hasSetTextAction())
+        compose.waitUntil(5000) {
+            name.fetchSemanticsNode().config[androidx.compose.ui.semantics.SemanticsProperties.Focused]
+        }
+        name.assertIsFocused()
+        compose.waitUntil(5000) {
+            androidx.core.view.ViewCompat.getRootWindowInsets(compose.activity.window.decorView)
+                ?.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime()) == true
+        }
+        val amount = compose.onNode(hasText(label(R.string.amount)) and hasSetTextAction())
+        amount.performScrollTo().assert(SemanticsMatcher.expectValue(
+            androidx.compose.ui.semantics.SemanticsProperties.EditableText, androidx.compose.ui.text.AnnotatedString("")))
+        androidx.test.espresso.Espresso.pressBack()
+        compose.waitUntil(5000) {
+            androidx.core.view.ViewCompat.getRootWindowInsets(compose.activity.window.decorView)
+                ?.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime()) == false
+        }
+        compose.activityRule.scenario.recreate()
+        compose.waitForIdle()
+        org.junit.Assert.assertFalse(androidx.core.view.ViewCompat.getRootWindowInsets(compose.activity.window.decorView)
+            ?.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime()) == true)
+    }
+
     @Test fun launcherModesRestoreAndManualEditorStillOpens() {
         fab().performClick()
         compose.onNodeWithText(label(R.string.scan_package)).assertExists()

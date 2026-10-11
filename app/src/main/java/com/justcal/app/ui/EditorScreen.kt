@@ -21,6 +21,11 @@ import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
+import com.justcal.app.ocr.PackageScanPrefill
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -38,10 +43,24 @@ import com.justcal.app.ui.theme.CalLayout
 fun EditorScreen(
     state: EditorState, editing: Boolean, onChange: (FoodField, String) -> Unit,
     onSave: () -> Unit, onDelete: () -> Unit, onBack: () -> Unit, onRetry: () -> Unit,
+    scan: PackageScanPrefill? = null, claimInitialFocus: () -> Boolean = { false },
 ) {
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
     val focus = LocalFocusManager.current
     val fieldFocus = remember { FoodField.entries.associateWith { FocusRequester() } }
+    val keyboard = LocalSoftwareKeyboardController.current
+    val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+    var firstFocusHandled by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(lifecycle, state.loading) {
+        if (!firstFocusHandled && !state.loading && lifecycle.isAtLeast(Lifecycle.State.RESUMED)) {
+            firstFocusHandled = true
+            if (!editing && state.draft.name.isEmpty() && claimInitialFocus()) {
+                withFrameNanos { }
+                fieldFocus.getValue(FoodField.NAME).requestFocus()
+                keyboard?.show()
+            }
+        }
+    }
     var validateFocus by remember { mutableStateOf(false) }
     LaunchedEffect(validateFocus, state.errors) {
         if (validateFocus) {
@@ -61,7 +80,7 @@ fun EditorScreen(
                 if (!compactIme) TopAppBar(
                     title = {
                         Column {
-                            Text(stringResource(if (editing) R.string.edit_food else R.string.add_food), style = MaterialTheme.typography.titleLarge)
+                            Text(stringResource(if (editing) R.string.edit_food else if (scan != null) R.string.ocr_confirmation else R.string.add_food), style = MaterialTheme.typography.titleLarge)
                             state.dayEpoch?.let {
                                 val locale = LocalConfiguration.current.locales[0]
                                 Text(java.time.LocalDate.ofEpochDay(it).format(
@@ -132,6 +151,7 @@ fun EditorScreen(
                             done = field == FoodField.AMOUNT,
                             onNext = { FoodField.entries.getOrNull(field.ordinal + 1)?.let { fieldFocus.getValue(it).requestFocus() } })
                     }
+                    scan?.let { PackageRecognitionSummary(it) }
                     input(FoodField.NAME, Modifier.fillMaxWidth())
                     Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                         SectionTitle(stringResource(R.string.per_100g))
@@ -151,6 +171,9 @@ fun EditorScreen(
                         }
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                        if (scan?.label?.netGrams != null) Text(
+                            stringResource(R.string.ocr_net_weight, nutritionText(scan.label.netGrams.value.toBigDecimal(), 2)),
+                            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         input(FoodField.AMOUNT, Modifier.fillMaxWidth())
                         Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = MaterialTheme.shapes.large) {
                             Column(Modifier.fillMaxWidth().padding(CalSpacing.dense), verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {

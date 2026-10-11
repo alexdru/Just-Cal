@@ -1,0 +1,1239 @@
+{
+  "lines": [
+    {
+      "text": "ТАЛЬЯТЕЛЛЕ",
+      "confidence": 0.99221843,
+      "points": [
+        {
+          "x": 665,
+          "y": 633
+        },
+        {
+          "x": 1283,
+          "y": 640
+        },
+        {
+          "x": 1281,
+          "y": 766
+        },
+        {
+          "x": 664,
+          "y": 759
+        }
+      ]
+    },
+    {
+      "text": "BKУСВИЛЛ",
+      "confidence": 0.68860376,
+      "points": [
+        {
+          "x": 1979,
+          "y": 642
+        },
+        {
+          "x": 2539,
+          "y": 648
+        },
+        {
+          "x": 2538,
+          "y": 741
+        },
+        {
+          "x": 1978,
+          "y": 736
+        }
+      ]
+    },
+    {
+      "text": "С КУРИЦЕЙ",
+      "confidence": 0.9870016,
+      "points": [
+        {
+          "x": 661,
+          "y": 782
+        },
+        {
+          "x": 1224,
+          "y": 782
+        },
+        {
+          "x": 1224,
+          "y": 923
+        },
+        {
+          "x": 661,
+          "y": 923
+        }
+      ]
+    },
+    {
+      "text": "КЛАССИКА",
+      "confidence": 0.7817645,
+      "points": [
+        {
+          "x": 1956,
+          "y": 752
+        },
+        {
+          "x": 2509,
+          "y": 752
+        },
+        {
+          "x": 2509,
+          "y": 1003
+        },
+        {
+          "x": 1956,
+          "y": 1003
+        }
+      ]
+    },
+    {
+      "text": "В СЫРНОМ СОУСЕ",
+      "confidence": 0.96917856,
+      "points": [
+        {
+          "x": 657,
+          "y": 931
+        },
+        {
+          "x": 1541,
+          "y": 942
+        },
+        {
+          "x": 1539,
+          "y": 1071
+        },
+        {
+          "x": 655,
+          "y": 1060
+        }
+      ]
+    },
+    {
+      "text": "KYPNЦA",
+      "confidence": 0.755144,
+      "points": [
+        {
+          "x": 652,
+          "y": 1097
+        },
+        {
+          "x": 939,
+          "y": 1102
+        },
+        {
+          "x": 937,
+          "y": 1222
+        },
+        {
+          "x": 650,
+          "y": 1216
+        }
+      ]
+    },
+    {
+      "text": "ИЗДЕЛИЕ КУЛИНАРНОЕ ИЗ МЯСА ПТИЦЫ ВАРЁНОЕ, ОХЛАЖДЁННОЕ:",
+      "confidence": 0.98546076,
+      "points": [
+        {
+          "x": 648,
+          "y": 1291
+        },
+        {
+          "x": 2543,
+          "y": 1307
+        },
+        {
+          "x": 2542,
+          "y": 1403
+        },
+        {
+          "x": 647,
+          "y": 1387
+        }
+      ]
+    },
+    {
+      "text": "MACCA HETTO: 240 Г",
+      "confidence": 0.9059282,
+      "points": [
+        {
+          "x": 650,
+          "y": 1457
+        },
+        {
+          "x": 1249,
+          "y": 1466
+        },
+        {
+          "x": 1248,
+          "y": 1541
+        },
+        {
+          "x": 649,
+          "y": 1533
+        }
+      ]
+    },
+    {
+      "text": "крахмал кукурузный). Продукция производится на предприятии, где используется диоксид серы (суль-",
+      "confidence": 0.9702069,
+      "points": [
+        {
+          "x": 639,
+          "y": 2086
+        },
+        {
+          "x": 2559,
+          "y": 2092
+        },
+        {
+          "x": 2559,
+          "y": 2160
+        },
+        {
+          "x": 639,
+          "y": 2154
+        }
+      ]
+    },
+    {
+      "text": "ФОH3",
+      "confidence": 0.6405597,
+      "points": [
+        {
+          "x": 62,
+          "y": 2119
+        },
+        {
+          "x": 267,
+          "y": 2112
+        },
+        {
+          "x": 270,
+          "y": 2204
+        },
+        {
+          "x": 66,
+          "y": 2211
+        }
+      ]
+    },
+    {
+      "text": "фиты)и продукты его переработки.",
+      "confidence": 0.96749,
+      "points": [
+        {
+          "x": 641,
+          "y": 2147
+        },
+        {
+          "x": 1325,
+          "y": 2147
+        },
+        {
+          "x": 1325,
+          "y": 2208
+        },
+        {
+          "x": 641,
+          "y": 2208
+        }
+      ]
+    },
+    {
+      "text": "Пищевая ценность 100 г продукта (средниезначения): белки - 11 г;жиры - 6,4г, в т.ч. насыщенныежир-",
+      "confidence": 0.95763737,
+      "points": [
+        {
+          "x": 637,
+          "y": 2213
+        },
+        {
+          "x": 2555,
+          "y": 2217
+        },
+        {
+          "x": 2555,
+          "y": 2282
+        },
+        {
+          "x": 637,
+          "y": 2278
+        }
+      ]
+    },
+    {
+      "text": "ные кислоты - 2,4 г, в т.ч.транс-изомеры жирных кислот - 0 г;углеводы - 20,4 г, в т.ч.сахара (общие) - 1 г, в",
+      "confidence": 0.9376489,
+      "points": [
+        {
+          "x": 636,
+          "y": 2277
+        },
+        {
+          "x": 2561,
+          "y": 2280
+        },
+        {
+          "x": 2561,
+          "y": 2339
+        },
+        {
+          "x": 636,
+          "y": 2336
+        }
+      ]
+    },
+    {
+      "text": "т.ч.добавленный сахар - 0 г;соль - 0,8 г.Энергетическаяценность (калорийность):770,6 кДж/183,2 ккал.",
+      "confidence": 0.964785,
+      "points": [
+        {
+          "x": 633,
+          "y": 2339
+        },
+        {
+          "x": 2562,
+          "y": 2339
+        },
+        {
+          "x": 2562,
+          "y": 2401
+        },
+        {
+          "x": 633,
+          "y": 2401
+        }
+      ],
+      "alternatives": [
+        "т.ч.добавленный сахар - 0г;соль - 0,8 г.Энергетическаяценность (калорийность):770,6 кДж/183,2 кал."
+      ]
+    },
+    {
+      "text": "Ой",
+      "confidence": 0.45939398,
+      "points": [
+        {
+          "x": 392,
+          "y": 2537
+        },
+        {
+          "x": 483,
+          "y": 2583
+        },
+        {
+          "x": 415,
+          "y": 2723
+        },
+        {
+          "x": 324,
+          "y": 2677
+        }
+      ]
+    },
+    {
+      "text": "PrOH3",
+      "confidence": 0.5473361,
+      "points": [
+        {
+          "x": 4,
+          "y": 2635
+        },
+        {
+          "x": 288,
+          "y": 2702
+        },
+        {
+          "x": 259,
+          "y": 2830
+        },
+        {
+          "x": 0,
+          "y": 2763
+        }
+      ]
+    },
+    {
+      "text": "СРОК ГОДНОСТИ: 5 СУТОК.",
+      "confidence": 0.95378447,
+      "points": [
+        {
+          "x": 640,
+          "y": 3183
+        },
+        {
+          "x": 1357,
+          "y": 3179
+        },
+        {
+          "x": 1358,
+          "y": 3258
+        },
+        {
+          "x": 641,
+          "y": 3262
+        }
+      ]
+    },
+    {
+      "text": "",
+      "confidence": 0,
+      "points": [
+        {
+          "x": 1504,
+          "y": 3239
+        },
+        {
+          "x": 1627,
+          "y": 3239
+        },
+        {
+          "x": 1627,
+          "y": 3421
+        },
+        {
+          "x": 1504,
+          "y": 3421
+        }
+      ]
+    },
+    {
+      "text": "плёнка",
+      "confidence": 0.7645214,
+      "points": [
+        {
+          "x": 1645,
+          "y": 3271
+        },
+        {
+          "x": 1691,
+          "y": 3272
+        },
+        {
+          "x": 1688,
+          "y": 3401
+        },
+        {
+          "x": 1641,
+          "y": 3400
+        }
+      ]
+    },
+    {
+      "text": "OTHER",
+      "confidence": 0.99905425,
+      "points": [
+        {
+          "x": 1694,
+          "y": 3346
+        },
+        {
+          "x": 1824,
+          "y": 3346
+        },
+        {
+          "x": 1824,
+          "y": 3406
+        },
+        {
+          "x": 1694,
+          "y": 3406
+        }
+      ]
+    },
+    {
+      "text": "EAC",
+      "confidence": 0.97552156,
+      "points": [
+        {
+          "x": 1487,
+          "y": 3417
+        },
+        {
+          "x": 1663,
+          "y": 3417
+        },
+        {
+          "x": 1663,
+          "y": 3593
+        },
+        {
+          "x": 1487,
+          "y": 3593
+        }
+      ]
+    }
+  ],
+  "width": 3000,
+  "height": 4000,
+  "metrics": {
+    "initializationMs": 296,
+    "detectionMs": 1466,
+    "recognitionMs": 6143,
+    "totalMs": 8144
+  },
+  "regions": [
+    {
+      "index": 0,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 1968,
+      "preparationUs": 977,
+      "inferenceUs": 58618,
+      "decodingUs": 106,
+      "text": "10010011",
+      "confidence": 0.9871904
+    },
+    {
+      "index": 1,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 603,
+      "preparationUs": 483,
+      "inferenceUs": 38122,
+      "decodingUs": 100,
+      "text": "X",
+      "confidence": 0.5368515
+    },
+    {
+      "index": 2,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 1418,
+      "preparationUs": 456,
+      "inferenceUs": 37742,
+      "decodingUs": 99,
+      "text": "EAC",
+      "confidence": 0.97552156
+    },
+    {
+      "index": 3,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 519,
+      "preparationUs": 459,
+      "inferenceUs": 38162,
+      "decodingUs": 104,
+      "text": "OTHER",
+      "confidence": 0.99905425
+    },
+    {
+      "index": 4,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 1719,
+      "preparationUs": 866,
+      "inferenceUs": 48842,
+      "decodingUs": 108,
+      "text": "указана на лицевой час",
+      "confidence": 0.93154275
+    },
+    {
+      "index": 5,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 449,
+      "preparationUs": 496,
+      "inferenceUs": 37806,
+      "decodingUs": 100,
+      "text": "OO",
+      "confidence": 0.3437023
+    },
+    {
+      "index": 6,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 598,
+      "preparationUs": 496,
+      "inferenceUs": 37910,
+      "decodingUs": 98,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 6,
+      "stage": "rotation",
+      "width": 320,
+      "cropUs": 0,
+      "preparationUs": 525,
+      "inferenceUs": 37774,
+      "decodingUs": 102,
+      "text": "плёнка",
+      "confidence": 0.7645214
+    },
+    {
+      "index": 7,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 1873,
+      "preparationUs": 805,
+      "inferenceUs": 38543,
+      "decodingUs": 112,
+      "text": "Дата изготовления (числ",
+      "confidence": 0.9636908
+    },
+    {
+      "index": 8,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 530,
+      "preparationUs": 427,
+      "inferenceUs": 37570,
+      "decodingUs": 101,
+      "text": "A",
+      "confidence": 0.3953086
+    },
+    {
+      "index": 9,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 1120,
+      "preparationUs": 389,
+      "inferenceUs": 37660,
+      "decodingUs": 98,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 9,
+      "stage": "rotation",
+      "width": 320,
+      "cropUs": 0,
+      "preparationUs": 401,
+      "inferenceUs": 37748,
+      "decodingUs": 98,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 10,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 2332,
+      "preparationUs": 810,
+      "inferenceUs": 38593,
+      "decodingUs": 106,
+      "text": "СРОК ГОДНОСТИ: 5",
+      "confidence": 0.99082863
+    },
+    {
+      "index": 11,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 1901,
+      "preparationUs": 799,
+      "inferenceUs": 39135,
+      "decodingUs": 110,
+      "text": "лучей.Продуктготов куг",
+      "confidence": 0.97233003
+    },
+    {
+      "index": 12,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 19357,
+      "preparationUs": 849,
+      "inferenceUs": 43996,
+      "decodingUs": 113,
+      "text": "часов при температур",
+      "confidence": 0.9819228
+    },
+    {
+      "index": 13,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 22249,
+      "preparationUs": 1059,
+      "inferenceUs": 45802,
+      "decodingUs": 110,
+      "text": "Условия хранения: хран",
+      "confidence": 0.95449555
+    },
+    {
+      "index": 14,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 3232,
+      "preparationUs": 818,
+      "inferenceUs": 39543,
+      "decodingUs": 105,
+      "text": "ланиям пишите и звон",
+      "confidence": 0.94183725
+    },
+    {
+      "index": 15,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 10893,
+      "preparationUs": 805,
+      "inferenceUs": 40959,
+      "decodingUs": 117,
+      "text": "Изготовитель: 000«Т",
+      "confidence": 0.8702571
+    },
+    {
+      "index": 16,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 3184,
+      "preparationUs": 813,
+      "inferenceUs": 38858,
+      "decodingUs": 112,
+      "text": "yсловияхмодифициро",
+      "confidence": 0.8086422
+    },
+    {
+      "index": 17,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 17068,
+      "preparationUs": 1030,
+      "inferenceUs": 46390,
+      "decodingUs": 116,
+      "text": "соус на макароны. В",
+      "confidence": 0.89621365
+    },
+    {
+      "index": 18,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 1894,
+      "preparationUs": 507,
+      "inferenceUs": 38213,
+      "decodingUs": 103,
+      "text": "PrOH3",
+      "confidence": 0.5473361
+    },
+    {
+      "index": 18,
+      "stage": "rotation",
+      "width": 320,
+      "cropUs": 0,
+      "preparationUs": 525,
+      "inferenceUs": 37770,
+      "decodingUs": 98,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 19,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 18707,
+      "preparationUs": 966,
+      "inferenceUs": 42601,
+      "decodingUs": 107,
+      "text": "лотка.Осторожно по",
+      "confidence": 0.94856346
+    },
+    {
+      "index": 20,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 11407,
+      "preparationUs": 826,
+      "inferenceUs": 39988,
+      "decodingUs": 104,
+      "text": "роны вилкой так,чтоби",
+      "confidence": 0.95472175
+    },
+    {
+      "index": 21,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 914,
+      "preparationUs": 439,
+      "inferenceUs": 38790,
+      "decodingUs": 103,
+      "text": "ИO",
+      "confidence": 0.3846085
+    },
+    {
+      "index": 21,
+      "stage": "rotation",
+      "width": 320,
+      "cropUs": 0,
+      "preparationUs": 472,
+      "inferenceUs": 38548,
+      "decodingUs": 101,
+      "text": "Ой",
+      "confidence": 0.45939398
+    },
+    {
+      "index": 22,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 16820,
+      "preparationUs": 815,
+      "inferenceUs": 42105,
+      "decodingUs": 112,
+      "text": "закрытой.Снимать пл",
+      "confidence": 0.9804416
+    },
+    {
+      "index": 23,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 10814,
+      "preparationUs": 826,
+      "inferenceUs": 39374,
+      "decodingUs": 112,
+      "text": "Разогреть в СВЧ-печи",
+      "confidence": 0.9684018
+    },
+    {
+      "index": 24,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 12421,
+      "preparationUs": 822,
+      "inferenceUs": 43183,
+      "decodingUs": 109,
+      "text": "Рекомендации по пр",
+      "confidence": 0.95962954
+    },
+    {
+      "index": 25,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 11949,
+      "preparationUs": 820,
+      "inferenceUs": 38946,
+      "decodingUs": 110,
+      "text": "т.ч.добавленный саха",
+      "confidence": 0.9603014
+    },
+    {
+      "index": 26,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 12563,
+      "preparationUs": 838,
+      "inferenceUs": 41900,
+      "decodingUs": 112,
+      "text": "ные кислоты - 2,4 г,е",
+      "confidence": 0.89408255
+    },
+    {
+      "index": 27,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 19304,
+      "preparationUs": 958,
+      "inferenceUs": 45989,
+      "decodingUs": 111,
+      "text": "Пищевая ценность 10",
+      "confidence": 0.96963775
+    },
+    {
+      "index": 28,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 1788,
+      "preparationUs": 795,
+      "inferenceUs": 38005,
+      "decodingUs": 109,
+      "text": "фиты) и продукты еп",
+      "confidence": 0.9163542
+    },
+    {
+      "index": 29,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 981,
+      "preparationUs": 492,
+      "inferenceUs": 37979,
+      "decodingUs": 102,
+      "text": "ФОH3",
+      "confidence": 0.6405597
+    },
+    {
+      "index": 30,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 10767,
+      "preparationUs": 897,
+      "inferenceUs": 40585,
+      "decodingUs": 111,
+      "text": "крахмал кукурузный).П",
+      "confidence": 0.9552692
+    },
+    {
+      "index": 31,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 28374,
+      "preparationUs": 1014,
+      "inferenceUs": 41261,
+      "decodingUs": 105,
+      "text": "солнечное рафинирован",
+      "confidence": 0.9920967
+    },
+    {
+      "index": 32,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 12953,
+      "preparationUs": 856,
+      "inferenceUs": 43270,
+      "decodingUs": 109,
+      "text": "мезофильная бактериал",
+      "confidence": 0.9803122
+    },
+    {
+      "index": 33,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 16722,
+      "preparationUs": 893,
+      "inferenceUs": 42671,
+      "decodingUs": 111,
+      "text": "уплотнитель - хлорид",
+      "confidence": 0.9661007
+    },
+    {
+      "index": 34,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 13108,
+      "preparationUs": 999,
+      "inferenceUs": 44082,
+      "decodingUs": 109,
+      "text": "бой благородной плесе",
+      "confidence": 0.925315
+    },
+    {
+      "index": 35,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 12600,
+      "preparationUs": 830,
+      "inferenceUs": 44007,
+      "decodingUs": 111,
+      "text": "молоко питьевое пастер",
+      "confidence": 0.96782225
+    },
+    {
+      "index": 36,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 12860,
+      "preparationUs": 908,
+      "inferenceUs": 43737,
+      "decodingUs": 164,
+      "text": "быстрозамороженный,соль",
+      "confidence": 0.9741783
+    },
+    {
+      "index": 37,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 11879,
+      "preparationUs": 872,
+      "inferenceUs": 40231,
+      "decodingUs": 108,
+      "text": "ный,желтокяичный пасте",
+      "confidence": 0.94606817
+    },
+    {
+      "index": 38,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 16351,
+      "preparationUs": 969,
+      "inferenceUs": 47442,
+      "decodingUs": 104,
+      "text": "пшеничная хлебопекарн",
+      "confidence": 0.9695638
+    },
+    {
+      "index": 39,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 12751,
+      "preparationUs": 839,
+      "inferenceUs": 39773,
+      "decodingUs": 111,
+      "text": "Состав: макаронные издел",
+      "confidence": 0.98665076
+    },
+    {
+      "index": 40,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 2148,
+      "preparationUs": 801,
+      "inferenceUs": 38063,
+      "decodingUs": 115,
+      "text": "MACCA HETTO: 24",
+      "confidence": 0.95790493
+    },
+    {
+      "index": 41,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 18069,
+      "preparationUs": 1004,
+      "inferenceUs": 42367,
+      "decodingUs": 108,
+      "text": "ТАЛЬЯТЕЛЛЕ СО ШП",
+      "confidence": 0.9842889
+    },
+    {
+      "index": 42,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 12183,
+      "preparationUs": 789,
+      "inferenceUs": 39639,
+      "decodingUs": 109,
+      "text": "ИЗДЕЛИЕ КУЛИНАРНО",
+      "confidence": 0.98830384
+    },
+    {
+      "index": 43,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 1411,
+      "preparationUs": 831,
+      "inferenceUs": 38295,
+      "decodingUs": 107,
+      "text": "CTO26924121-001-2",
+      "confidence": 0.99180657
+    },
+    {
+      "index": 44,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 1697,
+      "preparationUs": 530,
+      "inferenceUs": 37544,
+      "decodingUs": 104,
+      "text": "KYPNЦA",
+      "confidence": 0.755144
+    },
+    {
+      "index": 44,
+      "stage": "rotation",
+      "width": 320,
+      "cropUs": 0,
+      "preparationUs": 523,
+      "inferenceUs": 37761,
+      "decodingUs": 95,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 45,
+      "stage": "title",
+      "width": 329,
+      "cropUs": 11707,
+      "preparationUs": 986,
+      "inferenceUs": 51474,
+      "decodingUs": 108,
+      "text": "В СЫРНОМ СОУСЕ",
+      "confidence": 0.96917856
+    },
+    {
+      "index": 46,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 3109,
+      "preparationUs": 644,
+      "inferenceUs": 38483,
+      "decodingUs": 104,
+      "text": "С КУРИЦЕЙ",
+      "confidence": 0.9870016
+    },
+    {
+      "index": 47,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 26793,
+      "preparationUs": 782,
+      "inferenceUs": 42743,
+      "decodingUs": 102,
+      "text": "КЛАССИКА",
+      "confidence": 0.7817645
+    },
+    {
+      "index": 47,
+      "stage": "rotation",
+      "width": 320,
+      "cropUs": 0,
+      "preparationUs": 521,
+      "inferenceUs": 37729,
+      "decodingUs": 96,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 48,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 2161,
+      "preparationUs": 749,
+      "inferenceUs": 37666,
+      "decodingUs": 104,
+      "text": "BKУСВИЛЛ",
+      "confidence": 0.68860376
+    },
+    {
+      "index": 49,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 3225,
+      "preparationUs": 692,
+      "inferenceUs": 37894,
+      "decodingUs": 104,
+      "text": "ТАЛЬЯТЕЛЛЕ",
+      "confidence": 0.99221843
+    },
+    {
+      "index": 48,
+      "stage": "selected",
+      "width": 320,
+      "cropUs": 2289,
+      "preparationUs": 838,
+      "inferenceUs": 37574,
+      "decodingUs": 101,
+      "text": "BKУСВИЛЛ",
+      "confidence": 0.68860376
+    },
+    {
+      "index": 48,
+      "stage": "rotation",
+      "width": 320,
+      "cropUs": 0,
+      "preparationUs": 767,
+      "inferenceUs": 37535,
+      "decodingUs": 96,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 42,
+      "stage": "selected",
+      "width": 948,
+      "cropUs": 12797,
+      "preparationUs": 2348,
+      "inferenceUs": 288581,
+      "decodingUs": 277,
+      "text": "ИЗДЕЛИЕ КУЛИНАРНОЕ ИЗ МЯСА ПТИЦЫ ВАРЁНОЕ, ОХЛАЖДЁННОЕ:",
+      "confidence": 0.98546076
+    },
+    {
+      "index": 40,
+      "stage": "selected",
+      "width": 379,
+      "cropUs": 1913,
+      "preparationUs": 922,
+      "inferenceUs": 71850,
+      "decodingUs": 219,
+      "text": "MACCA HETTO: 240 Г",
+      "confidence": 0.9059282
+    },
+    {
+      "index": 30,
+      "stage": "selected",
+      "width": 1376,
+      "cropUs": 11309,
+      "preparationUs": 3105,
+      "inferenceUs": 415265,
+      "decodingUs": 407,
+      "text": "крахмал кукурузный). Продукция производится на предприятии, где используется диоксид серы (суль-",
+      "confidence": 0.9702069
+    },
+    {
+      "index": 29,
+      "stage": "selected",
+      "width": 320,
+      "cropUs": 1047,
+      "preparationUs": 512,
+      "inferenceUs": 53034,
+      "decodingUs": 102,
+      "text": "ФОH3",
+      "confidence": 0.6405597
+    },
+    {
+      "index": 29,
+      "stage": "rotation",
+      "width": 320,
+      "cropUs": 0,
+      "preparationUs": 509,
+      "inferenceUs": 38569,
+      "decodingUs": 101,
+      "text": "HO",
+      "confidence": 0.3675191
+    },
+    {
+      "index": 28,
+      "stage": "selected",
+      "width": 547,
+      "cropUs": 1841,
+      "preparationUs": 1215,
+      "inferenceUs": 77053,
+      "decodingUs": 168,
+      "text": "фиты)и продукты его переработки.",
+      "confidence": 0.96749
+    },
+    {
+      "index": 27,
+      "stage": "selected",
+      "width": 1439,
+      "cropUs": 26685,
+      "preparationUs": 3394,
+      "inferenceUs": 461208,
+      "decodingUs": 426,
+      "text": "Пищевая ценность 100 г продукта (средниезначения): белки - 11 г;жиры - 6,4г, в т.ч. насыщенныежир-",
+      "confidence": 0.95763737
+    },
+    {
+      "index": 26,
+      "stage": "selected",
+      "width": 1594,
+      "cropUs": 29002,
+      "preparationUs": 3846,
+      "inferenceUs": 517054,
+      "decodingUs": 462,
+      "text": "ные кислоты - 2,4 г, в т.ч.транс-изомеры жирных кислот - 0 г;углеводы - 20,4 г, в т.ч.сахара (общие) - 1 г, в",
+      "confidence": 0.9376489
+    },
+    {
+      "index": 25,
+      "stage": "selected",
+      "width": 1494,
+      "cropUs": 19262,
+      "preparationUs": 4855,
+      "inferenceUs": 490305,
+      "decodingUs": 440,
+      "text": "т.ч.добавленный сахар - 0г;соль - 0,8 г.Энергетическаяценность (калорийность):770,6 кДж/183,2 кал.",
+      "confidence": 0.96442693
+    },
+    {
+      "index": 25,
+      "stage": "energy_retry",
+      "width": 1929,
+      "cropUs": 0,
+      "preparationUs": 3234,
+      "inferenceUs": 635129,
+      "decodingUs": 557,
+      "text": "т.ч.добавленный сахар - 0 г;соль - 0,8 г.Энергетическаяценность (калорийность):770,6 кДж/183,2 ккал.",
+      "confidence": 0.964785
+    },
+    {
+      "index": 10,
+      "stage": "selected",
+      "width": 436,
+      "cropUs": 2350,
+      "preparationUs": 1091,
+      "inferenceUs": 63787,
+      "decodingUs": 139,
+      "text": "СРОК ГОДНОСТИ: 5 СУТОК.",
+      "confidence": 0.95378447
+    }
+  ],
+  "detectedRegions": 50
+}

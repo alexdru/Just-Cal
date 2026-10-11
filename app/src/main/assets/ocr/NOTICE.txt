@@ -1,0 +1,15 @@
+Bundled package OCR models and code: PaddlePaddle Authors, Apache-2.0.
+PP-OCRv5_mobile_det_onnx, e6f4fa85f00e168c862bc462aebca69eef9b3d3d.
+eslav_PP-OCRv5_mobile_rec_onnx, 9a32171fc5718746875e1a261818884517975013.
+PaddleOCR postprocessing source, dab3fe35379033fdcb2d0e9572fac0b36c9a9ebf.
+ONNX Runtime 1.23.2: Microsoft Corporation, MIT.
+OpenCV 4.12.0: OpenCV contributors, Apache-2.0 and third-party licenses.
+Carotene: Copyright (C) 2014-2015 NVIDIA Corporation, BSD-3-Clause.
+KleidiCV 0.5.0: Copyright 2023-2025 Arm Limited and/or its affiliates,
+Apache-2.0; f5996f99977c37f738344e027b4751158e4e3a48.
+LLVM libc++ runtime: Apache-2.0 with LLVM exception and legacy BSD notices.
+libwebp: Google Inc., BSD-3-Clause (see libwebp-COPYING).
+This software is based in part on the work of the Independent JPEG Group.
+Full texts are in ocr/licenses. SDK notice collections cover optional components
+as well as those linked on Android; presence of a notice does not imply use.
+See corresponding source docs/PACKAGE_OCR.md for hashes and packaging.

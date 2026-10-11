@@ -18,28 +18,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.*
 import com.justcal.app.ui.theme.CalLayout
 import com.justcal.app.ui.theme.CalSpacing
-import androidx.lifecycle.ViewModel
 import com.justcal.app.R
 import com.justcal.app.camera.*
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import kotlinx.coroutines.CancellationException
-
-@HiltViewModel
-class PhotoReviewViewModel @Inject constructor(val images: ImagePreprocessor) : ViewModel() {
-    private var owned: PreparedImage? = null
-    fun attach(image: PreparedImage) { owned = image }
-    override fun onCleared() { owned?.let { images.discard(it.uri) } }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PhotoReviewScreen(
     image: PreparedImage, images: ImagePreprocessor,
     onReplace: () -> Unit, onBack: () -> Unit,
+    packageState: PackageReviewState = PackageReviewState(), onRecognize: () -> Unit = {}, onManual: () -> Unit = {},
 ) {
     var bitmap by remember(image.uri) { mutableStateOf<Bitmap?>(null) }
     var failed by remember(image.uri) { mutableStateOf(false) }
@@ -50,6 +41,7 @@ fun PhotoReviewScreen(
         } catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) { failed = true; verified = false }
     }
+    DisposableEffect(image.uri) { onDispose { bitmap?.recycle() } }
     val date = LocalDate.ofEpochDay(image.request.dayEpoch).format(
         DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(LocalConfiguration.current.locales[0]))
     Scaffold(
@@ -83,9 +75,15 @@ fun PhotoReviewScreen(
                     if (!verified) {
                         Text(stringResource(if (image.request.mode == ScanMode.PACKAGE) R.string.review_package_guidance else R.string.review_meal_guidance),
                             style = MaterialTheme.typography.bodyLarge)
-                        Text(stringResource(R.string.review_no_recognition),
+                        Text(stringResource(if (image.request.mode == ScanMode.PACKAGE) R.string.review_package_ocr else R.string.review_no_recognition),
                             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
+                    if (packageState.busy) {
+                        LinearProgressIndicator(Modifier.fillMaxWidth())
+                        Text(stringResource(R.string.ocr_processing), Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+                    }
+                    if (packageState.failed) Text(stringResource(R.string.ocr_failed),
+                        Modifier.semantics { liveRegion = LiveRegionMode.Polite }, color = MaterialTheme.colorScheme.error)
                     if (failed) Text(stringResource(R.string.image_error),
                         Modifier.semantics { liveRegion = LiveRegionMode.Polite }, color = MaterialTheme.colorScheme.error)
                     if (verified) {
@@ -96,17 +94,23 @@ fun PhotoReviewScreen(
                     } else {
                         Button(onClick = {
                             try {
-                                // Milestone endpoint: this exact input will be handed to local recognition.
-                                images.verify(image)
-                                verified = true
+                                if (image.request.mode == ScanMode.PACKAGE) onRecognize()
+                                else {
+                                    images.verify(image)
+                                    verified = true
+                                }
                             } catch (_: Exception) { failed = true }
-                        }, enabled = bitmap != null && !failed,
+                        }, enabled = bitmap != null && !failed && !packageState.busy,
                             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                            Text(stringResource(R.string.use_photo))
+                            Text(stringResource(if (packageState.failed) R.string.retry else R.string.use_photo))
                         }
                     }
-                    OutlinedButton(onClick = onReplace, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                    OutlinedButton(onClick = onReplace, enabled = !packageState.busy, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                         Text(stringResource(if (image.source == ImageSource.CAMERA) R.string.retake else R.string.choose_another))
+                    }
+                    if (image.request.mode == ScanMode.PACKAGE) TextButton(onClick = onManual,
+                        enabled = !packageState.busy, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Text(stringResource(R.string.add_manually))
                     }
                 }
             }

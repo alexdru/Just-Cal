@@ -74,6 +74,10 @@ android {
         versionCode = releaseVersionCode
         versionName = releaseVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // OnePlus 7T/12 and ARM64 emulators. The upstream x86 OpenCV includes proprietary
+        // Intel IPP; it must not be shipped as part of this GPL application.
+        //noinspection ChromeOsAbiSupport
+        ndk { abiFilters += "arm64-v8a" }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -139,6 +143,8 @@ dependencies {
     implementation(libs.datastore)
     implementation(libs.coroutines)
     implementation(libs.litertlm)
+    implementation(libs.onnxruntime)
+    implementation(libs.opencv)
     implementation(libs.serialization)
     debugImplementation(libs.tooling)
     testImplementation(libs.junit)

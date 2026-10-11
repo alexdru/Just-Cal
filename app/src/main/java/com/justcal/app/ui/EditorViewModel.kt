@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.justcal.app.domain.*
+import com.justcal.app.ocr.PackageScanPrefill
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -36,9 +37,10 @@ class EditorViewModel @AssistedInject constructor(
     private val clock: Clock,
     @Assisted("entryId") private val entryId: Long?,
     @Assisted("dayEpoch") private val dayEpoch: Long? = null,
+    @Assisted("scan") private val scan: PackageScanPrefill? = null,
 ) : ViewModel() {
     private var original: DiaryEntry? = null
-    private fun restoredDraft() = FoodField.entries.fold(FoodDraft()) { draft, field ->
+    private fun restoredDraft() = FoodField.entries.fold(scan?.label?.draft() ?: FoodDraft()) { draft, field ->
         draft.with(field, savedState[field.name] ?: draft.value(field))
     }
     private val mutableState = MutableStateFlow(EditorState(draft = restoredDraft(), loading = entryId != null, dayEpoch = dayEpoch))
@@ -66,6 +68,13 @@ class EditorViewModel @AssistedInject constructor(
     }
 
     fun retryLoad() { if (entryId != null && original == null) load() }
+
+    /** Persist the one-shot event independently of composition, navigation and Activity recreation. */
+    fun claimInitialFocus(): Boolean {
+        if (savedState.get<Boolean>("initialFocusHandled") == true) return false
+        savedState["initialFocusHandled"] = true
+        return entryId == null && scan == null && savedState.get<Boolean>("hasDraft") != true && state.value.draft.name.isEmpty()
+    }
 
     fun change(field: FoodField, value: String) {
         if (state.value.busy || state.value.loading) return
@@ -96,7 +105,7 @@ class EditorViewModel @AssistedInject constructor(
                     eatenGramsHundredths = food.eatenGramsHundredths,
                     dayEpoch = original?.dayEpoch ?: dayEpoch ?: clock.instant().atZone(ZoneId.systemDefault()).toLocalDate().toEpochDay(),
                     createdAtMillis = original?.createdAtMillis ?: clock.millis(),
-                    source = original?.source ?: EntrySource.MANUAL,
+                    source = original?.source ?: if (scan != null) EntrySource.PACKAGE_SCAN else EntrySource.MANUAL,
                 )
                 repository.save(entry)
                 mutableState.update { it.copy(busy = false, completed = true) }
@@ -122,5 +131,5 @@ class EditorViewModel @AssistedInject constructor(
         }
     }
 
-    @AssistedFactory interface Factory { fun create(@Assisted("entryId") entryId: Long?, @Assisted("dayEpoch") dayEpoch: Long?): EditorViewModel }
+    @AssistedFactory interface Factory { fun create(@Assisted("entryId") entryId: Long?, @Assisted("dayEpoch") dayEpoch: Long?, @Assisted("scan") scan: PackageScanPrefill?): EditorViewModel }
 }

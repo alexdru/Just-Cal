@@ -34,14 +34,15 @@ A content-sized Compose navigation pill stays horizontally centered on Home, Dia
 - English/Russian Android resources, AGP-generated locale config and AppCompat application locales provide synchronized per-app language selection without a duplicate DataStore preference. Dates and exact nutrition values use the active app locale.
 - Room schema version 1 is exported under `app/schemas`. Future schema changes must include data-preserving migrations.
 - CameraX rear-camera capture and Android Photo Picker feed a shared local image preparation and review flow. Camera access is requested only for taking a photo; choosing a photo needs no broad storage permission.
-- Review preserves scan mode and target diary date, supports retake/reselect and ends with an explicit photo-ready state. Production food recognition is not implemented; Add Food does not invoke AI.
+- Package review runs bundled PP-OCRv5 offline text detection and Russian/English eslav recognition, then deterministic nutrition parsing. The existing editor shows editable confirmation, raw recognized text, uncertainty and net weight; explicit save retains the selected diary date. Scan meal keeps its photo-ready endpoint. See [docs/PACKAGE_OCR.md](docs/PACKAGE_OCR.md).
+- New manual entries start with an empty required Amount eaten and focus the empty Food name once. Existing entries preserve their saved amount and do not reopen the keyboard automatically.
 - Private temporary images use URI references, EXIF-aware decoding and bounded downsampling. No network permission, uploads, cloud backup, accounts or external food database.
 
 ## Experimental Local AI Lab
 
 Settings → Local AI Lab provides debug/developer functionality using the LiteRT-LM Kotlin API. Import a compatible Gemma 4 E2B vision `.litertlm` with Android's document picker; the Lab stores a private copy rather than bundling the model in the APK. Choose CPU or GPU, load the model, choose/take a food photo through the shared image pipeline, edit a prompt and run multimodal inference entirely on-device. Streaming, cancellation, repeated runs without reloading, explicit backend errors and runtime metrics are available.
 
-The Nutrition extraction preset enables JSON Schema constrained decoding and displays both the raw answer and a validated structured result. Values remain unverified and never enter the diary. This is experimental infrastructure, not production food recognition. There are no cloud AI calls, API keys, OCR, barcode services or model downloads inside the app. See [docs/LOCAL_AI_LAB.md](docs/LOCAL_AI_LAB.md) for compatible-model setup, lifecycle checks and verified coverage.
+The Nutrition extraction preset enables JSON Schema constrained decoding and displays both the raw answer and a validated structured result. Values remain unverified and never enter the diary. This is experimental infrastructure, not production food recognition. There are no cloud AI calls, API keys, barcode services or model downloads inside the app. Production package OCR is independent of this Lab. See [docs/LOCAL_AI_LAB.md](docs/LOCAL_AI_LAB.md) for compatible-model setup, lifecycle checks and verified coverage.
 
 ## Build and test
 

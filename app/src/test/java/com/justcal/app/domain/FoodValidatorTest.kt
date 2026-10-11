@@ -22,6 +22,12 @@ class FoodValidatorTest {
         assertEquals(InputError.POSITIVE, result.errors[FoodField.AMOUNT])
         assertNull(result.food)
     }
+    @Test fun newAmountIsEmptyAndRequiredRatherThanImplicitZero() {
+        assertEquals("", FoodDraft().amount)
+        val result = FoodValidator.validate(draft.copy(amount = ""))
+        assertNull(result.food)
+        assertEquals(InputError.REQUIRED, result.errors[FoodField.AMOUNT])
+    }
     @Test fun missingMacrosAreNotSilentlyRecordedAsZero() {
         assertEquals(InputError.REQUIRED, FoodValidator.validate(draft.copy(carbs = "")).errors[FoodField.CARBS])
     }

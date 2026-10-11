@@ -25,3 +25,7 @@ signing/
 release-files/
 *.apk
 *.aab
+
+# Local OCR experiments: private photo fixtures, tensor dumps, conversions and raw runs.
+# Bundled production models/dictionaries/notices and curated verification reports stay tracked.
+/.ocr-work/

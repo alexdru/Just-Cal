@@ -1,0 +1,1192 @@
+{
+  "lines": [
+    {
+      "text": "«АЗИАТСКИЙ",
+      "confidence": 0.9856972,
+      "points": [
+        {
+          "x": 882,
+          "y": 581
+        },
+        {
+          "x": 1400,
+          "y": 565
+        },
+        {
+          "x": 1402,
+          "y": 641
+        },
+        {
+          "x": 885,
+          "y": 658
+        }
+      ]
+    },
+    {
+      "text": "BB",
+      "confidence": 0.9993707,
+      "points": [
+        {
+          "x": 1476,
+          "y": 555
+        },
+        {
+          "x": 1739,
+          "y": 550
+        },
+        {
+          "x": 1742,
+          "y": 697
+        },
+        {
+          "x": 1478,
+          "y": 702
+        }
+      ]
+    },
+    {
+      "text": "с говядиной,",
+      "confidence": 0.90946037,
+      "points": [
+        {
+          "x": 850,
+          "y": 666
+        },
+        {
+          "x": 1399,
+          "y": 658
+        },
+        {
+          "x": 1400,
+          "y": 738
+        },
+        {
+          "x": 851,
+          "y": 746
+        }
+      ]
+    },
+    {
+      "text": "РИСОМИБИТЫМИ",
+      "confidence": 0.78443956,
+      "points": [
+        {
+          "x": 720,
+          "y": 764
+        },
+        {
+          "x": 1400,
+          "y": 751
+        },
+        {
+          "x": 1401,
+          "y": 824
+        },
+        {
+          "x": 722,
+          "y": 837
+        }
+      ]
+    },
+    {
+      "text": "ОГУРЦАМИ",
+      "confidence": 0.9857983,
+      "points": [
+        {
+          "x": 987,
+          "y": 849
+        },
+        {
+          "x": 1398,
+          "y": 844
+        },
+        {
+          "x": 1399,
+          "y": 912
+        },
+        {
+          "x": 987,
+          "y": 916
+        }
+      ]
+    },
+    {
+      "text": "Hro",
+      "confidence": 0.6163754,
+      "points": [
+        {
+          "x": 271,
+          "y": 974
+        },
+        {
+          "x": 528,
+          "y": 985
+        },
+        {
+          "x": 508,
+          "y": 1452
+        },
+        {
+          "x": 250,
+          "y": 1440
+        }
+      ]
+    },
+    {
+      "text": "КОРЕЯ",
+      "confidence": 0.8957556,
+      "points": [
+        {
+          "x": 511,
+          "y": 1128
+        },
+        {
+          "x": 615,
+          "y": 1133
+        },
+        {
+          "x": 601,
+          "y": 1417
+        },
+        {
+          "x": 497,
+          "y": 1412
+        }
+      ]
+    },
+    {
+      "text": "Вармант сервировки.",
+      "confidence": 0.95878106,
+      "points": [
+        {
+          "x": 2431,
+          "y": 1045
+        },
+        {
+          "x": 2583,
+          "y": 1377
+        },
+        {
+          "x": 2515,
+          "y": 1409
+        },
+        {
+          "x": 2363,
+          "y": 1077
+        }
+      ]
+    },
+    {
+      "text": "КУЛИНАРНОЕ ИЗДЕЛИЕ ОХЛАЖДЁННОЕ: БОУЛ«АЗИАТСКИЙ» С ГОВЯДИНОЙ, РИСОМ И БИТЫМИ ОГУРЦАМИ",
+      "confidence": 0.96933115,
+      "points": [
+        {
+          "x": 25,
+          "y": 1515
+        },
+        {
+          "x": 2642,
+          "y": 1519
+        },
+        {
+          "x": 2642,
+          "y": 1592
+        },
+        {
+          "x": 25,
+          "y": 1589
+        }
+      ]
+    },
+    {
+      "text": "пищевое отварное, дайкон (редька) маринованный в собственном соку, ростки сои маринованные(маринад (вода питьевая,сахар, соль пищевая, уксусная кислота",
+      "confidence": 0.9623865,
+      "points": [
+        {
+          "x": 32,
+          "y": 1910
+        },
+        {
+          "x": 2643,
+          "y": 1924
+        },
+        {
+          "x": 2643,
+          "y": 1976
+        },
+        {
+          "x": 31,
+          "y": 1962
+        }
+      ]
+    },
+    {
+      "text": "70 %), ростки сои свежие), микс салатный(салат айсберг сВежиЙ, салатромано сВежиЙ, шпинат сВежий), кинза сВежая (зелень). ПРодукция пРоизводится на пред-",
+      "confidence": 0.8242755,
+      "points": [
+        {
+          "x": 38,
+          "y": 1945
+        },
+        {
+          "x": 2637,
+          "y": 1968
+        },
+        {
+          "x": 2636,
+          "y": 2024
+        },
+        {
+          "x": 38,
+          "y": 2001
+        }
+      ]
+    },
+    {
+      "text": "приятии, где используются арахис, горчица,диоксид серы (сульфиты), ракообразные,рыба,молоко(лактоза), орехи,сельдерей и продукты их переработки.",
+      "confidence": 0.9637526,
+      "points": [
+        {
+          "x": 44,
+          "y": 1994
+        },
+        {
+          "x": 2628,
+          "y": 2010
+        },
+        {
+          "x": 2627,
+          "y": 2060
+        },
+        {
+          "x": 44,
+          "y": 2045
+        }
+      ]
+    },
+    {
+      "text": "Пищевая ценность 100 г продукта (средние значения): белки - 5,9 г;жиры - 3,7г, в т.ч.насыщенные жирные кислоты - 0,9 г, в т.ч.транс-изомеры жирных кислот -",
+      "confidence": 0.9571824,
+      "points": [
+        {
+          "x": 59,
+          "y": 2044
+        },
+        {
+          "x": 2613,
+          "y": 2066
+        },
+        {
+          "x": 2612,
+          "y": 2125
+        },
+        {
+          "x": 59,
+          "y": 2103
+        }
+      ]
+    },
+    {
+      "text": "0 г,углеводы - 10,4 г,вт.ч.сахара (общие)- 4 г,вт.ч.добавленный сахар 3 г; соль – 2,3 г. Энергетическая ценность(калорийность): 414 кДж/ 98,5 ккал.",
+      "confidence": 0.91207117,
+      "points": [
+        {
+          "x": 90,
+          "y": 2086
+        },
+        {
+          "x": 2580,
+          "y": 2107
+        },
+        {
+          "x": 2579,
+          "y": 2171
+        },
+        {
+          "x": 89,
+          "y": 2149
+        }
+      ]
+    },
+    {
+      "text": "В одной порции (205 г) содержится 202 ккал.",
+      "confidence": 0.9717436,
+      "points": [
+        {
+          "x": 932,
+          "y": 2139
+        },
+        {
+          "x": 1699,
+          "y": 2145
+        },
+        {
+          "x": 1698,
+          "y": 2199
+        },
+        {
+          "x": 931,
+          "y": 2192
+        }
+      ]
+    },
+    {
+      "text": "СРОК ГОДНОСТИ: 4 СУТОК. МАССА НЕТТО: 205 Г (БОУЛ - 175 Г, СОУС - 30 Г)",
+      "confidence": 0.9315294,
+      "points": [
+        {
+          "x": 306,
+          "y": 2412
+        },
+        {
+          "x": 2362,
+          "y": 2440
+        },
+        {
+          "x": 2361,
+          "y": 2526
+        },
+        {
+          "x": 305,
+          "y": 2498
+        }
+      ]
+    },
+    {
+      "text": "",
+      "confidence": 0,
+      "points": [
+        {
+          "x": 471,
+          "y": 2603
+        },
+        {
+          "x": 570,
+          "y": 2603
+        },
+        {
+          "x": 570,
+          "y": 2750
+        },
+        {
+          "x": 471,
+          "y": 2750
+        }
+      ]
+    },
+    {
+      "text": "EAC",
+      "confidence": 0.97984684,
+      "points": [
+        {
+          "x": 675,
+          "y": 2569
+        },
+        {
+          "x": 852,
+          "y": 2569
+        },
+        {
+          "x": 852,
+          "y": 2748
+        },
+        {
+          "x": 675,
+          "y": 2748
+        }
+      ]
+    },
+    {
+      "text": "контейнер",
+      "confidence": 0.93064487,
+      "points": [
+        {
+          "x": 1787,
+          "y": 2587
+        },
+        {
+          "x": 1836,
+          "y": 2590
+        },
+        {
+          "x": 1828,
+          "y": 2755
+        },
+        {
+          "x": 1779,
+          "y": 2752
+        }
+      ]
+    },
+    {
+      "text": "",
+      "confidence": 0,
+      "points": [
+        {
+          "x": 1845,
+          "y": 2596
+        },
+        {
+          "x": 1951,
+          "y": 2600
+        },
+        {
+          "x": 1945,
+          "y": 2767
+        },
+        {
+          "x": 1839,
+          "y": 2764
+        }
+      ]
+    },
+    {
+      "text": "крышка",
+      "confidence": 0.9692019,
+      "points": [
+        {
+          "x": 1965,
+          "y": 2621
+        },
+        {
+          "x": 2015,
+          "y": 2621
+        },
+        {
+          "x": 2015,
+          "y": 2759
+        },
+        {
+          "x": 1965,
+          "y": 2759
+        }
+      ]
+    },
+    {
+      "text": "PET",
+      "confidence": 0.9923788,
+      "points": [
+        {
+          "x": 2019,
+          "y": 2696
+        },
+        {
+          "x": 2106,
+          "y": 2696
+        },
+        {
+          "x": 2106,
+          "y": 2767
+        },
+        {
+          "x": 2019,
+          "y": 2767
+        }
+      ]
+    },
+    {
+      "text": "S",
+      "confidence": 0.4540239,
+      "points": [
+        {
+          "x": 702,
+          "y": 2706
+        },
+        {
+          "x": 853,
+          "y": 2717
+        },
+        {
+          "x": 841,
+          "y": 2894
+        },
+        {
+          "x": 690,
+          "y": 2884
+        }
+      ]
+    },
+    {
+      "text": "07.10.2026",
+      "confidence": 0.99578387,
+      "points": [
+        {
+          "x": 1034,
+          "y": 2748
+        },
+        {
+          "x": 1575,
+          "y": 2754
+        },
+        {
+          "x": 1574,
+          "y": 2850
+        },
+        {
+          "x": 1033,
+          "y": 2844
+        }
+      ]
+    }
+  ],
+  "width": 3000,
+  "height": 4000,
+  "metrics": {
+    "initializationMs": 299,
+    "detectionMs": 1497,
+    "recognitionMs": 7658,
+    "totalMs": 9682
+  },
+  "regions": [
+    {
+      "index": 0,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 1906,
+      "preparationUs": 783,
+      "inferenceUs": 56411,
+      "decodingUs": 103,
+      "text": "2 100101",
+      "confidence": 0.94247234
+    },
+    {
+      "index": 1,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 2322,
+      "preparationUs": 744,
+      "inferenceUs": 37472,
+      "decodingUs": 103,
+      "text": "07.10.2026",
+      "confidence": 0.99578387
+    },
+    {
+      "index": 2,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 478,
+      "preparationUs": 388,
+      "inferenceUs": 37487,
+      "decodingUs": 99,
+      "text": "©",
+      "confidence": 0.27058178
+    },
+    {
+      "index": 3,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 1401,
+      "preparationUs": 382,
+      "inferenceUs": 37852,
+      "decodingUs": 98,
+      "text": "S",
+      "confidence": 0.4540239
+    },
+    {
+      "index": 3,
+      "stage": "rotation",
+      "width": 320,
+      "cropUs": 0,
+      "preparationUs": 382,
+      "inferenceUs": 38346,
+      "decodingUs": 96,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 4,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 498,
+      "preparationUs": 402,
+      "inferenceUs": 37879,
+      "decodingUs": 102,
+      "text": "PET",
+      "confidence": 0.9923788
+    },
+    {
+      "index": 5,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 532,
+      "preparationUs": 492,
+      "inferenceUs": 38084,
+      "decodingUs": 96,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 5,
+      "stage": "rotation",
+      "width": 320,
+      "cropUs": 0,
+      "preparationUs": 509,
+      "inferenceUs": 37686,
+      "decodingUs": 112,
+      "text": "крышка",
+      "confidence": 0.9692019
+    },
+    {
+      "index": 6,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 643,
+      "preparationUs": 365,
+      "inferenceUs": 38147,
+      "decodingUs": 100,
+      "text": "A",
+      "confidence": 0.30634215
+    },
+    {
+      "index": 7,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 808,
+      "preparationUs": 365,
+      "inferenceUs": 37951,
+      "decodingUs": 96,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 7,
+      "stage": "rotation",
+      "width": 320,
+      "cropUs": 0,
+      "preparationUs": 379,
+      "inferenceUs": 37481,
+      "decodingUs": 95,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 8,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 1050,
+      "preparationUs": 449,
+      "inferenceUs": 38924,
+      "decodingUs": 99,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 8,
+      "stage": "rotation",
+      "width": 320,
+      "cropUs": 0,
+      "preparationUs": 448,
+      "inferenceUs": 37652,
+      "decodingUs": 97,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 9,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 1547,
+      "preparationUs": 400,
+      "inferenceUs": 37616,
+      "decodingUs": 100,
+      "text": "EAC",
+      "confidence": 0.97984684
+    },
+    {
+      "index": 10,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 632,
+      "preparationUs": 574,
+      "inferenceUs": 38038,
+      "decodingUs": 96,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 10,
+      "stage": "rotation",
+      "width": 320,
+      "cropUs": 0,
+      "preparationUs": 542,
+      "inferenceUs": 37321,
+      "decodingUs": 101,
+      "text": "контейнер",
+      "confidence": 0.93064487
+    },
+    {
+      "index": 11,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 1685,
+      "preparationUs": 765,
+      "inferenceUs": 48904,
+      "decodingUs": 107,
+      "text": "Дата изготовления (чи",
+      "confidence": 0.9653051
+    },
+    {
+      "index": 12,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 21478,
+      "preparationUs": 1053,
+      "inferenceUs": 43466,
+      "decodingUs": 108,
+      "text": "СРОК ГОДНОСТИ: 4 С",
+      "confidence": 0.9197545
+    },
+    {
+      "index": 13,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 3128,
+      "preparationUs": 794,
+      "inferenceUs": 38557,
+      "decodingUs": 110,
+      "text": "Упаковано в ГМС. Состав",
+      "confidence": 0.86288124
+    },
+    {
+      "index": 14,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 5368,
+      "preparationUs": 808,
+      "inferenceUs": 50280,
+      "decodingUs": 192,
+      "text": "Хранить при температуре",
+      "confidence": 0.98675996
+    },
+    {
+      "index": 15,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 14267,
+      "preparationUs": 881,
+      "inferenceUs": 41812,
+      "decodingUs": 109,
+      "text": "1-7.Адрес производства",
+      "confidence": 0.9851397
+    },
+    {
+      "index": 16,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 19832,
+      "preparationUs": 1031,
+      "inferenceUs": 44055,
+      "decodingUs": 143,
+      "text": "Изготовитель: 000 «Йу",
+      "confidence": 0.88655204
+    },
+    {
+      "index": 17,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 1780,
+      "preparationUs": 760,
+      "inferenceUs": 37964,
+      "decodingUs": 108,
+      "text": "В одной порции (205",
+      "confidence": 0.94909626
+    },
+    {
+      "index": 18,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 20903,
+      "preparationUs": 930,
+      "inferenceUs": 43808,
+      "decodingUs": 108,
+      "text": "0г;углеводы-10,4гвт.ч.",
+      "confidence": 0.84467214
+    },
+    {
+      "index": 19,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 23278,
+      "preparationUs": 876,
+      "inferenceUs": 44220,
+      "decodingUs": 102,
+      "text": "Пищевая ценность 100 г",
+      "confidence": 0.9562541
+    },
+    {
+      "index": 20,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 12463,
+      "preparationUs": 851,
+      "inferenceUs": 39587,
+      "decodingUs": 109,
+      "text": "приятии, где исполь:",
+      "confidence": 0.82496595
+    },
+    {
+      "index": 21,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 29239,
+      "preparationUs": 2637,
+      "inferenceUs": 63538,
+      "decodingUs": 107,
+      "text": "70 %),рОстки сои сВежи",
+      "confidence": 0.76049304
+    },
+    {
+      "index": 22,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 14237,
+      "preparationUs": 849,
+      "inferenceUs": 45139,
+      "decodingUs": 105,
+      "text": "пищевое отварное,да",
+      "confidence": 0.9906718
+    },
+    {
+      "index": 23,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 11183,
+      "preparationUs": 801,
+      "inferenceUs": 41464,
+      "decodingUs": 105,
+      "text": "финированное(соево",
+      "confidence": 0.9530688
+    },
+    {
+      "index": 24,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 16413,
+      "preparationUs": 949,
+      "inferenceUs": 41320,
+      "decodingUs": 100,
+      "text": "уксусная кислота),уксус",
+      "confidence": 0.9135233
+    },
+    {
+      "index": 25,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 12895,
+      "preparationUs": 754,
+      "inferenceUs": 39407,
+      "decodingUs": 107,
+      "text": "агар, имбирь молотый",
+      "confidence": 0.9351252
+    },
+    {
+      "index": 26,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 17868,
+      "preparationUs": 923,
+      "inferenceUs": 44210,
+      "decodingUs": 108,
+      "text": "курузный,сокапельсинов",
+      "confidence": 0.9831953
+    },
+    {
+      "index": 27,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 18225,
+      "preparationUs": 1065,
+      "inferenceUs": 43940,
+      "decodingUs": 103,
+      "text": "бобы, пшеница,соль п",
+      "confidence": 0.9439401
+    },
+    {
+      "index": 28,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 16903,
+      "preparationUs": 967,
+      "inferenceUs": 43468,
+      "decodingUs": 110,
+      "text": "соево-кунжутное рафи",
+      "confidence": 0.89090824
+    },
+    {
+      "index": 29,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 12901,
+      "preparationUs": 883,
+      "inferenceUs": 41672,
+      "decodingUs": 107,
+      "text": "соль пищевая), рис отвар",
+      "confidence": 0.9383814
+    },
+    {
+      "index": 30,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 14933,
+      "preparationUs": 816,
+      "inferenceUs": 41993,
+      "decodingUs": 105,
+      "text": "КУЛИНАРНОЕ ИЗДЕ",
+      "confidence": 0.9240016
+    },
+    {
+      "index": 31,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 1610,
+      "preparationUs": 502,
+      "inferenceUs": 37759,
+      "decodingUs": 93,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 31,
+      "stage": "rotation",
+      "width": 320,
+      "cropUs": 0,
+      "preparationUs": 541,
+      "inferenceUs": 37647,
+      "decodingUs": 102,
+      "text": "КОРЕЯ",
+      "confidence": 0.8957556
+    },
+    {
+      "index": 32,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 1526,
+      "preparationUs": 666,
+      "inferenceUs": 37714,
+      "decodingUs": 105,
+      "text": "Вармант сервировки.",
+      "confidence": 0.95878106
+    },
+    {
+      "index": 33,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 12531,
+      "preparationUs": 499,
+      "inferenceUs": 41113,
+      "decodingUs": 95,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 33,
+      "stage": "rotation",
+      "width": 320,
+      "cropUs": 0,
+      "preparationUs": 478,
+      "inferenceUs": 37360,
+      "decodingUs": 97,
+      "text": "Hro",
+      "confidence": 0.6163754
+    },
+    {
+      "index": 34,
+      "stage": "scout",
+      "width": 320,
+      "cropUs": 1285,
+      "preparationUs": 735,
+      "inferenceUs": 37446,
+      "decodingUs": 103,
+      "text": "ОГУРЦАМИ",
+      "confidence": 0.9857983
+    },
+    {
+      "index": 35,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 2032,
+      "preparationUs": 789,
+      "inferenceUs": 38387,
+      "decodingUs": 99,
+      "text": "РИСОМИБИТ",
+      "confidence": 0.77738917
+    },
+    {
+      "index": 36,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 1843,
+      "preparationUs": 773,
+      "inferenceUs": 38691,
+      "decodingUs": 100,
+      "text": "с говядиной",
+      "confidence": 0.8697294
+    },
+    {
+      "index": 37,
+      "stage": "title",
+      "width": 320,
+      "cropUs": 1717,
+      "preparationUs": 446,
+      "inferenceUs": 40580,
+      "decodingUs": 97,
+      "text": "BB",
+      "confidence": 0.9993707
+    },
+    {
+      "index": 38,
+      "stage": "scout",
+      "width": 321,
+      "cropUs": 1717,
+      "preparationUs": 846,
+      "inferenceUs": 38706,
+      "decodingUs": 102,
+      "text": "«АЗИАТСКИЙ",
+      "confidence": 0.98653567
+    },
+    {
+      "index": 38,
+      "stage": "selected",
+      "width": 323,
+      "cropUs": 1666,
+      "preparationUs": 814,
+      "inferenceUs": 42469,
+      "decodingUs": 101,
+      "text": "«АЗИАТСКИЙ",
+      "confidence": 0.9856972
+    },
+    {
+      "index": 36,
+      "stage": "selected",
+      "width": 330,
+      "cropUs": 1848,
+      "preparationUs": 829,
+      "inferenceUs": 50629,
+      "decodingUs": 103,
+      "text": "с говядиной,",
+      "confidence": 0.90946037
+    },
+    {
+      "index": 35,
+      "stage": "selected",
+      "width": 448,
+      "cropUs": 2026,
+      "preparationUs": 1041,
+      "inferenceUs": 60782,
+      "decodingUs": 134,
+      "text": "РИСОМИБИТЫМИ",
+      "confidence": 0.78443956
+    },
+    {
+      "index": 35,
+      "stage": "rotation",
+      "width": 448,
+      "cropUs": 0,
+      "preparationUs": 1054,
+      "inferenceUs": 54100,
+      "decodingUs": 129,
+      "text": "",
+      "confidence": 0
+    },
+    {
+      "index": 30,
+      "stage": "selected",
+      "width": 1721,
+      "cropUs": 14942,
+      "preparationUs": 3700,
+      "inferenceUs": 596077,
+      "decodingUs": 495,
+      "text": "КУЛИНАРНОЕ ИЗДЕЛИЕ ОХЛАЖДЁННОЕ: БОУЛ«АЗИАТСКИЙ» С ГОВЯДИНОЙ, РИСОМ И БИТЫМИ ОГУРЦАМИ",
+      "confidence": 0.96933115
+    },
+    {
+      "index": 22,
+      "stage": "selected",
+      "width": 2412,
+      "cropUs": 26439,
+      "preparationUs": 8555,
+      "inferenceUs": 769426,
+      "decodingUs": 797,
+      "text": "пищевое отварное, дайкон (редька) маринованный в собственном соку, ростки сои маринованные(маринад (вода питьевая,сахар, соль пищевая, уксусная кислота",
+      "confidence": 0.9623865
+    },
+    {
+      "index": 21,
+      "stage": "selected",
+      "width": 2228,
+      "cropUs": 22112,
+      "preparationUs": 7526,
+      "inferenceUs": 697195,
+      "decodingUs": 654,
+      "text": "70 %), ростки сои свежие), микс салатный(салат айсберг сВежиЙ, салатромано сВежиЙ, шпинат сВежий), кинза сВежая (зелень). ПРодукция пРоизводится на пред-",
+      "confidence": 0.8242755
+    },
+    {
+      "index": 21,
+      "stage": "rotation",
+      "width": 2228,
+      "cropUs": 0,
+      "preparationUs": 5753,
+      "inferenceUs": 275630,
+      "decodingUs": 620,
+      "text": "         ",
+      "confidence": 0.4274077
+    },
+    {
+      "index": 20,
+      "stage": "selected",
+      "width": 2481,
+      "cropUs": 15380,
+      "preparationUs": 9731,
+      "inferenceUs": 782863,
+      "decodingUs": 716,
+      "text": "приятии, где используются арахис, горчица,диоксид серы (сульфиты), ракообразные,рыба,молоко(лактоза), орехи,сельдерей и продукты их переработки.",
+      "confidence": 0.9637526
+    },
+    {
+      "index": 19,
+      "stage": "selected",
+      "width": 2078,
+      "cropUs": 26281,
+      "preparationUs": 7405,
+      "inferenceUs": 687006,
+      "decodingUs": 595,
+      "text": "Пищевая ценность 100 г продукта (средние значения): белки - 5,9 г;жиры - 3,7г, в т.ч.насыщенные жирные кислоты - 0,9 г, в т.ч.транс-изомеры жирных кислот -",
+      "confidence": 0.9571824
+    },
+    {
+      "index": 18,
+      "stage": "selected",
+      "width": 1868,
+      "cropUs": 14556,
+      "preparationUs": 5306,
+      "inferenceUs": 711497,
+      "decodingUs": 554,
+      "text": "0 г,углеводы - 10,4 г,вт.ч.сахара (общие)- 4 г,вт.ч.добавленный сахар 3 г; соль – 2,3 г. Энергетическая ценность(калорийность): 414 кДж/ 98,5 ккал.",
+      "confidence": 0.91207117
+    },
+    {
+      "index": 17,
+      "stage": "selected",
+      "width": 682,
+      "cropUs": 1827,
+      "preparationUs": 1432,
+      "inferenceUs": 93228,
+      "decodingUs": 217,
+      "text": "В одной порции (205 г) содержится 202 ккал.",
+      "confidence": 0.9717436
+    },
+    {
+      "index": 12,
+      "stage": "selected",
+      "width": 1148,
+      "cropUs": 10167,
+      "preparationUs": 2559,
+      "inferenceUs": 355459,
+      "decodingUs": 335,
+      "text": "СРОК ГОДНОСТИ: 4 СУТОК. МАССА НЕТТО: 205 Г (БОУЛ - 175 Г, СОУС - 30 Г)",
+      "confidence": 0.9315294
+    }
+  ],
+  "detectedRegions": 39
+}

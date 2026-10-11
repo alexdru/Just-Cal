@@ -1,0 +1,459 @@
+{
+  "device": "OnePlus 7T HD1900 Android 11; adb serial 099812d2",
+  "date": "2026-10-11",
+  "units": "milliseconds for metrics; microseconds for per-region profiles; KiB for memory snapshots",
+  "models": "unchanged official PP-OCRv5_mobile_det_onnx and eslav_PP-OCRv5_mobile_rec_onnx, FP32",
+  "fixtures": [
+    {
+      "case": 1,
+      "sha256": "f919b064de1215d1635fa8fbe712bbad628971f34626513bdaa492b0637e992a"
+    },
+    {
+      "case": 2,
+      "sha256": "0b6a2512c778785d5fd172088c03b4ab8803377d091703dd2621d06b26d658d9"
+    },
+    {
+      "case": 3,
+      "sha256": "86e8fa45f52a964c43b6e570bea71c1d5c9ca1a842fd120d669722a1ff0629b1"
+    }
+  ],
+  "runs": [
+    {
+      "name": "full-t1",
+      "case": 1,
+      "metrics": {
+        "initializationMs": 313,
+        "detectionMs": 2883,
+        "recognitionMs": 18537,
+        "totalMs": 22032
+      },
+      "fullFallback": false,
+      "detectedRegions": 49,
+      "fullLines": 48,
+      "profileTotalsUs": {
+        "cropUs": 661064,
+        "preparationUs": 84435,
+        "inferenceUs": 17765230,
+        "decodingUs": 13866
+      },
+      "stages": {
+        "full": 49,
+        "rotation": 10
+      }
+    },
+    {
+      "name": "full-t2",
+      "case": 1,
+      "metrics": {
+        "initializationMs": 311,
+        "detectionMs": 1945,
+        "recognitionMs": 11708,
+        "totalMs": 14271
+      },
+      "fullFallback": false,
+      "detectedRegions": 49,
+      "fullLines": 48,
+      "profileTotalsUs": {
+        "cropUs": 647596,
+        "preparationUs": 87827,
+        "inferenceUs": 10941295,
+        "decodingUs": 14051
+      },
+      "stages": {
+        "full": 49,
+        "rotation": 10
+      }
+    },
+    {
+      "name": "full-t4",
+      "case": 1,
+      "metrics": {
+        "initializationMs": 319,
+        "detectionMs": 1620,
+        "recognitionMs": 10083,
+        "totalMs": 12317
+      },
+      "fullFallback": false,
+      "detectedRegions": 49,
+      "fullLines": 48,
+      "profileTotalsUs": {
+        "cropUs": 479247,
+        "preparationUs": 102264,
+        "inferenceUs": 9471833,
+        "decodingUs": 15943
+      },
+      "stages": {
+        "full": 49,
+        "rotation": 10
+      }
+    },
+    {
+      "name": "prefix-v1-rejected",
+      "case": 1,
+      "metrics": {
+        "initializationMs": 324,
+        "detectionMs": 1640,
+        "recognitionMs": 11691,
+        "totalMs": 13956
+      },
+      "fullFallback": true,
+      "fullLines": 49,
+      "profileTotalsUs": {
+        "cropUs": 771485,
+        "preparationUs": 135295,
+        "inferenceUs": 10725225,
+        "decodingUs": 19618
+      },
+      "stages": {
+        "scout": 43,
+        "title": 6,
+        "rotation": 10,
+        "selected": 17,
+        "fallback": 18
+      }
+    },
+    {
+      "name": "selected-t4",
+      "case": 1,
+      "metrics": {
+        "initializationMs": 314,
+        "detectionMs": 1642,
+        "recognitionMs": 6076,
+        "totalMs": 8319
+      },
+      "fullFallback": false,
+      "detectedRegions": 49,
+      "fullLines": 31,
+      "profileTotalsUs": {
+        "cropUs": 512082,
+        "preparationUs": 70176,
+        "inferenceUs": 5346896,
+        "decodingUs": 12676
+      },
+      "stages": {
+        "scout": 43,
+        "title": 6,
+        "rotation": 8,
+        "selected": 17
+      }
+    },
+    {
+      "name": "production-v0.7.1",
+      "case": 1,
+      "metrics": {
+        "initializationMs": 313,
+        "detectionMs": 1656,
+        "recognitionMs": 6107,
+        "totalMs": 8379
+      },
+      "fullFallback": false,
+      "detectedRegions": 49,
+      "fullLines": 30
+    },
+    {
+      "name": "full-t1",
+      "case": 2,
+      "metrics": {
+        "initializationMs": 298,
+        "detectionMs": 2682,
+        "recognitionMs": 26784,
+        "totalMs": 30011
+      },
+      "fullFallback": false,
+      "detectedRegions": 50,
+      "fullLines": 49,
+      "profileTotalsUs": {
+        "cropUs": 808728,
+        "preparationUs": 108672,
+        "inferenceUs": 25842787,
+        "decodingUs": 14297
+      },
+      "stages": {
+        "full": 50,
+        "rotation": 11
+      }
+    },
+    {
+      "name": "full-t2",
+      "case": 2,
+      "metrics": {
+        "initializationMs": 292,
+        "detectionMs": 1775,
+        "recognitionMs": 16725,
+        "totalMs": 19025
+      },
+      "fullFallback": false,
+      "detectedRegions": 50,
+      "fullLines": 49,
+      "profileTotalsUs": {
+        "cropUs": 846857,
+        "preparationUs": 111310,
+        "inferenceUs": 15742513,
+        "decodingUs": 14411
+      },
+      "stages": {
+        "full": 50,
+        "rotation": 11
+      }
+    },
+    {
+      "name": "full-t4",
+      "case": 2,
+      "metrics": {
+        "initializationMs": 298,
+        "detectionMs": 1471,
+        "recognitionMs": 13622,
+        "totalMs": 15629
+      },
+      "fullFallback": false,
+      "detectedRegions": 50,
+      "fullLines": 49,
+      "profileTotalsUs": {
+        "cropUs": 472005,
+        "preparationUs": 123519,
+        "inferenceUs": 13000605,
+        "decodingUs": 15689
+      },
+      "stages": {
+        "full": 50,
+        "rotation": 11
+      }
+    },
+    {
+      "name": "selected-t4",
+      "case": 2,
+      "metrics": {
+        "initializationMs": 296,
+        "detectionMs": 1466,
+        "recognitionMs": 6143,
+        "totalMs": 8144
+      },
+      "fullFallback": false,
+      "detectedRegions": 50,
+      "fullLines": 21,
+      "profileTotalsUs": {
+        "cropUs": 549938,
+        "preparationUs": 68429,
+        "inferenceUs": 5476825,
+        "decodingUs": 9502
+      },
+      "stages": {
+        "scout": 40,
+        "title": 10,
+        "rotation": 8,
+        "selected": 10,
+        "energy_retry": 1
+      }
+    },
+    {
+      "name": "production-v0.7.1",
+      "case": 2,
+      "metrics": {
+        "initializationMs": 301,
+        "detectionMs": 1476,
+        "recognitionMs": 6585,
+        "totalMs": 8594
+      },
+      "fullFallback": false,
+      "detectedRegions": 50,
+      "fullLines": 20
+    },
+    {
+      "name": "full-t1",
+      "case": 3,
+      "metrics": {
+        "initializationMs": 304,
+        "detectionMs": 2669,
+        "recognitionMs": 30607,
+        "totalMs": 33818
+      },
+      "fullFallback": false,
+      "detectedRegions": 39,
+      "fullLines": 37,
+      "profileTotalsUs": {
+        "cropUs": 517452,
+        "preparationUs": 177886,
+        "inferenceUs": 29887247,
+        "decodingUs": 14994
+      },
+      "stages": {
+        "full": 39,
+        "rotation": 12
+      }
+    },
+    {
+      "name": "full-t2",
+      "case": 3,
+      "metrics": {
+        "initializationMs": 301,
+        "detectionMs": 1771,
+        "recognitionMs": 18494,
+        "totalMs": 20803
+      },
+      "fullFallback": false,
+      "detectedRegions": 39,
+      "fullLines": 37,
+      "profileTotalsUs": {
+        "cropUs": 536126,
+        "preparationUs": 141746,
+        "inferenceUs": 17786871,
+        "decodingUs": 15548
+      },
+      "stages": {
+        "full": 39,
+        "rotation": 12
+      }
+    },
+    {
+      "name": "full-t4",
+      "case": 3,
+      "metrics": {
+        "initializationMs": 300,
+        "detectionMs": 1472,
+        "recognitionMs": 14269,
+        "totalMs": 16275
+      },
+      "fullFallback": false,
+      "detectedRegions": 39,
+      "fullLines": 37,
+      "profileTotalsUs": {
+        "cropUs": 377641,
+        "preparationUs": 139127,
+        "inferenceUs": 13727269,
+        "decodingUs": 15622
+      },
+      "stages": {
+        "full": 39,
+        "rotation": 12
+      }
+    },
+    {
+      "name": "prefix-v1-rejected",
+      "case": 3,
+      "metrics": {
+        "initializationMs": 302,
+        "detectionMs": 1498,
+        "recognitionMs": 15997,
+        "totalMs": 18028
+      },
+      "fullFallback": true,
+      "fullLines": 39,
+      "profileTotalsUs": {
+        "cropUs": 686170,
+        "preparationUs": 169173,
+        "inferenceUs": 15099126,
+        "decodingUs": 18953
+      },
+      "stages": {
+        "scout": 29,
+        "title": 10,
+        "rotation": 12,
+        "selected": 18,
+        "fallback": 8
+      }
+    },
+    {
+      "name": "selected-t4",
+      "case": 3,
+      "metrics": {
+        "initializationMs": 299,
+        "detectionMs": 1497,
+        "recognitionMs": 7658,
+        "totalMs": 9682
+      },
+      "fullFallback": false,
+      "detectedRegions": 39,
+      "fullLines": 24,
+      "profileTotalsUs": {
+        "cropUs": 462301,
+        "preparationUs": 88977,
+        "inferenceUs": 7064915,
+        "decodingUs": 10289
+      },
+      "stages": {
+        "scout": 29,
+        "title": 10,
+        "rotation": 9,
+        "selected": 11
+      }
+    },
+    {
+      "name": "production-v0.7.1",
+      "case": 3,
+      "metrics": {
+        "initializationMs": 303,
+        "detectionMs": 1464,
+        "recognitionMs": 7792,
+        "totalMs": 9786
+      },
+      "fullFallback": false,
+      "detectedRegions": 39,
+      "fullLines": 22
+    }
+  ],
+  "cacheComparison": {
+    "fixture": 2,
+    "reused": [
+      {
+        "initializationMs": 315,
+        "detectionMs": 1638,
+        "recognitionMs": 6151,
+        "totalMs": 8434,
+        "pssKiB": 141404,
+        "processHighWaterRssKiB": 510696
+      },
+      {
+        "initializationMs": 0,
+        "detectionMs": 1136,
+        "recognitionMs": 4472,
+        "totalMs": 5849,
+        "pssKiB": 141404,
+        "processHighWaterRssKiB": 569628
+      }
+    ],
+    "fresh": [
+      {
+        "initializationMs": 310,
+        "detectionMs": 1645,
+        "recognitionMs": 6131,
+        "totalMs": 8393,
+        "pssKiB": 136953,
+        "processHighWaterRssKiB": 514504
+      },
+      {
+        "initializationMs": 303,
+        "detectionMs": 1459,
+        "recognitionMs": 6187,
+        "totalMs": 8181,
+        "pssKiB": 136953,
+        "processHighWaterRssKiB": 514504
+      }
+    ],
+    "decision": "Reuse remains disabled in production. Warm latency improves but process high-water RSS increases. Small sample, not controlled statistical profiling."
+  },
+  "productionMemory": {
+    "pssKiB": 116691,
+    "processHighWaterRssKiB": 517588
+  },
+  "ncnn": {
+    "qualification": "conversion only; no Android candidate benchmark, no replacement",
+    "converter": "pnnx 20260704, fp16=0, optlevel=2",
+    "archiveSha256": "651d425937c5ca54b2052ed4a48339bbba89e1d5702f0b0068a49e7974992121",
+    "recognizer": {
+      "paramBytes": 19390,
+      "binBytes": 7795084,
+      "binSha256": "f4cd6a8d131edcea702e79e4fddd5e9f342cb2dde37a913f8e46fd92ef4ee367"
+    },
+    "detector": {
+      "paramBytes": 23506,
+      "binBytes": 4685856,
+      "binSha256": "7f4635ba0c8933707ad5cb3ceadaba8a7165fbb906fc1378ae8249de0b2132d8"
+    }
+  },
+  "finalApkBytes": 123095524,
+  "initialOcrApkBytes": 122994444,
+  "finalSmokeHeartbeat": {
+    "pulses": 49,
+    "maxSchedulingDelayMs": 2
+  }
+}

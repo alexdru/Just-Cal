@@ -26,6 +26,10 @@ sdkmanager --list --channel=3
 
 SDK package IDs and Gradle API levels are distinct. Check the live catalog before changing package IDs; do not downgrade the app's compile SDK to work around SDK provisioning.
 
+## Native OCR packaging
+
+APK/AAB builds include bundled offline OCR models and their license notices. The supported native ABI is `arm64-v8a` (including OnePlus 7T/12 and ARM64 emulators). Upstream OpenCV's x86 builds include Intel IPP under incompatible binary-only terms; restoring x86 support requires an OpenCV build without IPP and a fresh native license/16-KiB alignment check. Do not remove the ABI filter merely to run an x86 emulator. See [PACKAGE_OCR.md](PACKAGE_OCR.md).
+
 ## One-time signing setup
 
 If you already created the release key, keep it; do not generate a replacement. For first-time setup only, create it outside the repository using a JDK's `keytool`:

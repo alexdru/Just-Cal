@@ -106,6 +106,49 @@ class EditorViewModelTest {
         assertEquals(12L, repository.rows.getValue(7).dayEpoch)
     }
 
+    @Test fun autofocusIsClaimedOnceAndSurvivesViewModelRestoration() = runTest(dispatcher) {
+        val handle = SavedStateHandle()
+        val repository = FakeDiary()
+        val first = EditorViewModel(repository, handle, clock, null)
+        assertTrue(first.claimInitialFocus())
+        assertFalse(first.claimInitialFocus())
+        assertFalse(EditorViewModel(repository, handle, clock, null).claimInitialFocus())
+        val editing = EditorViewModel(repository, SavedStateHandle(), clock, 7)
+        assertFalse(editing.claimInitialFocus())
+        advanceUntilIdle()
+    }
+
+    @Test fun scannedDraftIsEditableAndOnlyExplicitSaveWritesSelectedDateAndSource() = runTest(dispatcher) {
+        val repository = FakeDiary()
+        fun field(value: String) = com.justcal.app.ocr.LabelValue(value, 0.98f, "label")
+        val scan = com.justcal.app.ocr.PackageScanPrefill(
+            com.justcal.app.ocr.ParsedNutritionLabel(field("Food"), field("240"), field("183.2"),
+                field("11"), field("6.4"), field("20.4"), com.justcal.app.ocr.LabelBasis.PER_100_G),
+            "raw", 0.98f, com.justcal.app.ocr.OcrMetrics(1, 2, 3, 6))
+        val handle = SavedStateHandle()
+        val vm = EditorViewModel(repository, handle, clock, null, 123, scan)
+        assertEquals("240", vm.state.value.draft.amount)
+        assertFalse(vm.claimInitialFocus())
+        assertEquals(0, repository.saves)
+        vm.change(FoodField.AMOUNT, "120")
+        val restored = EditorViewModel(repository, handle, clock, null, 123, scan)
+        assertEquals("120", restored.state.value.draft.amount)
+        restored.save(); restored.save(); advanceUntilIdle()
+        val saved = repository.rows.values.single()
+        assertEquals(12000L, saved.eatenGramsHundredths)
+        assertEquals(123L, saved.dayEpoch)
+        assertEquals(EntrySource.PACKAGE_SCAN, saved.source)
+    }
+
+    @Test fun editingPreservesSavedAmountWithoutAutofocus() = runTest(dispatcher) {
+        val repository = FakeDiary()
+        repository.rows[7] = DiaryEntry(7, "Food", NutritionPer100g(100, 0, 0, 0), 3750, 12, 99)
+        val vm = EditorViewModel(repository, SavedStateHandle(), clock, 7)
+        advanceUntilIdle()
+        assertEquals("37.5", vm.state.value.draft.amount)
+        assertFalse(vm.claimInitialFocus())
+    }
+
     private class FakeDiary : DiaryRepository {
         val rows = mutableMapOf<Long, DiaryEntry>()
         var fail = false

@@ -18,6 +18,7 @@ import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.NavDisplay
 import com.justcal.app.domain.Appearance
 import com.justcal.app.camera.*
+import com.justcal.app.ocr.PackageScanPrefill
 import com.justcal.app.ui.theme.JustCalTheme
 import java.time.LocalDate
 import kotlinx.serialization.Serializable
@@ -31,6 +32,7 @@ import kotlinx.serialization.Serializable
     val id: Long? = null,
     val dayEpoch: Long? = null,
     val origin: MainTab = MainTab.HOME,
+    val scan: PackageScanPrefill? = null,
 ) : NavKey
 
 @Composable
@@ -132,6 +134,13 @@ fun JustCalApp() {
                         entry<PhotoReview> { route ->
                             val viewModel = hiltViewModel<PhotoReviewViewModel>()
                             viewModel.attach(route.image)
+                            val packageState by viewModel.state.collectAsStateWithLifecycle()
+                            LaunchedEffect(packageState.prefill) {
+                                packageState.prefill?.let {
+                                    if (stack.lastOrNull() == route) stack[stack.lastIndex] =
+                                        FoodEditor(dayEpoch = route.image.request.dayEpoch, origin = tab, scan = it)
+                                }
+                            }
                             DisposableEffect(route) {
                                 onDispose {
                                     // A configuration change keeps the route; a pop/replacement releases it.
@@ -139,6 +148,12 @@ fun JustCalApp() {
                                 }
                             }
                             PhotoReviewScreen(route.image, viewModel.images,
+                                packageState = packageState,
+                                onRecognize = { viewModel.recognize(route.image) },
+                                onManual = {
+                                    if (stack.lastOrNull() == route) stack[stack.lastIndex] =
+                                        FoodEditor(dayEpoch = route.image.request.dayEpoch, origin = tab)
+                                },
                                 onReplace = {
                                     if (stack.lastOrNull() == route) {
                                         viewModel.images.discard(route.image.uri)
@@ -154,7 +169,7 @@ fun JustCalApp() {
                         }
                         entry<FoodEditor> { route ->
                             val viewModel = hiltViewModel<EditorViewModel, EditorViewModel.Factory> {
-                                it.create(route.id, route.dayEpoch)
+                                it.create(route.id, route.dayEpoch, route.scan)
                             }
                             val state by viewModel.state.collectAsStateWithLifecycle()
                             val close = {
@@ -163,7 +178,8 @@ fun JustCalApp() {
                             }
                             LaunchedEffect(state.completed) { if (state.completed) close() }
                             EditorScreen(state, route.id != null, viewModel::change, viewModel::save,
-                                viewModel::delete, close, viewModel::retryLoad)
+                                viewModel::delete, close, viewModel::retryLoad, scan = route.scan,
+                                claimInitialFocus = viewModel::claimInitialFocus)
                         }
                     },
                 )

@@ -16,8 +16,15 @@ coroutines = "1.11.0"
 serialization = "1.11.0"
 camerax = "1.6.2"
 litertlm = "0.17.1"
+# Pinned to the runtimes validated with the bundled OCR exports on Android 11.
+#noinspection NewerVersionAvailable
+onnxruntime = "1.23.2"
+#noinspection NewerVersionAvailable
+opencv = "4.12.0"
 
 [libraries]
+onnxruntime = { module = "com.microsoft.onnxruntime:onnxruntime-android", version.ref = "onnxruntime" }
+opencv = { module = "org.opencv:opencv", version.ref = "opencv" }
 litertlm = { module = "com.google.ai.edge.litertlm:litertlm-android", version.ref = "litertlm" }
 camera-core = { module = "androidx.camera:camera-core", version.ref = "camerax" }
 camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }

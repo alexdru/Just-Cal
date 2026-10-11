@@ -1,6 +1,6 @@
 # Licensing review
 
-Review date: 2026-10-07. Project license: GPL-3.0-or-later.
+Review date: 2026-10-11 (OCR additions); original inventory: 2026-10-07. Project license: GPL-3.0-or-later.
 
 ## Scope and findings
 
@@ -9,12 +9,13 @@ Reviewed the version catalog, app dependencies and packaging configuration, reso
 - AndroidX (including Compose, Material 3, CameraX, Navigation 3, Room and DataStore), Dagger/Hilt, Kotlin libraries and LiteRT-LM use Apache-2.0 upstream. No conflict with GPL v3 was identified for these declared runtime dependencies. Their original license, copyright and applicable NOTICE obligations remain.
 - LiteRT-LM v0.17.1: https://github.com/google-ai-edge/LiteRT-LM/blob/v0.17.1/LICENSE . The Android runtime includes native components; verify their bundled third-party notices as well as the top-level Apache license before redistribution.
 - JUnit 4 is a test dependency under EPL-1.0, not an application runtime dependency. Android test/tooling dependencies are not automatically covered by the application license.
-- Resources are local XML vector icons, theme values and Android resource files; no bundled font or AI model was found in the main resource inventory. Icon paths have no provenance/attribution metadata. Confirm whether any were copied or adapted from an external icon set and preserve its required notices. The launcher artwork's provenance should also be confirmed by the maintainer.
+- Package OCR bundles official PaddlePaddle PP-OCRv5 mobile detection/eslav recognition ONNX exports under Apache-2.0. The adapted Android geometry/postprocessing source retains its Apache headers. ONNX Runtime 1.23.2 is MIT; OpenCV 4.12.0 is Apache-2.0 with third-party notices. These permissive licenses allow inclusion in GPL-3.0-or-later with preserved attribution. Exact model provenance/hashes and native packaging are in [PACKAGE_OCR.md](PACKAGE_OCR.md). Full upstream license texts and the OpenCV Android SDK/ONNX Runtime notice collections are included in `app/src/main/assets/ocr/licenses`; root NOTICE and bundled OCR NOTICE identify the components. Notice collections include optional components, not all linked into this build. Intel IPP's binary-only, no-modification terms are incompatible with this GPL application: only ARM64 OpenCV is packaged, and a device test checks its actual native build configuration. ITT notification code uses its BSD-3-Clause option, not its GPL-2.0-only alternative.
+- Resources are local XML vector icons, theme values and Android resource files; no bundled font was found. Icon paths have no provenance/attribution metadata. Confirm whether any were copied or adapted from an external icon set and preserve its required notices. The launcher artwork's provenance should also be confirmed by the maintainer.
 - Gemma model weights are imported separately through SAF, not bundled. Gemma has separate terms: https://ai.google.dev/gemma/terms . GPL licensing of Just Cal does not grant rights to redistribute these weights. Check the exact model's terms and required notices before any future model distribution.
 
 ## Manual attention before binary distribution
 
-1. Produce and verify a complete resolved runtime dependency/native-component license inventory for the release APK/AAB. Retain all required copyright, license and upstream NOTICE texts; the current build excludes `/META-INF/{AL2.0,LGPL2.1}` and has no dedicated attribution viewer or generated notice bundle. A project NOTICE is not a replacement for those notices.
+1. Produce and verify a complete resolved runtime dependency/native-component license inventory for the release APK/AAB. Retain all required copyright, license and upstream NOTICE texts; the current build excludes `/META-INF/{AL2.0,LGPL2.1}` and has no complete app-wide attribution viewer/generated inventory. OCR has its own bundled license/notice collection; this does not complete the pre-existing dependency audit. A project NOTICE is not a replacement for those notices.
 2. Confirm icon/artwork provenance and any existing contributors' rights to license their work under GPL-3.0-or-later.
 3. Distribute the GPL text and corresponding source for each published binary, including its build scripts and the exact release revision, in accordance with GPL requirements. A moving repository default branch alone does not identify a binary's corresponding source.
 

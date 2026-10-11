@@ -9,7 +9,7 @@ data class FoodDraft(
     val protein: String = "",
     val fat: String = "",
     val carbs: String = "",
-    val amount: String = "100",
+    val amount: String = "",
 ) {
     fun value(field: FoodField): String = when (field) {
         FoodField.NAME -> name; FoodField.ENERGY -> energy; FoodField.PROTEIN -> protein

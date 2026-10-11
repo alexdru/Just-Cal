@@ -8,3 +8,13 @@ any later version. See LICENSE. Distributed without warranty.
 
 Third-party components and separately imported models retain their own
 licenses and attribution requirements; see docs/LICENSING.md.
+
+Package OCR includes PaddleOCR code and PP-OCRv5 mobile models.
+Copyright (c) 2016-2026 PaddlePaddle Authors. Apache License 2.0.
+Source: https://github.com/PaddlePaddle/PaddleOCR
+ONNX Runtime 1.23.2: Copyright (c) Microsoft Corporation. MIT License.
+OpenCV 4.12.0: OpenCV contributors. Apache License 2.0 and third-party notices.
+This software is based in part on the work of the Independent JPEG Group.
+OCR model revisions and hashes: docs/PACKAGE_OCR.md.
+Full runtime/model license and notice texts are distributed in
+app/src/main/assets/ocr/licenses and included in the APK.

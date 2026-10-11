@@ -8,7 +8,7 @@ Just Cal is licensed under GPL-3.0-or-later. Contributed code must remain compat
 
 Just Cal is a cutting-edge, privacy-first, offline-first Android calorie tracker focused on making food logging nearly effortless through on-device intelligence and carefully designed native Android UX.
 
-Its main future feature is fast calorie logging from photos of packaged prepared food using on-device AI.
+Package-label logging uses bundled offline OCR followed by editable confirmation. Visual meal estimation remains a future feature.
 
 The application should remain usable without an internet connection.
 
@@ -153,8 +153,10 @@ Avoid premature visual polish when implementing infrastructure or domain work.
 - Use Photo Picker for individual images, never broad media/storage permissions. Request camera access only for Take photo.
 - Treat external images as URIs; never resolve content URIs to filesystem paths. Keep owned temporary files private and release them when their flow ends.
 - Keep Bitmaps and camera resources out of ViewModels and saved navigation state. Decode off the main thread within the image budget.
-- Generic orientation/decoding belongs in the image boundary; model-specific preprocessing and inference belong in the future AI layer.
-- Use photo confirms the reviewed image; it must not invent nutrition or add a diary entry.
+- Generic orientation/decoding belongs in the image boundary; OCR preprocessing and inference belong in the `ocr` runtime adapter.
+- Package Use photo runs offline OCR and deterministic parsing, then opens the existing editable food editor with the original diary date. Saving is explicit. Meal Use photo only confirms the image.
+- Keep OCR runtime types out of UI/domain. Preserve raw OCR evidence, per-100-g versus serving basis, independent net mass and missing values; uncertain fields stay empty. Bundled OCR model revisions, dictionaries, hashes and notices are documented in `docs/PACKAGE_OCR.md`.
+- New manual entries start with an empty consumed amount and request empty-name focus once; edits preserve the saved amount and do not request initial focus.
 
 ## Persistence
 

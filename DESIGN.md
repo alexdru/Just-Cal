@@ -168,12 +168,12 @@ from both implementations and verification. See [the baseline audit](docs/DESIGN
 
 ### Product truth
 
-The production app currently supports manual entry, local diary/history/day detail,
-settings, camera/photo selection and photo review. Photo confirmation does not
-recognize nutrition or create an entry. Local AI Lab is an isolated developer tool.
-The future package-photo → recognition → verification → diary flow is the intended
-destination; plated meals remain secondary. There is no dedicated statistics screen
-in the inspected navigation graph. Do not design as though these future steps exist.
+The production app supports manual entry, local diary/history/day detail,
+settings, camera/photo selection and photo review. Package confirmation runs bundled
+offline OCR and deterministic nutrition parsing, then opens the existing editable
+food editor. Only explicit Save creates an entry. Scan meal confirms its photo
+without visual estimation. Local AI Lab remains isolated. There is no dedicated
+statistics screen in the inspected navigation graph.
 
 ### Composition before components
 
@@ -356,8 +356,10 @@ Food rows separate name, eaten weight, macro detail and trailing energy.
 **Implemented in Stage 2:** package review asks for the full, sharp nutrition
 label without glare; meal review asks for the complete meal. Pixel dimensions no
 longer occupy consumer hierarchy. Capability disclosure precedes confirmation;
-confirmation checks the photo and never creates a diary entry. Recognition and
-charts are not implemented.
+confirmation never creates a diary entry automatically. Package OCR opens editable
+confirmation in the existing editor, with quiet review guidance, model confidence,
+expandable raw text and an independently editable consumed amount. No new card or
+visual token is introduced. Charts and visual meal estimation are not implemented.
 
 ## Elevation & Depth
 
@@ -434,7 +436,7 @@ Define each applicable state: default, pressed, focus, selected, disabled,
 loading, empty, error, submitting and success. Busy actions prevent duplicate
 submission; errors identify the field/problem and recovery; entered drafts survive
 recoverable failure. Do not display missing macro goals as zero. Recognition output
-must remain untrusted and reviewable before any future diary integration.
+must remain untrusted and reviewable before explicit diary save.
 
 **Implemented for Settings:** brightness, palette and language use selectableGroup
 with Role.RadioButton rows and visible native radio indicators. Entire rows are
@@ -444,9 +446,10 @@ separate section after Save. Save feedback reserves a stable slot. Settings focu
 scrolling subtracts the measured floating-control overlay from available space.
 Local AI Lab backend selection is outside Stage 1 and remains unchanged.
 
-Add Food discloses automatic recognition is unavailable before scan selection,
-including the source-choice sheet. Package, meal and manual actions remain in
-the established order; manual logging remains directly accessible.
+Add Food explains offline package-label OCR before source selection; Scan meal
+still explains that automatic meal recognition is unavailable. Package, meal and
+manual actions remain in the established order; manual logging stays directly
+accessible, including as package-review fallback.
 
 ### Motion and performance
 
