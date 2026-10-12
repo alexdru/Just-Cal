@@ -23,7 +23,7 @@ import org.junit.runner.RunWith
 class CameraFlowTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
     private fun label(id: Int) = compose.activity.getString(id)
-    private fun click(id: Int) = compose.onNodeWithText(label(id)).performClick()
+    private fun click(id: Int) = compose.onNode(hasText(label(id)) and hasClickAction()).performClick()
 
     @Test fun historicalMealCaptureReviewRetakeAndRecreation() {
         val cache = java.io.File(compose.activity.cacheDir, "image-input")
@@ -36,7 +36,7 @@ class CameraFlowTest {
         val locale = compose.activity.resources.configuration.locales[0]
         val full = day.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale))
         val medium = day.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale))
-        compose.onNode(hasText(full, substring = true) and hasClickAction()).performClick()
+        compose.onNode(hasText(full, substring = true, ignoreCase = true) and hasClickAction()).performClick()
         click(R.string.open_day)
         compose.onNodeWithContentDescription(label(R.string.add_food)).performClick()
         click(R.string.scan_meal)
@@ -54,10 +54,24 @@ class CameraFlowTest {
                 compose.onAllNodes(hasContentDescription(label(R.string.capture_photo)) and isEnabled())
                     .fetchSemanticsNodes().isNotEmpty()
             }
+            val frame = compose.onNodeWithTag("camera_frame").fetchSemanticsNode().boundsInRoot
+            org.junit.Assert.assertEquals(0.75f, minOf(frame.width, frame.height) / maxOf(frame.width, frame.height), 0.01f)
+            val gallery = compose.onNodeWithContentDescription(label(R.string.choose_photo)).fetchSemanticsNode().boundsInRoot
+            org.junit.Assert.assertTrue("Gallery belongs below the viewfinder", gallery.center.y >= frame.bottom)
+            if (cycle == 0) {
+                compose.onNodeWithContentDescription(label(R.string.flash_off)).performClick()
+                compose.onNodeWithContentDescription(label(R.string.flash_on)).assertIsOn()
+            }
+            val beforeCapture = cache.listFiles().orEmpty().map { it.name }.toSet()
             compose.onNodeWithContentDescription(label(R.string.capture_photo)).performClick()
             compose.waitUntil(20000) {
                 compose.onAllNodes(hasText(label(R.string.use_photo)) and isEnabled()).fetchSemanticsNodes().isNotEmpty()
             }
+            val captured = cache.listFiles().orEmpty().first { it.name !in beforeCapture }
+            val bounds = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            android.graphics.BitmapFactory.decodeFile(captured.absolutePath, bounds)
+            org.junit.Assert.assertEquals("Captured JPEG must match the 4:3 preview frame",
+                0.75f, minOf(bounds.outWidth, bounds.outHeight).toFloat() / maxOf(bounds.outWidth, bounds.outHeight), 0.01f)
             compose.onNodeWithText(label(R.string.mode_meal)).assertExists()
             compose.onNodeWithText(medium).assertExists()
             if (cycle == 0) {

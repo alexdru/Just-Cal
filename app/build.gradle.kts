@@ -100,6 +100,7 @@ android {
             }
         }
     }
+    // Debug-signed minified validation build; no production credentials.
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -110,7 +111,15 @@ android {
             if (hasReleaseSigning) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+        create("ocrCheck") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".ocrcheck"
+            versionNameSuffix = "-ocrcheck"
+            isDebuggable = false
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += "release"
         }
     }
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }

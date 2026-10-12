@@ -421,6 +421,65 @@ binaries and generated models belong under ignored `/.ocr-work/`. Production
 models, dictionary/configuration, notices and curated verification must remain
 versioned so offline builds are reproducible.
 
+## Release JNI regression — 0.9.0 (2026-10-12)
+
+Version **0.9.0 (versionCode 13)** adds explicit R8 JNI preservation in
+`app/proguard-rules.pro`. ONNX Runtime's Android consumer archive does not
+provide its required keep rules. Its native bridge resolves Java types and
+constructors by fixed names, including `NodeInfo`/`ValueInfo` during session
+metadata inspection. The app therefore retains `ai.onnxruntime.**` and all
+members, following the upstream Android requirement. For OpenCV, the additional
+rule retains `org.opencv.core.CvException` and its public String constructor,
+which the native bridge resolves when throwing an exception. Android's default
+rules retain the native method names. The app does not broadly retain every
+OpenCV class.
+
+The supplied 0.8.2 report contains two `INTERRUPTED` attempts on OnePlus 12
+CPH2581 / Android 16, each with 3000 × 4000 upright pixels and no completed stage
+metrics or stack trace. An interrupted marker establishes that processing did not
+finish; it cannot establish a native crash, memory kill or the precise cause.
+A controlled minified build on OnePlus 7T reproduced a native SIGABRT when the
+JNI rules were excluded; the same 3000 × 4000 input completes with the rules.
+Android recorded APP CRASH NATIVE (reason 5, status 6). This establishes a
+release JNI regression, while the archive alone cannot prove that the original
+OnePlus 12 interruption had the same cause. The OnePlus 12 was not connected
+during the following verification.
+
+The local `ocrCheck` build type inherits release minification and resource
+shrinking, remains non-debuggable, and uses the Android debug signing key with
+application ID `com.justcal.app.ocrcheck` and version suffix `-ocrcheck`.
+It needs no production signing secrets and installs alongside debug/release
+without accessing their diaries. A self-contained `OcrJniProbe` instrumentation
+component lives only in `app/src/ocrCheck`; compiling it into the minified APK
+exercises JNI without a separate JUnit runner's shared-classpath assumptions.
+It is a local verification artifact, never a production release.
+
+Run the large synthetic RU/EN-label regression from the repository root:
+
+```sh
+./gradlew :app:assembleOcrCheck
+adb install -r app/build/outputs/apk/ocrCheck/app-ocrCheck.apk
+adb shell am instrument -w -e large true \
+  com.justcal.app.ocrcheck/com.justcal.app.OcrJniProbe
+```
+
+On OnePlus 7T HD1900 / Android 11, the actual minified pipeline returned
+`MINIFIED_OCR_OK`: 3000 × 4000 pixels, seven detected regions, initialization
+301 ms, detection 1536 ms, recognition 948 ms and total 3107 ms. The parser
+returned the expected synthetic nutrition values. These are one run's measured
+times on rendered text, not real-label accuracy results or a comprehensive
+performance benchmark. This verifies the minified synthetic OCR path on that
+device; production signing and OnePlus 12 execution remain separate checks.
+The final corrected minified build repeated the same test successfully: initialization
+292 ms, detection 1495 ms, recognition 955 ms, total 3060 ms. Full unit tests,
+`assembleDebug`, `assembleDebugAndroidTest`, `assembleOcrCheck`, `lintDebug` and
+`minifyReleaseWithR8` passed. Six device tests passed: five CameraX capture/retake
+cycles within the camera-flow test (flash, 4:3 preview/JPEG, rotation, recreation,
+cleanup), and five diagnostics persistence tests. The camera was visually checked
+on the OnePlus 7T. A manual camera-to-OCR pass on an image without readable text
+returned the retry UI rather than terminating the process.
+No model weights, recognition preprocessing or nutrition arithmetic changed.
+
 ## Limits
 
 Glare, perspective, tiny/curved text, mixed orientations and complex multi-column
@@ -431,5 +490,6 @@ ambiguous tables require manual per-100-g input. Missing units or unsupported
 layouts remain editable rather than guessed. Confidence/name heuristics need
 calibration beyond these three photographs. Selected-region recognition takes
 8–10 seconds on the verified fixtures; difficult-label fallback can take longer.
-Android 11 ARM64 is device-verified;
-OnePlus 12/Android 15+ and release-minified OCR need their own device validation.
+Android 11 ARM64 and the minified synthetic JNI regression are device-verified.
+OnePlus 12/Android 15+, minified real-package recognition and the production-signed
+release still need their own device validation.

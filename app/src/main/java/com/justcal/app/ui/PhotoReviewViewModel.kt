@@ -55,6 +55,9 @@ class PhotoReviewViewModel @Inject constructor(
             } catch (cancelled: CancellationException) {
                 attempt.failure(true, "RECOGNITION_CANCELLED")
                 throw cancelled
+            } catch (error: LinkageError) {
+                attempt.failure(false, "OCR_RUNTIME_LINKAGE_FAILURE:${error.javaClass.simpleName.take(80)}")
+                mutableState.value = PackageReviewState(failed = true)
             } catch (error: Exception) {
                 attempt.failure(false, "$stage:${error.javaClass.simpleName.take(80)}")
                 // Native exceptions may contain model/private paths; never send them to Logcat.

@@ -145,4 +145,8 @@
     <string name="capturing_photo">Taking photo…</string>
     <string name="expanded">Expanded</string>
     <string name="collapsed">Collapsed</string>
+    <string name="flash_on">Flash on</string>
+    <string name="flash_off">Flash off</string>
+    <string name="flash_unavailable">No flash</string>
+    <string name="camera_gallery">Gallery</string>
 </resources>

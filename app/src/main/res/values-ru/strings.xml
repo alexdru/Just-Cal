@@ -141,4 +141,8 @@
     <string name="capturing_photo">Съёмка…</string>
     <string name="expanded">Развёрнуто</string>
     <string name="collapsed">Свёрнуто</string>
+    <string name="flash_on">Вспышка вкл.</string>
+    <string name="flash_off">Вспышка выкл.</string>
+    <string name="flash_unavailable">Нет вспышки</string>
+    <string name="camera_gallery">Галерея</string>
 </resources>

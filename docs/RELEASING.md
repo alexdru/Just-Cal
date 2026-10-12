@@ -30,6 +30,39 @@ SDK package IDs and Gradle API levels are distinct. Check the live catalog befor
 
 APK/AAB builds include bundled offline OCR models and their license notices. The supported native ABI is `arm64-v8a` (including OnePlus 7T/12 and ARM64 emulators). Upstream OpenCV's x86 builds include Intel IPP under incompatible binary-only terms; restoring x86 support requires an OpenCV build without IPP and a fresh native license/16-KiB alignment check. Do not remove the ABI filter merely to run an x86 emulator. See [PACKAGE_OCR.md](PACKAGE_OCR.md).
 
+### Local minified OCR verification
+
+Release R8 configuration includes `app/proguard-rules.pro`. Preserve the
+upstream-required `ai.onnxruntime.**` classes and members: ONNX Runtime 1.23.2's
+AAR does not ship consumer keep rules, and its JNI bridge looks up Java types and
+constructors by fixed names. The OpenCV addition preserves only
+`org.opencv.core.CvException` and its public String constructor; Android's
+default native-method rules remain in effect. A successful R8 build alone does
+not verify native calls.
+
+The `ocrCheck` variant inherits release minification/resource shrinking and is
+non-debuggable. It uses the standard Android debug key, application ID suffix
+`.ocrcheck` and version suffix `-ocrcheck`, so it needs no production secrets
+and installs separately from release/debug. Its self-contained
+`app/src/ocrCheck` instrumentation probe is compiled into the same minified APK,
+avoiding a separate test runner's shared-classpath assumptions.
+
+```sh
+./gradlew :app:assembleOcrCheck
+adb install -r app/build/outputs/apk/ocrCheck/app-ocrCheck.apk
+adb shell am instrument -w -e large true \
+  com.justcal.app.ocrcheck/com.justcal.app.OcrJniProbe
+```
+
+Expect `MINIFIED_OCR_OK` only after actual bundled-model execution and the
+synthetic parser assertions pass. Run this on each target device when changing
+native runtimes or R8 rules. The variant is a local regression artifact signed
+with the debug key; never publish it as a production release or treat its
+certificate as release-signature verification. The 0.9.0 (code 13) OnePlus 7T
+result and remaining OnePlus 12 qualification are documented in
+[PACKAGE_OCR.md](PACKAGE_OCR.md). The rendered-label check does not replace
+real-package accuracy or normal diary-flow tests.
+
 ## One-time signing setup
 
 If you already created the release key, keep it; do not generate a replacement. For first-time setup only, create it outside the repository using a JDK's `keytool`:

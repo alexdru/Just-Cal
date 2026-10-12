@@ -71,9 +71,7 @@ fun ImageSourceScreen(
         topBar = {
             TopAppBar(title = { Text(stringResource(request.mode.label()), style = MaterialTheme.typography.titleLarge) },
                 navigationIcon = { IconButton(onClick = onBack) { CalIcon(R.drawable.ic_back, stringResource(R.string.close)) } },
-                actions = {
-                    IconButton(onClick = { choose() }, enabled = !state.busy) { CalIcon(R.drawable.ic_photo, stringResource(R.string.choose_photo)) }
-                })
+                )
         },
     ) { padding ->
         when {
@@ -83,7 +81,7 @@ fun ImageSourceScreen(
                 Text(stringResource(R.string.preparing_image), Modifier.padding(24.dp))
             }
             source == ImageSource.CAMERA && granted && !cameraError && !state.error -> {
-                CameraCapture(images, { onImage(it, ImageSource.CAMERA) }, { cameraError = true },
+                CameraCapture(images, { onImage(it, ImageSource.CAMERA) }, { cameraError = true }, { choose() },
                     Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()).windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)))
             }
             else -> Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)

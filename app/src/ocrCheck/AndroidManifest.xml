@@ -1,0 +1,7 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- OcrJniProbe is compiled only for ocrCheck and is not indexed in the debug variant. -->
+    <!--suppress AndroidDomInspection -->
+    <instrumentation android:name="com.justcal.app.OcrJniProbe"
+        android:targetPackage="com.justcal.app.ocrcheck"
+        android:label="Local minified OCR verification" />
+</manifest>

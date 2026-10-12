@@ -53,10 +53,18 @@ abstract class DiagnosticDatabase : RoomDatabase() { abstract fun scans(): Diagn
         scope.launch { for (operation in operations) runCatching { operation() } }
         operations.trySend {
             database.withTransaction {
+                val exits = runCatching {
+                    context.getSystemService(android.app.ActivityManager::class.java)
+                        .getHistoricalProcessExitReasons(context.packageName, 0, 16)
+                }.getOrDefault(emptyList())
                 dao.observe().first().forEach { row ->
                     val scan = Json.decodeFromString<DiagnosticScan>(row.payload)
-                    if (scan.status == "RUNNING") put(scan.copy(status = "INTERRUPTED",
-                        errors = listOf("PROCESS_INTERRUPTED_TOTAL_UNAVAILABLE")))
+                    if (scan.status == "RUNNING") {
+                        val exit = exits.filter { it.timestamp >= scan.timestampMillis }.minByOrNull { it.timestamp }
+                        val reason = exit?.let { "PROCESS_EXIT_REASON:${it.reason}" }
+                        put(scan.copy(status = "INTERRUPTED",
+                            errors = listOfNotNull("PROCESS_INTERRUPTED_TOTAL_UNAVAILABLE", reason)))
+                    }
                 }
                 prune()
             }
