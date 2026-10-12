@@ -130,6 +130,25 @@ class PhotoPickerFlowTest {
         }
     }
 
+    @Test fun cancellingPickerReturnsDirectlyForBothScanModes() {
+        listOf(R.string.scan_package, R.string.scan_meal).forEach { mode ->
+            compose.onNodeWithContentDescription(label(R.string.add_food)).performClick()
+            click(mode)
+            click(R.string.choose_photo)
+            compose.waitUntil(15000) {
+                automation.rootInActiveWindow?.packageName?.toString()?.let { it != compose.activity.packageName } == true
+            }
+            check(InstrumentationRegistry.getInstrumentation().uiAutomation.performGlobalAction(
+                    android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK))
+            compose.waitUntil(10000) {
+                compose.onAllNodesWithContentDescription(label(R.string.add_food))
+                    .fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()
+            }
+            compose.onAllNodesWithText(label(R.string.choose_photo)).assertCountEquals(0)
+            compose.onAllNodesWithText(label(R.string.cancel)).assertCountEquals(0)
+        }
+    }
+
     @Test fun systemPickerReviewReselectAndCancel() {
         val cache = java.io.File(compose.activity.cacheDir, "image-input")
         val previousFiles = cache.listFiles().orEmpty().map { it.name }.toSet()

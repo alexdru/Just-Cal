@@ -471,9 +471,17 @@ Camera preview is a fitted, sharp-cornered 4:3 frame matching the actual CameraX
 capture crop. The surrounding edge-to-edge canvas uses the semantic surface color;
 camera pixels and the contrasting shutter retain the media-control exception.
 A transparent bottom host places flash and gallery beside the 88 dp shutter, with
-48 dp native tonal icon targets, visible labels and navigation/cutout clearance.
-Unsupported flash is explicitly disabled. Controls reserve their measured height
-so they do not hide packaging text; no gallery action remains in the top app bar.
+48 dp native tonal icon targets and navigation/cutout clearance. Controls have no
+visible captions; localized accessibility names and flash selection state remain.
+Unsupported flash is explicitly disabled. The control row is vertically centered
+in the entire space below the 4:3 frame, excluding system navigation insets. All
+three button centers share one horizontal axis. Measured control height adapts
+the frame for short windows. Cancelling a directly opened system Photo Picker
+returns to the originating diary screen without an extra source page; cancelling
+the picker launched from the camera restores the camera. No gallery action remains in the top app bar. Tapping the viewfinder shows
+a brief contrasting focus ring at the selected point; localized feedback exposes
+focusing, acquired and unconfirmed states. The feedback never certifies label
+readability. A center-focus accessibility action is also available.
 
 Define each applicable state: default, pressed, focus, selected, disabled,
 loading, empty, error, submitting and success. Busy actions prevent duplicate

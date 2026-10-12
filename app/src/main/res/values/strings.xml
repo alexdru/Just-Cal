@@ -148,5 +148,8 @@
     <string name="flash_on">Flash on</string>
     <string name="flash_off">Flash off</string>
     <string name="flash_unavailable">No flash</string>
-    <string name="camera_gallery">Gallery</string>
+    <string name="camera_focus_here">Focus here</string>
+    <string name="camera_focusing">Focusing…</string>
+    <string name="camera_focused">Focus acquired</string>
+    <string name="camera_focus_unconfirmed">Focus could not be confirmed</string>
 </resources>

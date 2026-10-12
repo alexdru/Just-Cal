@@ -144,5 +144,8 @@
     <string name="flash_on">Вспышка вкл.</string>
     <string name="flash_off">Вспышка выкл.</string>
     <string name="flash_unavailable">Нет вспышки</string>
-    <string name="camera_gallery">Галерея</string>
+    <string name="camera_focus_here">Сфокусироваться здесь</string>
+    <string name="camera_focusing">Фокусировка…</string>
+    <string name="camera_focused">Фокус установлен</string>
+    <string name="camera_focus_unconfirmed">Не удалось подтвердить фокус</string>
 </resources>

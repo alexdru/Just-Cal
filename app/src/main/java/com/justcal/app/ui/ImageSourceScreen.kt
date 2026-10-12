@@ -34,7 +34,8 @@ import com.justcal.app.ui.theme.CalSpacing
 @Composable
 fun ImageSourceScreen(
     request: ScanRequest, source: ImageSource, state: ImageInputState, images: ImagePreprocessor,
-    onImage: (Uri, ImageSource) -> Unit, onRetry: () -> Unit, onBack: () -> Unit,
+    onImage: (Uri, ImageSource) -> Unit, onRetry: () -> Unit,
+    onPickerCancelled: (() -> Unit)? = null, onBack: () -> Unit,
 ) {
     val context = LocalContext.current
     val activity = LocalActivity.current
@@ -47,6 +48,7 @@ fun ImageSourceScreen(
     }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) onImage(uri, ImageSource.PHOTO_PICKER)
+        else if (source == ImageSource.PHOTO_PICKER) onPickerCancelled?.invoke()
     }
     fun choose() = picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     fun ask() {
@@ -83,6 +85,10 @@ fun ImageSourceScreen(
             source == ImageSource.CAMERA && granted && !cameraError && !state.error -> {
                 CameraCapture(images, { onImage(it, ImageSource.CAMERA) }, { cameraError = true }, { choose() },
                     Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()).windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)))
+            }
+            source == ImageSource.PHOTO_PICKER && !state.error && onPickerCancelled != null -> {
+                // The system picker owns the interaction; cancellation closes this route.
+                Box(Modifier.fillMaxSize())
             }
             else -> Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)
                 .calContent(CalLayout.readingWidth).verticalScroll(rememberScrollState()).padding(CalSpacing.page), verticalArrangement = Arrangement.spacedBy(16.dp)) {

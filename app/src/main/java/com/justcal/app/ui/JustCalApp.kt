@@ -141,6 +141,7 @@ fun JustCalApp() {
                             ImageSourceScreen(route.request, route.source, state, viewModel.images,
                                 onImage = { uri, source -> viewModel.prepare(uri, source, route.request) },
                                 onRetry = viewModel::retry,
+                                onPickerCancelled = { if (stack.lastOrNull() == route) stack.removeLastOrNull() },
                                 onBack = { if (stack.lastOrNull() == route) stack.removeLastOrNull() })
                         }
                         entry<PhotoReview> { route ->

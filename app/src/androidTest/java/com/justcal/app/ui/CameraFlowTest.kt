@@ -58,7 +58,30 @@ class CameraFlowTest {
             org.junit.Assert.assertEquals(0.75f, minOf(frame.width, frame.height) / maxOf(frame.width, frame.height), 0.01f)
             val gallery = compose.onNodeWithContentDescription(label(R.string.choose_photo)).fetchSemanticsNode().boundsInRoot
             org.junit.Assert.assertTrue("Gallery belongs below the viewfinder", gallery.center.y >= frame.bottom)
+            val shutter = compose.onNodeWithContentDescription(label(R.string.capture_photo)).fetchSemanticsNode().boundsInRoot
+            org.junit.Assert.assertEquals("Buttons share a horizontal center line", shutter.center.y, gallery.center.y, 1f)
+            val controls = compose.onNodeWithTag("camera_controls").fetchSemanticsNode().boundsInRoot
+            org.junit.Assert.assertTrue("Controls have breathing room above and below",
+                shutter.top > controls.top && shutter.bottom < controls.bottom)
+            val tap = androidx.compose.ui.geometry.Offset(frame.width * .25f, frame.height * .4f)
+            compose.onNodeWithTag("camera_frame").performTouchInput { click(tap) }
+            compose.waitUntil(1000) { compose.onAllNodesWithTag("camera_focus_ring").fetchSemanticsNodes().isNotEmpty() }
+            val focus = compose.onNodeWithTag("camera_focus_ring").fetchSemanticsNode().boundsInRoot
+            org.junit.Assert.assertEquals("Focus indicator follows tap x", frame.left + tap.x, focus.center.x, 2f)
+            org.junit.Assert.assertEquals("Focus indicator follows tap y", frame.top + tap.y, focus.center.y, 2f)
+            compose.onAllNodesWithText(label(R.string.flash_off)).assertCountEquals(0)
             if (cycle == 0) {
+                compose.onNodeWithContentDescription(label(R.string.choose_photo)).performClick()
+                compose.waitUntil(15000) {
+                    InstrumentationRegistry.getInstrumentation().uiAutomation.rootInActiveWindow
+                        ?.packageName?.toString()?.let { it != compose.activity.packageName } == true
+                }
+                check(InstrumentationRegistry.getInstrumentation().uiAutomation.performGlobalAction(
+                    android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK))
+                compose.waitUntil(15000) {
+                    compose.onAllNodes(hasContentDescription(label(R.string.capture_photo)) and isEnabled())
+                        .fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()
+                }
                 compose.onNodeWithContentDescription(label(R.string.flash_off)).performClick()
                 compose.onNodeWithContentDescription(label(R.string.flash_on)).assertIsOn()
             }
