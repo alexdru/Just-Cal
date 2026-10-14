@@ -1,10 +1,32 @@
 package com.justcal.app.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.*
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
+import androidx.compose.material3.MaterialTheme
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.rememberLifecycleOwner
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
+import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
+import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
+import com.justcal.app.ui.theme.LegacyCalTypography
+import com.justcal.app.ui.theme.LocalMotionEnabled
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.core.tween
 import com.justcal.app.ui.theme.CalMotion
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -12,11 +34,13 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.NavDisplay
 import com.justcal.app.domain.Appearance
+import com.justcal.app.domain.ColorStyle
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
 import com.justcal.app.camera.*
 import com.justcal.app.ocr.PackageScanPrefill
 import com.justcal.app.ui.theme.JustCalTheme
@@ -37,30 +61,75 @@ import kotlinx.serialization.Serializable
     val scan: PackageScanPrefill? = null,
 ) : NavKey
 
+private data class ThemeState(val loading: Boolean, val appearance: Appearance, val colorStyle: ColorStyle)
+private fun SettingsState.themeState() = ThemeState(loading, draft.appearance, draft.colorStyle)
+
 @Composable
-fun JustCalApp() {
+fun JustCalApp(splashVisible: Boolean = false) {
     val settingsViewModel = hiltViewModel<SettingsViewModel>()
-    val appearance by settingsViewModel.appearance.collectAsStateWithLifecycle()
-    val colorStyle by settingsViewModel.colorStyle.collectAsStateWithLifecycle()
+    // This is an initial snapshot only; subsequent updates are observed below.
+    val initialTheme = remember(settingsViewModel) { settingsViewModel.state.value.themeState() }
+    // Saving/profile emissions belong to Settings, not every Navigation 3 entry.
+    val themeState by remember(settingsViewModel) {
+        settingsViewModel.state.map { it.themeState() }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(initialValue = initialTheme)
+    // Mount the first palette only after preferences load; no wrong-color startup reveal.
+    if (themeState.loading) return
+    val appearance = themeState.appearance
+    val colorStyle = themeState.colorStyle
     val dark = when (appearance) {
         Appearance.SYSTEM -> isSystemInDarkTheme()
         Appearance.LIGHT -> false
         Appearance.DARK -> true
     }
-    var selected by rememberSaveable { mutableStateOf(MainTab.HOME) }
+    val pager = rememberPagerState { MainTab.entries.size }
+    var warmRootTabs by remember { mutableStateOf(false) }
+    LaunchedEffect(splashVisible) {
+        if (!splashVisible) {
+            withFrameNanos { }
+            withFrameNanos { }
+            warmRootTabs = true
+        }
+    }
+    val selected by remember { derivedStateOf { MainTab.entries[pager.settledPage] } }
+    val scope = rememberCoroutineScope()
+    val focus = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    var tabJob by remember { mutableStateOf<Job?>(null) }
+    var requestedTab by remember { mutableStateOf<MainTab?>(null) }
+    var barHeight by remember { mutableIntStateOf(0) }
+    val barDp = with(LocalDensity.current) { barHeight.toDp() }
+    val reserveBar: @Composable () -> Unit = { Spacer(Modifier.fillMaxWidth().height(barDp)) }
     val stacks = MainTab.entries.associateWith { tab ->
         key(tab) { rememberNavBackStack(tab) }
     }
-    val selectTab: (MainTab) -> Unit = { selected = it }
+    val animations = com.justcal.app.ui.theme.rememberMotionEnabled()
+    val selectTab: (MainTab) -> Unit = { tab ->
+        settingsViewModel.flushEdits()
+        focus.clearFocus()
+        keyboard?.hide()
+        tabJob?.cancel()
+        requestedTab = tab
+        val job = scope.launch {
+            if (animations) pager.animateScrollToPage(tab.ordinal, animationSpec = CalMotion.tab())
+            else pager.scrollToPage(tab.ordinal)
+        }
+        tabJob = job
+        job.invokeOnCompletion { if (tabJob === job) requestedTab = null }
+    }
+    LaunchedEffect(selected) {
+        settingsViewModel.flushEdits()
+        focus.clearFocus()
+        keyboard?.hide()
+    }
     var launcherDay by rememberSaveable { mutableStateOf<Long?>(null) }
     var launcherMode by rememberSaveable { mutableStateOf<ScanMode?>(null) }
 
-    JustCalTheme(darkTheme = dark, colorStyle = colorStyle) {
+    JustCalTheme(darkTheme = dark, colorStyle = colorStyle, splashVisible = splashVisible) {
+        val messages = remember { androidx.compose.material3.SnackbarHostState() }
         // Decorate every stack even while inactive, retaining its entry state and ViewModels.
         val entries = stacks.mapValues { (tab, stack) ->
             key(tab) {
-                // One date-carrying Add Food action, shared by roots and Day Detail.
-                val openAddFood: (Long) -> Unit = { day -> launcherMode = null; launcherDay = day }
                 rememberDecoratedNavEntries(
                     backStack = stack,
                     entryDecorators = listOf(
@@ -69,17 +138,17 @@ fun JustCalApp() {
                     ),
                     entryProvider = entryProvider {
                         entry<MainTab> { root ->
-                            // Freeze the intended diary date when the launcher opens.
-                            val addFood = dropUnlessResumed {
-                                if (stack.lastOrNull() == root) {
-                                    openAddFood(LocalDate.now().toEpochDay())
-                                }
-                            }
                             MainScreen(
-                                root, settingsViewModel, onSelect = selectTab, onAdd = addFood,
+                                root, settingsViewModel, bar = reserveBar,
                                 onLab = { if (stack.lastOrNull() == root) stack.add(LocalAiLab) },
-                                onBackup = { if (stack.lastOrNull() == root) stack.add(DataBackup) },
-                                onDiagnostics = { if (stack.lastOrNull() == root) stack.add(OcrDiagnostics) },
+                                onBackup = { if (stack.lastOrNull() == root) {
+                                    settingsViewModel.flushEdits()
+                                    stack.add(DataBackup)
+                                } },
+                                onDiagnostics = { if (stack.lastOrNull() == root) {
+                                    settingsViewModel.flushEdits()
+                                    stack.add(OcrDiagnostics)
+                                } },
                                 onEdit = { id ->
                                     if (stack.lastOrNull() == root) stack.add(FoodEditor(id = id, origin = tab))
                                 },
@@ -98,14 +167,7 @@ fun JustCalApp() {
                                 },
                                 onGoal = viewModel::setGoal, onRetry = viewModel::retry,
                                 onBack = { if (stack.lastOrNull() == route) stack.removeLastOrNull() },
-                                bottomBar = {
-                                    FloatingNavigation(tab, selectTab,
-                                        onAdd = dropUnlessResumed {
-                                            if (stack.lastOrNull() == route) {
-                                                openAddFood(route.dayEpoch)
-                                            }
-                                        })
-                                })
+                                bottomBar = reserveBar)
                         }
                         entry<DataBackup> { route ->
                             DiaryBackupScreen(hiltViewModel<DiaryBackupViewModel>(),
@@ -120,12 +182,15 @@ fun JustCalApp() {
                             DisposableEffect(route) {
                                 onDispose { if (route !in stack) viewModel.closeLab() }
                             }
+                            // Keep the excluded Lab's existing typography/motion without touching its implementation.
+                            MaterialTheme(typography = LegacyCalTypography, motionScheme = CalMotion.standard) {
                             LocalAiLabScreen(viewModel, onBack = {
                                 if (stack.lastOrNull() == route) {
                                     viewModel.closeLab()
                                     stack.removeLastOrNull()
                                 }
                             })
+                            }
                         }
                         entry<ImageAcquisition> { route ->
                             val viewModel = hiltViewModel<ImageInputViewModel>()
@@ -189,34 +254,109 @@ fun JustCalApp() {
                                 if ((stack.lastOrNull() == route) && (stack.size > 1)) stack.removeLastOrNull()
                                 Unit
                             }
-                            LaunchedEffect(state.completed) { if (state.completed) close() }
+                            var removed by remember { mutableStateOf(false) }
+                            val completeMessage = androidx.compose.ui.res.stringResource(
+                                if (removed) com.justcal.app.R.string.food_deleted else com.justcal.app.R.string.food_saved,
+                            )
+                            val haptic = LocalHapticFeedback.current
+                            LaunchedEffect(state.completed) {
+                                if (state.completed) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                                    close()
+                                    scope.launch { messages.showSnackbar(completeMessage) }
+                                }
+                            }
                             EditorScreen(state, route.id != null, viewModel::change, viewModel::save,
-                                viewModel::delete, close, viewModel::retryLoad, scan = route.scan,
+                                { removed = true; viewModel.delete() }, close, viewModel::retryLoad, scan = route.scan,
                                 claimInitialFocus = viewModel::claimInitialFocus)
                         }
                     },
                 )
             }
         }
-        // Exit through Home; inactive destination stacks remain intact.
-        val visibleEntries = if (selected == MainTab.HOME) entries.getValue(MainTab.HOME)
-            else entries.getValue(MainTab.HOME) + entries.getValue(selected)
-        NavDisplay(
-            entries = visibleEntries,
-            onBack = {
-                val stack = stacks.getValue(selected)
-                if (stack.size > 1) stack.removeLastOrNull() else selected = MainTab.HOME
-            },
-            transitionSpec = {
-                fadeIn(tween(CalMotion.navigationDurationMillis)) togetherWith
-                    fadeOut(tween(CalMotion.navigationDurationMillis))
-            },
-            popTransitionSpec = {
-                fadeIn(tween(CalMotion.navigationDurationMillis)) togetherWith
-                    fadeOut(tween(CalMotion.navigationDurationMillis))
-            },
-            // Keep Navigation 3's platform predictive-back transition.
-        )
+        val current = stacks.getValue(selected).lastOrNull()
+        val showNavigation = current is MainTab || current is DiaryDate
+        // A root handler has no role in a child gesture. Remove it entirely so a
+        // cancelled child preview cannot leave a stale root handler in the event chain.
+        if (current is MainTab) {
+            val rootBack = rememberNavigationEventState(currentInfo = NavigationEventInfo.None)
+            NavigationBackHandler(
+                state = rootBack,
+                isBackEnabled = (selected != MainTab.HOME || requestedTab?.let { it != MainTab.HOME } == true || pager.targetPage != 0) &&
+                    launcherDay == null && WindowInsets.ime.getBottom(LocalDensity.current) == 0,
+                onBackCompleted = { selectTab(MainTab.HOME) },
+            )
+        }
+        Box(Modifier.fillMaxSize()) {
+            HorizontalPager(
+                state = pager,
+                modifier = Modifier.fillMaxSize().testTag("main_pager"),
+                // Keep the three small root trees warm after first display. Keeping
+                // only one neighbor composed mounts Settings during Home -> Diary
+                // and repeats that expensive work on every return to Home.
+                beyondViewportPageCount = if (warmRootTabs) MainTab.entries.lastIndex else 0,
+                key = { MainTab.entries[it] },
+                userScrollEnabled = current is MainTab && WindowInsets.ime.getBottom(LocalDensity.current) == 0 && launcherDay == null,
+                overscrollEffect = null,
+                flingBehavior = PagerDefaults.flingBehavior(pager, snapAnimationSpec = CalMotion.tab()),
+            ) { index ->
+                val tab = MainTab.entries[index]
+                val active = pager.settledPage == index
+                val lifecycle = rememberLifecycleOwner(
+                    maxLifecycle = if (active) Lifecycle.State.RESUMED else Lifecycle.State.STARTED,
+                )
+                val dispatcher = rememberNavigationEventDispatcherOwner(enabled = active)
+                CompositionLocalProvider(
+                    LocalLifecycleOwner provides lifecycle,
+                    LocalNavigationEventDispatcherOwner provides dispatcher,
+                ) {
+                    val noMotion = !LocalMotionEnabled.current
+                    NavDisplay(
+                        modifier = Modifier.fillMaxSize().then(
+                            if (active) Modifier else Modifier.clearAndSetSemantics {},
+                        ),
+                        entries = entries.getValue(tab),
+                        onBack = {
+                            val stack = stacks.getValue(tab)
+                            if (stack.size > 1) stack.removeLastOrNull()
+                            else if (tab != MainTab.HOME) selectTab(MainTab.HOME)
+                        },
+                        transitionSpec = {
+                            if (noMotion) androidx.compose.animation.EnterTransition.None togetherWith androidx.compose.animation.ExitTransition.None
+                            // Cancellation leaves the preview scene as the animation target.
+                            // Infer direction from scene depth, not the now-idle gesture flag.
+                            else CalMotion.destination(targetState.previousEntries.size >= initialState.previousEntries.size)
+                        },
+                        popTransitionSpec = {
+                            if (noMotion) androidx.compose.animation.EnterTransition.None togetherWith androidx.compose.animation.ExitTransition.None
+                            else CalMotion.destination(false)
+                        },
+                        predictivePopTransitionSpec = {
+                            if (noMotion) androidx.compose.animation.EnterTransition.None togetherWith androidx.compose.animation.ExitTransition.None
+                            else CalMotion.destination(false)
+                        },
+                    )
+                }
+            }
+            androidx.compose.material3.SnackbarHost(messages,
+                Modifier.align(Alignment.BottomCenter).padding(horizontal = 24.dp)
+                    .padding(bottom = if (showNavigation) barDp else 24.dp))
+            if (showNavigation) Box(
+                Modifier.align(Alignment.BottomCenter),
+            ) {
+                Box(Modifier.onSizeChanged { barHeight = it.height }) {
+                FloatingNavigation(
+                    selected, selectTab,
+                    onAdd = if ((requestedTab ?: MainTab.entries[pager.targetPage]) == MainTab.SETTINGS) null else ({
+                        launcherMode = null
+                        launcherDay = (current as? DiaryDate)?.dayEpoch ?: LocalDate.now().toEpochDay()
+                    }),
+                    position = { pager.currentPage + pager.currentPageOffsetFraction },
+                    launcherOpen = launcherDay != null,
+                )
+                }
+            }
+        }
         launcherDay?.let { day ->
             AddFoodLauncher(day, launcherMode,
                 onDismiss = { launcherDay = null; launcherMode = null },
@@ -236,12 +376,9 @@ fun JustCalApp() {
 @Composable
 private fun MainScreen(
     tab: MainTab, settingsViewModel: SettingsViewModel,
-    onSelect: (MainTab) -> Unit, onAdd: () -> Unit, onLab: () -> Unit,
+    bar: @Composable () -> Unit, onLab: () -> Unit,
     onBackup: () -> Unit, onDiagnostics: () -> Unit, onEdit: (Long) -> Unit, onDay: (Long) -> Unit,
 ) {
-    val bar: @Composable () -> Unit = {
-        FloatingNavigation(tab, onSelect, onAdd = onAdd.takeUnless { tab == MainTab.SETTINGS })
-    }
     when (tab) {
         MainTab.HOME -> {
             val viewModel = hiltViewModel<TodayViewModel>()
@@ -255,9 +392,11 @@ private fun MainScreen(
             HistoryScreen(state, onDay, viewModel::retry, bottomBar = bar)
         }
         MainTab.SETTINGS -> {
-            val state by settingsViewModel.state.collectAsStateWithLifecycle()
+            // Deliver edit echoes synchronously to Compose state, including cursor updates
+            // between hardware key events within one frame.
+            val state by settingsViewModel.state.collectAsStateWithLifecycle(context = kotlinx.coroutines.Dispatchers.Main.immediate)
             SettingsScreen(state, settingsViewModel::change,
-                settingsViewModel::save, settingsViewModel::retry, onLab = onLab, bottomBar = bar,
+                settingsViewModel::retry, onLab = onLab, bottomBar = bar,
                 onBackup = onBackup, onDiagnostics = onDiagnostics)
         }
     }

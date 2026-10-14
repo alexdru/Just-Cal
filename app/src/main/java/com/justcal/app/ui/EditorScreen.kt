@@ -1,5 +1,7 @@
 package com.justcal.app.ui
 
+import androidx.compose.animation.animateContentSize
+import com.justcal.app.ui.theme.CalMotion
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
@@ -9,6 +11,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import com.justcal.app.ui.CalButton as Button
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -75,6 +78,7 @@ fun EditorScreen(
         // IME Done / Back restores the chrome; keep the editing viewport unobstructed meanwhile.
         val compactIme = imeBottom > 0.dp && (maxHeight - imeBottom < 280.dp)
         Scaffold(
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
             contentWindowInsets = WindowInsets.safeDrawing,
             topBar = {
                 if (!compactIme) TopAppBar(
@@ -176,11 +180,11 @@ fun EditorScreen(
                             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         input(FoodField.AMOUNT, Modifier.fillMaxWidth())
                         Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = MaterialTheme.shapes.large) {
-                            Column(Modifier.fillMaxWidth().padding(CalSpacing.dense), verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                            Column(Modifier.fillMaxWidth().padding(CalSpacing.dense).animateContentSize(CalMotion.size()), verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                                 Text(stringResource(R.string.portion_preview), style = MaterialTheme.typography.labelLarge)
                                 state.preview?.let { nutrition ->
-                                    Text(stringResource(R.string.nutrition_with_unit, nutritionText(nutrition.energyKcal, 0), stringResource(R.string.kcal)),
-                                        style = MaterialTheme.typography.headlineLarge.copy(fontFeatureSettings = "tnum"), color = MaterialTheme.colorScheme.primary)
+                                    AnimatedNutrition(stringResource(R.string.nutrition_with_unit, nutritionText(nutrition.energyKcal, 0), stringResource(R.string.kcal)),
+                                        style = MaterialTheme.typography.headlineLarge.copy(fontFeatureSettings = "tnum", color = MaterialTheme.colorScheme.primary))
                                     MacroDetail(nutrition)
                                 } ?: Text(stringResource(R.string.preview_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }

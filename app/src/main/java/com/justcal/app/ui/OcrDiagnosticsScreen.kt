@@ -5,7 +5,8 @@ import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import com.justcal.app.ui.theme.CalMotion
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.selection.toggleable
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import com.justcal.app.ui.CalButton as Button
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -70,7 +72,6 @@ internal fun OcrDiagnosticsContent(
 ) {
     val context = LocalContext.current
     val locale = LocalConfiguration.current.locales[0]
-    val contentLabel = stringResource(R.string.diag_include_text)
     val failuresLabel = stringResource(R.string.diag_failures)
     val pager = rememberPagerState { 5 }
     val coroutineScope = rememberCoroutineScope()
@@ -82,7 +83,6 @@ internal fun OcrDiagnosticsContent(
     var clear by rememberSaveable { mutableStateOf(false) }
     var exportMode by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingMode by rememberSaveable { mutableStateOf<String?>(null) }
-    var includeRaw by rememberSaveable { mutableStateOf(false) }
     var photos by remember { mutableStateOf(emptyList<android.net.Uri>()) }
     val photoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(5)) { photos = it }
     LaunchedEffect(scans) { selected = selected.intersect(scans.map { it.id }.toSet()) }
@@ -121,11 +121,12 @@ internal fun OcrDiagnosticsContent(
     BoxWithConstraints {
         val compactIme = imeBottom > 0.dp && maxHeight - imeBottom < 280.dp
         Scaffold(
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
             topBar = { CalTopBar({ Text(stringResource(R.string.ocr_diagnostics)) }, onBack, CalLayout.readingWidth) },
             bottomBar = {
                 if (!compactIme) DiagnosticReportActions(selected.size, busy, error, saved,
-                    onSave = { includeRaw = false; photos = emptyList(); exportMode = "save" },
-                    onShare = { includeRaw = false; photos = emptyList(); exportMode = "share" })
+                    onSave = { photos = emptyList(); exportMode = "save" },
+                    onShare = { photos = emptyList(); exportMode = "share" })
             },
             contentWindowInsets = WindowInsets.safeDrawing,
         ) { padding ->
@@ -149,7 +150,7 @@ internal fun OcrDiagnosticsContent(
                     SecondaryScrollableTabRow(selectedTabIndex = pager.currentPage, edgePadding = CalSpacing.medium) {
                         listOf(R.string.diag_overview, R.string.diag_history, R.string.diag_performance,
                             R.string.diag_errors, R.string.diag_brands).forEachIndexed { index, label ->
-                            Tab(selected = pager.currentPage == index, onClick = { coroutineScope.launch { pager.animateScrollToPage(index) } }, text = { Text(stringResource(label)) })
+                            Tab(selected = pager.currentPage == index, onClick = { coroutineScope.launch { pager.animateScrollToPage(index, animationSpec = CalMotion.spatial()) } }, text = { Text(stringResource(label)) })
                         }
                     }
                     HorizontalPager(state = pager, modifier = Modifier.weight(1f).testTag("diagnostics_pager"), key = { it }) { tab ->
@@ -217,15 +218,21 @@ internal fun OcrDiagnosticsContent(
                                 }
                                 if (filtered.isEmpty()) item { Text(stringResource(R.string.diag_empty)) }
                                 items(filtered, key = { it.id }) { scan ->
-                                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                    Row(Modifier.fillMaxWidth().animateItem(
+                                        fadeInSpec = CalMotion.effects(), placementSpec = CalMotion.spatial(), fadeOutSpec = CalMotion.effects(),
+                                    ), verticalAlignment = Alignment.CenterVertically) {
                                         val scanLabel = stringResource(R.string.diag_scan_details) + ": " +
                                             DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale).format(Date(scan.timestampMillis))
                                         Checkbox(scan.id in selected, { selected = if (it) selected + scan.id else selected - scan.id },
                                             modifier = Modifier.semantics { contentDescription = scanLabel })
-                                        Column(Modifier.weight(1f).clickable { opened = scan.id }.padding(vertical = CalSpacing.related),
-                                            verticalArrangement = Arrangement.spacedBy(CalSpacing.micro)) {
-                                            Text(scan.productName ?: scan.brand ?: DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale).format(Date(scan.timestampMillis)),
-                                                style = MaterialTheme.typography.titleMedium)
+                                        ListItem(
+                                            onClick = { opened = scan.id },
+                                            modifier = Modifier.weight(1f),
+                                            shapes = ListItemDefaults.shapes(shape = MaterialTheme.shapes.medium),
+                                            colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                                            contentPadding = PaddingValues(vertical = CalSpacing.related),
+                                            supportingContent = {
+                                            Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.micro)) {
                                             Text(statusLabel(scan.status) + " · " + scanTime(scan), style = MaterialTheme.typography.bodyMedium)
                                             if (scan.missingFields.isNotEmpty()) Text(stringResource(R.string.diag_missing) + ": " + fieldNames(scan.missingFields),
                                                 style = MaterialTheme.typography.bodySmall)
@@ -233,9 +240,13 @@ internal fun OcrDiagnosticsContent(
                                                 style = MaterialTheme.typography.bodySmall)
                                             if (scan.errors.isNotEmpty()) Text(scan.errors.joinToString(", "), style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.error)
+                                            }
+                                            },
+                                        ) {
+                                            Text(scan.productName ?: scan.brand ?: DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale).format(Date(scan.timestampMillis)),
+                                                style = MaterialTheme.typography.titleMedium)
                                         }
                                     }
-                                    HorizontalDivider()
                                 }
                             }
                         }
@@ -252,12 +263,7 @@ internal fun OcrDiagnosticsContent(
         title = { Text(stringResource(R.string.diag_report_title)) },
         text = { Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
             Text(stringResource(R.string.diag_report_preview, if (selected.isEmpty()) scans.size else selected.size))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(includeRaw, { includeRaw = it }, enabled = scans.any { it.detailedConsent },
-                    modifier = Modifier.semantics { contentDescription = contentLabel })
-                Text(stringResource(R.string.diag_include_text))
-            }
-            if (includeRaw || photos.isNotEmpty()) Text(stringResource(R.string.diag_sensitive), color = MaterialTheme.colorScheme.error)
+            Text(stringResource(R.string.diag_report_content), style = MaterialTheme.typography.bodyMedium)
             Text(stringResource(R.string.diag_no_photos), style = MaterialTheme.typography.bodyMedium)
             OutlinedButton(onClick = { photoLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }) {
                 Text(stringResource(R.string.diag_add_photos))
@@ -266,7 +272,7 @@ internal fun OcrDiagnosticsContent(
         } },
         confirmButton = { TextButton(onClick = {
             pendingMode = exportMode; exportMode = null
-            onExport(selected.ifEmpty { null }, includeRaw, photos)
+            onExport(selected.ifEmpty { null }, true, photos)
         }) { Text(stringResource(R.string.diag_continue)) } },
         dismissButton = { TextButton(onClick = { exportMode = null }) { Text(stringResource(R.string.diag_cancel)) } })
     scans.firstOrNull { it.id == opened }?.let { scan ->
@@ -318,9 +324,8 @@ private fun DiagnosticReportActions(selected: Int, busy: Boolean, error: Boolean
 private fun Counts(scans: List<DiagnosticScan>) {
     val locale = LocalConfiguration.current.locales[0]
     Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
-        Text(NumberFormat.getIntegerInstance(locale).format(scans.size),
-            style = MaterialTheme.typography.headlineLarge.copy(fontFeatureSettings = "tnum"),
-            color = MaterialTheme.colorScheme.primary)
+        AnimatedNutrition(NumberFormat.getIntegerInstance(locale).format(scans.size),
+            style = MaterialTheme.typography.displayMedium.copy(fontFeatureSettings = "tnum", color = MaterialTheme.colorScheme.primary))
         SectionTitle(stringResource(R.string.diag_total))
         Metric(R.string.diag_success, scans.count { it.status == "SUCCESS" }.toString())
         Metric(R.string.diag_partial, scans.count { it.status == "PARTIAL" }.toString())
@@ -368,7 +373,7 @@ private fun ScanDetail(scan: DiagnosticScan, busy: Boolean, onDismiss: () -> Uni
     } == true
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        sheetState = rememberBottomSheetState(SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)),
         sheetMaxWidth = CalLayout.readingWidth,
         contentWindowInsets = { WindowInsets.safeDrawing },
     ) {
@@ -413,14 +418,16 @@ private fun ScanDetail(scan: DiagnosticScan, busy: Boolean, onDismiss: () -> Uni
                 }
                 scan.rawText?.let {
                     TextButton(onClick = { raw = !raw }, modifier = Modifier.semantics { stateDescription = rawExpansion }) { Text(stringResource(R.string.diag_raw)) }
-                    if (raw) Text(it, style = MaterialTheme.typography.bodySmall)
+                    AnimatedVisibility(raw, enter = CalMotion.enter(), exit = CalMotion.exit()) { Text(it, style = MaterialTheme.typography.bodySmall) }
                 }
                 TextButton(onClick = { technical = !technical }, modifier = Modifier.semantics { stateDescription = technicalExpansion }) { Text(stringResource(R.string.diag_technical)) }
-                if (technical) {
+                AnimatedVisibility(technical, enter = CalMotion.enter(), exit = CalMotion.exit()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
                     Text(listOf(scan.appVersion, scan.androidVersion, scan.device, scan.model, scan.runtime, scan.orientation).joinToString("\n"),
                         style = MaterialTheme.typography.bodySmall)
                     scan.modelRevisions.forEach { (name, revision) -> Text("$name: $revision", style = MaterialTheme.typography.bodySmall) }
                     scan.modelHashes.forEach { (name, hash) -> Text("$name: $hash", style = MaterialTheme.typography.bodySmall) }
+                    }
                 }
                 if (scan.detailedConsent) {
                     SectionTitle(stringResource(R.string.diag_annotations))
@@ -437,7 +444,7 @@ private fun ScanDetail(scan: DiagnosticScan, busy: Boolean, onDismiss: () -> Uni
                 }
                 Spacer(Modifier.height(CalSpacing.related))
             }
-            FilledTonalButton(onClick = onDismiss,
+            CalTonalButton(onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = CalSpacing.page, vertical = CalSpacing.related).heightIn(min = 48.dp)) {
                 Text(stringResource(R.string.diag_close))
             }

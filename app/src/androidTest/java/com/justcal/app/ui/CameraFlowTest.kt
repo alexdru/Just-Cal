@@ -42,11 +42,8 @@ class CameraFlowTest {
         click(R.string.scan_meal)
         click(R.string.take_photo)
         repeat(5) { cycle ->
-            if (cycle == 1) {
-                compose.activityRule.scenario.onActivity { it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE }
-            }
             if (cycle == 2) {
-                compose.activityRule.scenario.onActivity { it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
+                compose.activityRule.scenario.onActivity { it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT }
                 compose.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
                 compose.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
             }

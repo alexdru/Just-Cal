@@ -31,12 +31,14 @@ camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cam
 camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
 camera-compose = { module = "androidx.camera:camera-compose", version.ref = "camerax" }
 core = { module = "androidx.core:core-ktx", version.ref = "core" }
+splashscreen = { module = "androidx.core:core-splashscreen", version = "1.2.0" }
 activity = { module = "androidx.activity:activity-compose", version.ref = "activity" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose" }
 compose-ui = { module = "androidx.compose.ui:ui" }
 compose-foundation = { module = "androidx.compose.foundation:foundation" }
-material3 = { module = "androidx.compose.material3:material3" }
+# Expressive APIs are pinned independently; retain the stable Compose BOM.
+material3 = { module = "androidx.compose.material3:material3", version = "1.5.0-beta01" }
 tooling = { module = "androidx.compose.ui:ui-tooling" }
 preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 ui-test = { module = "androidx.compose.ui:ui-test-junit4" }

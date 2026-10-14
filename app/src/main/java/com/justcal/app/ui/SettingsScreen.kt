@@ -1,10 +1,12 @@
 package com.justcal.app.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import com.justcal.app.ui.theme.CalMotion
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.ui.platform.LocalDensity
 import com.justcal.app.ui.theme.CalLayout
 import androidx.compose.foundation.rememberScrollState
@@ -15,8 +17,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -38,22 +40,30 @@ import com.justcal.app.ui.theme.CalSpacing
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSave: () -> Unit,
+fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit,
     onRetry: () -> Unit, onLab: () -> Unit, bottomBar: @Composable () -> Unit,
     onBackup: () -> Unit = {}, onDiagnostics: () -> Unit = {}) {
     val focus = LocalFocusManager.current
     val direction = LocalLayoutDirection.current
     val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
     var showMacros by rememberSaveable { mutableStateOf(false) }
+    var macrosInitialized by rememberSaveable { mutableStateOf(false) }
+    val macroAngle by animateFloatAsState(if (showMacros) 90f else 0f, CalMotion.fast(), label = "macro disclosure")
     val macroExpansion = stringResource(if (showMacros) R.string.expanded else R.string.collapsed)
     LaunchedEffect(state.loading) {
-        if (!state.loading && listOf(state.draft.proteinGoal, state.draft.fatGoal, state.draft.carbsGoal).any { it.isNotBlank() }) {
-            showMacros = true
+        if (!state.loading && !macrosInitialized) {
+            showMacros = listOf(state.draft.proteinGoal, state.draft.fatGoal, state.draft.carbsGoal).any { it.isNotBlank() }
+            macrosInitialized = true
         }
     }
     Scaffold(
-        topBar = { CalTopBar(maxWidth = CalLayout.readingWidth, title = { Text(stringResource(R.string.settings), style = MaterialTheme.typography.headlineLarge) }) },
-        bottomBar = { Box(Modifier.imePadding()) { bottomBar() } },
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+        topBar = {
+            CalTopBar(maxWidth = CalLayout.readingWidth, title = {
+                Text(stringResource(R.string.settings), style = MaterialTheme.typography.headlineLarge)
+            })
+        },
+        bottomBar = bottomBar,
         contentWindowInsets = WindowInsets.safeDrawing.union(WindowInsets.ime),
     ) { padding ->
         // Only the keyboard bounds the viewport. Content scrolls behind the floating controls;
@@ -72,30 +82,30 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSa
                 start = padding.calculateStartPadding(direction), end = padding.calculateEndPadding(direction),
                 top = padding.calculateTopPadding(), bottom = imeBottom,
             ).calContent(CalLayout.readingWidth).consumeWindowInsets(padding)
-                .verticalScroll(rememberScrollState()).padding(horizontal = CalSpacing.page)
+                .testTag("settings_scroll").verticalScroll(rememberScrollState()).padding(horizontal = CalSpacing.page)
                 .padding(top = CalSpacing.medium, bottom = overlaySpace),
                 verticalArrangement = Arrangement.spacedBy(CalSpacing.section)) {
                 if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
-                Text(stringResource(R.string.settings_save_hint), style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                     SectionTitle(stringResource(R.string.profile))
-                    Text(stringResource(R.string.profile_hint), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    CalGroup {
                     OutlinedTextField(value = state.draft.displayName,
                         onValueChange = { onChange(state.draft.copy(displayName = it)) },
                         label = { Text(stringResource(R.string.display_name)) }, singleLine = true,
-                        enabled = !state.loading && !state.busy, modifier = Modifier.fillMaxWidth(),
+                        enabled = !state.loading, modifier = Modifier.fillMaxWidth(),
                         shape = MaterialTheme.shapes.medium,
                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                         isError = state.submitted && !state.draft.nameValid,
                         supportingText = { if (state.submitted && !state.draft.nameValid) Text(stringResource(R.string.name_error)) })
+                    }
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                     SectionTitle(stringResource(R.string.nutrition_settings))
+                    CalGroup {
                     OutlinedTextField(value = state.draft.goal, onValueChange = { onChange(state.draft.copy(goal = it)) },
                         label = { Text(stringResource(R.string.goal_field)) }, suffix = { Text(stringResource(R.string.kcal)) },
                         modifier = Modifier.fillMaxWidth(), singleLine = true, shape = MaterialTheme.shapes.medium,
-                        enabled = !state.loading && !state.busy,
+                        enabled = !state.loading,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         isError = state.submitted && !state.draft.calorieGoalValid,
                         supportingText = { if (state.submitted && !state.draft.calorieGoalValid) Text(stringResource(R.string.goal_error)) })
@@ -105,77 +115,60 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSa
                             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                                 Text(stringResource(R.string.macro_goals), Modifier.weight(1f),
                                     style = MaterialTheme.typography.titleMedium)
-                                Box(Modifier.rotate(if (showMacros) 90f else 0f)) { CalIcon(R.drawable.ic_chevron) }
+                                Box(Modifier.rotate(macroAngle)) { CalIcon(R.drawable.ic_chevron) }
                             }
                         }
-                        Text(stringResource(R.string.macro_goals_hint), style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        if (showMacros) {
+                        AnimatedVisibility(showMacros, enter = CalMotion.enter(), exit = CalMotion.exit()) {
+                            Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                             MacroGoalField(R.string.protein, state.draft.proteinGoal, state.submitted && !state.draft.proteinGoalValid,
-                                !state.loading && !state.busy) { onChange(state.draft.copy(proteinGoal = it)) }
+                                !state.loading) { onChange(state.draft.copy(proteinGoal = it)) }
                             MacroGoalField(R.string.fat, state.draft.fatGoal, state.submitted && !state.draft.fatGoalValid,
-                                !state.loading && !state.busy) { onChange(state.draft.copy(fatGoal = it)) }
+                                !state.loading) { onChange(state.draft.copy(fatGoal = it)) }
                             MacroGoalField(R.string.carbs, state.draft.carbsGoal, state.submitted && !state.draft.carbsGoalValid,
-                                !state.loading && !state.busy) { onChange(state.draft.copy(carbsGoal = it)) }
+                                !state.loading) { onChange(state.draft.copy(carbsGoal = it)) }
+                            }
                         }
+                    }
                     }
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                     SectionTitle(stringResource(R.string.appearance))
-                    Text(stringResource(R.string.appearance_save_hint), style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    CalGroup {
                     Text(stringResource(R.string.brightness), style = MaterialTheme.typography.titleMedium)
-                    Column(Modifier.selectableGroup()) {
-                        Appearance.entries.forEach { appearance ->
-                            val label = when (appearance) {
-                                Appearance.SYSTEM -> R.string.theme_system
-                                Appearance.LIGHT -> R.string.theme_light
-                                Appearance.DARK -> R.string.theme_dark
-                            }
-                            SingleChoice(stringResource(label), state.draft.appearance == appearance,
-                                enabled = !state.loading && !state.busy) { onChange(state.draft.copy(appearance = appearance)) }
-                        }
-                    }
+                    SettingsChoiceGroup(
+                        options = Appearance.entries,
+                        selected = state.draft.appearance,
+                        enabled = !state.loading,
+                        label = { stringResource(when (it) {
+                            Appearance.SYSTEM -> R.string.theme_system
+                            Appearance.LIGHT -> R.string.theme_light
+                            Appearance.DARK -> R.string.theme_dark
+                        }) },
+                    ) { onChange(state.draft.copy(appearance = it)) }
                     Text(stringResource(R.string.color_style), style = MaterialTheme.typography.titleMedium)
-                    Column(Modifier.selectableGroup()) {
-                        ColorStyle.entries.forEach { style ->
-                            SingleChoice(stringResource(if (style == ColorStyle.JUST_CAL) R.string.color_just_cal else R.string.color_material_you),
-                                state.draft.colorStyle == style, enabled = !state.loading && !state.busy) {
-                                onChange(state.draft.copy(colorStyle = style))
-                            }
-                        }
+                    SettingsChoiceGroup(
+                        options = ColorStyle.entries,
+                        selected = state.draft.colorStyle,
+                        optionEnabled = { it != ColorStyle.MATERIAL_YOU || android.os.Build.VERSION.SDK_INT >= 31 },
+                        enabled = !state.loading,
+                        label = { stringResource(if (it == ColorStyle.JUST_CAL) R.string.color_just_cal else R.string.color_material_you) },
+                    ) { onChange(state.draft.copy(colorStyle = it)) }
                     }
-                    Text(stringResource(R.string.color_style_hint), style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 if (state.error) {
                     Text(stringResource(R.string.storage_error), color = MaterialTheme.colorScheme.error)
                     TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
                 }
-                Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
-                    Box(Modifier.heightIn(min = 24.dp)) {
-                        if (state.saved) Text(stringResource(R.string.settings_saved), color = MaterialTheme.colorScheme.primary)
-                    }
-                    Button(onClick = { focus.clearFocus(); onSave() }, enabled = !state.loading && !state.busy,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
-                        Text(stringResource(if (state.busy) R.string.saving else R.string.save_changes))
-                    }
-                }
                 LanguageSettings()
                 Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
                     SectionTitle(stringResource(R.string.data_backup))
-                    TextButton(onClick = { focus.clearFocus(); onBackup() },
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Text(stringResource(R.string.data_backup), Modifier.weight(1f))
-                            CalIcon(R.drawable.ic_chevron)
+                    CalGroup {
+                        CalSettingsRow(stringResource(R.string.data_backup), R.drawable.ic_diary) {
+                            focus.clearFocus(); onBackup()
                         }
-                    }
-                    TextButton(onClick = { focus.clearFocus(); onDiagnostics() },
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Text(stringResource(R.string.ocr_diagnostics), Modifier.weight(1f))
-                            CalIcon(R.drawable.ic_chevron)
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        CalSettingsRow(stringResource(R.string.ocr_diagnostics), R.drawable.ic_package) {
+                            focus.clearFocus(); onDiagnostics()
                         }
                     }
                 }
@@ -184,17 +177,10 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSa
                     Text(stringResource(R.string.privacy_title), style = MaterialTheme.typography.titleMedium)
                     Text(stringResource(R.string.privacy_description), style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(onClick = { focus.clearFocus(); onLab() },
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                                Text(stringResource(R.string.local_ai_lab), Modifier.weight(1f),
-                                    style = MaterialTheme.typography.titleMedium)
-                                CalIcon(R.drawable.ic_chevron)
-                            }
+                    CalGroup {
+                        CalSettingsRow(stringResource(R.string.local_ai_lab), R.drawable.ic_settings) {
+                            focus.clearFocus(); onLab()
                         }
-                        Text(stringResource(R.string.lab_intro), style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
                 AboutSettings()
@@ -206,9 +192,12 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit, onSa
 @Composable
 private fun AboutSettings() {
     val uriHandler = LocalUriHandler.current
+    val resources = androidx.compose.ui.platform.LocalResources.current
+    var fontLicense by remember { mutableStateOf<String?>(null) }
     val repositoryUrl = stringResource(R.string.repository_url)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionTitle(stringResource(R.string.about))
+        CalGroup {
         Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleMedium)
         Text(stringResource(R.string.app_version, BuildConfig.VERSION_NAME),
             style = MaterialTheme.typography.bodyMedium,
@@ -219,24 +208,24 @@ private fun AboutSettings() {
         Text(stringResource(R.string.app_license_notice),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
+        CalSettingsRow(stringResource(R.string.font_credits), R.drawable.ic_settings) {
+            fontLicense = resources.openRawResource(R.raw.roboto_flex_ofl).bufferedReader().use { it.readText() }
+        }
         Text(stringResource(R.string.app_author, stringResource(R.string.author_name)),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
-        TextButton(
-            onClick = { uriHandler.openUri(repositoryUrl) },
-            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-            contentPadding = PaddingValues(vertical = 12.dp),
-            shape = RectangleShape,
-        ) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(stringResource(R.string.repository), style = MaterialTheme.typography.titleMedium)
-                    Text(stringResource(R.string.repository_name), style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                CalIcon(R.drawable.ic_chevron)
-            }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        CalSettingsRow(stringResource(R.string.repository), R.drawable.ic_diary,
+            subtitle = stringResource(R.string.repository_name)) { uriHandler.openUri(repositoryUrl) }
         }
+    }
+    fontLicense?.let { license ->
+        AlertDialog(onDismissRequest = { fontLicense = null },
+            title = { Text("Roboto Flex · SIL OFL 1.1") },
+            text = { Column(Modifier.verticalScroll(rememberScrollState())) {
+                Text(license, style = MaterialTheme.typography.bodySmall)
+            } },
+            confirmButton = { TextButton(onClick = { fontLicense = null }) { Text(stringResource(R.string.done)) } })
     }
 }
 
@@ -269,17 +258,20 @@ private fun LanguageSettings() {
     }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         SectionTitle(stringResource(R.string.language))
-        Column(Modifier.selectableGroup()) {
-            listOf("" to R.string.language_system, "en" to R.string.language_english, "ru" to R.string.language_russian)
-                .forEach { (tag, label) ->
-                    SingleChoice(stringResource(label), selected = language == tag) {
-                        focus.clearFocus()
-                        language = tag
-                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
-                    }
-                }
+        CalGroup {
+        SettingsChoiceGroup(
+            options = listOf("", "en", "ru"),
+            selected = language,
+            label = { stringResource(when (it) {
+                "en" -> R.string.language_english
+                "ru" -> R.string.language_russian
+                else -> R.string.language_system
+            }) },
+        ) { tag ->
+            focus.clearFocus()
+            language = tag
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
         }
-        Text(stringResource(R.string.language_hint), style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
 }

@@ -1,7 +1,7 @@
 ---
-version: alpha
+version: 0.12.2
 name: Just Cal
-description: Refined Functional Minimalism for an offline-first native Android food diary.
+description: Modern Material 3 Expressive for an offline-first native Android food diary.
 colors:
   primary: "#244D32"
   on-primary: "#FFFFFF"
@@ -38,39 +38,23 @@ colors:
   dark-outline: "#8D9883"
   dark-outline-variant: "#424B3B"
 typography:
-  display-large:
-    fontFamily: sans-serif
-    fontSize: 64px
-    fontWeight: 700
-    lineHeight: 72px
-    letterSpacing: -2px
-  headline-large:
-    fontSize: 32px
-    fontWeight: 700
-    lineHeight: 40px
-    letterSpacing: -0.7px
-  headline-medium:
-    fontSize: 28px
-    fontWeight: 600
-    lineHeight: 36px
-  title-large:
-    fontSize: 22px
-    fontWeight: 600
-    lineHeight: 28px
-  title-medium:
-    fontSize: 16px
-    fontWeight: 600
-    lineHeight: 24px
-  body-large:
-    fontSize: 16px
-    lineHeight: 24px
-  body-medium:
-    fontSize: 14px
-    lineHeight: 20px
-  label-large:
-    fontSize: 14px
-    fontWeight: 600
-    lineHeight: 20px
+  font-family: Roboto Flex
+  axes: [wght, opsz, wdth, GRAD]
+  display-large: {fontSize: 76sp, lineHeight: 84sp, fontWeight: 720, width: 110, letterSpacing: -1sp}
+  display-medium: {fontSize: 52sp, lineHeight: 60sp, fontWeight: 680}
+  display-small: {fontSize: 40sp, lineHeight: 48sp, fontWeight: 650}
+  headline-large: {fontSize: 34sp, lineHeight: 42sp, fontWeight: 680, letterSpacing: -0.6sp}
+  headline-medium: {fontSize: 28sp, lineHeight: 36sp, fontWeight: 650}
+  headline-small: {fontSize: 24sp, lineHeight: 32sp, fontWeight: 620}
+  title-large: {fontSize: 22sp, lineHeight: 30sp, fontWeight: 620}
+  title-medium: {fontSize: 16sp, lineHeight: 24sp, fontWeight: 600}
+  title-small: {fontSize: 14sp, lineHeight: 20sp, fontWeight: 600}
+  body-large: {fontSize: 16sp, lineHeight: 24sp, fontWeight: 400, grade: 5}
+  body-medium: {fontSize: 14sp, lineHeight: 20sp, fontWeight: 400, grade: 5}
+  body-small: {fontSize: 12sp, lineHeight: 18sp, fontWeight: 400, grade: 5}
+  label-large: {fontSize: 14sp, lineHeight: 20sp, fontWeight: 600}
+  label-medium: {fontSize: 12sp, lineHeight: 18sp, fontWeight: 600}
+  label-small: {fontSize: 11sp, lineHeight: 16sp, fontWeight: 600}
 rounded:
   extra-small: 8px
   small: 12px
@@ -149,406 +133,164 @@ components:
 
 # Just Cal design system
 
-## Overview
+Modern Material 3 Expressive is the approved consumer direction. Preserve the evergreen/lime
+leaf identity, warm neutral canvas, dominant calorie number, quiet macro strip and floating
+navigation. Motion gives changes spatial meaning and makes controls feel immediate.
+Composition, useful information and native interactions take priority over decoration.
+The Local AI Lab destination retains its existing presentation; its Settings entry uses the shared tonal navigation group.
 
-**Refined Functional Minimalism** makes a daily task feel immediate, calm and precise.
-The identity is the existing evergreen/lime leaf, warm neutral canvas, confident calorie
-number, quiet macro summary and compact floating navigation. Distinction comes from
-composition and useful information, not additional decoration.
+## Product and composition
 
-**Status:** Stages 1 and 2 implemented on 2026-10-10 (apps 0.5.0 and 0.6.0),
-following the approved redesign requests. Frontmatter records implemented tokens and existing component
-mappings. Remaining items explicitly marked **Proposed** are future refinements.
-Stage 1 covers shared foundations, Home, Diary, Day Detail, Settings and Add Food
-capability disclosure. Stage 2 refines manual entry, camera and photo review,
-including focus, validation and adaptive form behavior. Local AI Lab is excluded
-from both implementations and verification. See [the baseline audit](docs/DESIGN_AUDIT.md),
-[Stage 1 verification](docs/DESIGN_STAGE_1.md) and
-[Stage 2 verification](docs/DESIGN_STAGE_2.md).
+Manual logging, date-aware diary, offline package OCR, backup and diagnostic export remain
+local. Package OCR opens editable values; only explicit diary confirmation persists food.
+Meal recognition remains unavailable. Never suggest model confidence certifies accuracy.
+Keep quantities, units, per-100-g values and independently optional macro goals distinct.
 
-### Product truth
-
-The production app supports manual entry, local diary/history/day detail,
-settings, camera/photo selection and photo review. Package confirmation runs bundled
-offline OCR and deterministic nutrition parsing, then opens the existing editable
-food editor. Only explicit Save creates an entry. Scan meal confirms its photo
-without visual estimation. Local AI Lab remains isolated. There is no dedicated
-statistics screen in the inspected navigation graph.
-
-### Composition before components
-
-For each screen decide, in order: user goal → primary information → secondary
-information → hierarchy → grouping → spatial composition → typography → interaction
-priority → component choice → motion/refinement.
-
-Use one clear information anchor, stable alignment and whitespace. Nutrition remains
-the content, with controls supporting it. Prefer compact rows over repeated cards.
-A single calorie summary surface is purposeful emphasis, not a pattern to repeat
-around every metric. Native behavior, predictable feedback and one-handed actions
-matter more than stylistic novelty. Expressive techniques must improve hierarchy
-or feedback; do not adopt them simply because the library offers them.
-
-### Source and format contract
-
-The [Google DESIGN.md alpha specification](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md)
-defines this file's YAML fields, references and section order. Its dimension units
-are CSS-oriented. **In this Android document, YAML px is a serialization convention:
-spacing, radii and component dimensions map 1:1 to dp; typography dimensions map
-1:1 to sp. These are not physical screen pixels.** Compose must retain font scaling;
-do not paste exported CSS dimensions into Android or convert sp to dp.
-
-Unsuffixed colors are branded light; `dark-` names serialize branded dark values
-because the format has no native Android theme selector. Runtime components use
-`MaterialTheme.colorScheme`, never choose these suffixes themselves. Component
-entries describe existing role pairings; height/size values do not override native
-minimum touch targets or text growth. The YAML is a curated token set, not every
-Material default. Unspecified type properties continue to resolve through Compose.
-
-Implementation anchors:
-[Theme.kt](app/src/main/java/com/justcal/app/ui/theme/Theme.kt),
-[Components.kt](app/src/main/java/com/justcal/app/ui/Components.kt),
-[FloatingNavigation.kt](app/src/main/java/com/justcal/app/ui/FloatingNavigation.kt).
-Authority order: explicit product requirements, official Android platform behavior,
-approved Just Cal decisions, relevant skill recommendations. The installed adaptive
-skill's generic rail/scaffold conversion is intentionally not adopted: the product
-requires the floating pill. No experimental Grid, Styles or new UI dependency is
-needed for this milestone.
-
-## Colors
-
-### Existing identity and semantic roles
-
-The launcher uses evergreen `#244D32` behind a lime `#D9F294` leaf. Preserve its
-adaptive foreground/background and monochrome layer. The UI repeats these hues
-through roles rather than reproducing the icon on each screen.
-
-| Role | Use |
-| --- | --- |
-| primary / onPrimary | Primary action, FAB; readable text/icon on that fill |
-| primaryContainer / onPrimaryContainer | Calorie summary and its content |
-| secondaryContainer / onSecondaryContainer | Lower-emphasis actions and selections |
-| tertiary / tertiaryContainer | Available supporting accent; no fixed macro rainbow |
-| surface / onSurface | Canvas and primary reading content |
-| onSurfaceVariant | Units, dates, helper text, secondary detail |
-| surfaceContainer | Portion preview and purposeful grouping |
-| surfaceContainerHigh | Floating navigation's own surface |
-| outline / outlineVariant | Necessary input boundary / subtle separator |
-| error / onError, errorContainer / onErrorContainer | Validation and failure, with text and recovery |
-
-Error roles currently inherit Material defaults; they are not custom branded constants.
-Remaining tonal levels, inverse roles and paired secondary/tertiary foregrounds are
-defined in Theme.kt and should not be copied into screen code. Use intended on-color
-pairs; alpha overlays and controls inside colored containers require separate checks.
-
-### Independent personalization
-
-Brightness is System / Light / Dark. Color style is Just Cal / Material You.
-Both are independent DataStore preferences. Material You uses Android dynamic
-schemes on API 31+ and branded fallback below that. Preserve geometry and hierarchy
-across palettes. Never hardcode a wallpaper palette into DESIGN.md.
-
-Camera black/white is an intentional media-control exception, not an alternative
-app palette. It protects capture affordance against image content; validate on
-bright as well as dark scenes.
-
-**Proposed:** name component aliases for calorie surface, metadata, navigation
-selection and camera controls in the existing theme layer if repeated use warrants
-them. Do not add another color store or a second theme framework. The goal
-TextButton now uses onPrimaryContainer on the calorie surface; retain palette
-checks rather than inferring all contrast from semantic naming.
+Use one calorie emphasis container, flat macro summaries and flat interactive lists.
+Do not turn every row into a Card. Preserve semantic branded/dynamic colors; no glass,
+blur, gradients, ornamental shapes or copied mpvRx code/assets. mpvRx is an interaction
+reference for pager, motion and theme continuity, independently implemented here.
 
 ## Typography
 
-Keep platform sans-serif rendering and English/Cyrillic coverage. No downloaded
-font or new brand typeface. The eight YAML styles plus bodySmall and labelSmall are explicit CalTypography
-overrides. Other Material styles continue to inherit library defaults, including
-headlineSmall.
+`ui/theme/Typography.kt` defines all 15 Material roles using one unmodified, officially
+distributed Roboto Flex variable binary (about 1.7 MiB). Both English and Russian use this
+family throughout consumer UI. Binary cmap inspection confirmed Russian А–Я, а–я and Ё/ё.
+The Google Sans Flex demo binary in its official repository lacked these glyphs, so it
+was not selected. Avoid mixed per-character fallback.
 
-| Product role | Existing style and use | Direction |
-| --- | --- | --- |
-| Calorie anchor | displayLarge, 64/72 sp, bold | Dominant number; unit subordinate |
-| Root screen title | headlineLarge, 32/40 sp, bold | One title per page |
-| Empty-state emphasis | titleMedium, 16/24 sp | Quiet body copy below the diary heading |
-| History energy | titleLarge, 22/28 sp | Trailing aligned amount with subordinate kcal unit |
-| Section heading / macro amount | titleLarge, 22/28 sp | Preserve macro readability, quieter than calories |
-| Food name / setting subgroup | titleMedium, 16/24 sp | Scan-friendly medium emphasis |
-| Main explanation | bodyLarge, 16/24 sp | Short, useful copy |
-| Date / units / helper text | bodyMedium, 14/20 sp | Secondary color, readable contrast |
-| Action / summary label | labelLarge, 14/20 sp | Concise action or context |
-| Navigation label / small metadata | explicit labelSmall / bodySmall | 11/16 sp navigation; 12/16 sp small metadata |
+Use weight, optical size (scaled sp), width and grade axes. The calorie anchor is 76/84 sp,
+weight 720, width 110; root headings 34/42, weight 680; section/amount titles 22/30, weight
+620; food names 16/24, weight 600; body 16/24 or 14/20, grade 5. Metadata is 12/18 and
+navigation 11/16. Only the anchor/headline use tightened tracking. Roboto Flex has no
+roundness axis; do not invent one. Amounts retain exact, locale-aware formatting and tabular numerals. Binary metrics
+confirm equal default advances for 0–9 (1156 units; 1113 at the anchor axes).
+Roboto Flex's optional pnum feature is not enabled; existing tnum requests remain. Text grows with font scale; never shrink it to force a fit. The calorie/unit FlowRow
+wraps its unit when needed; unusually long amounts scroll horizontally within the anchor,
+preserving the complete value at 150% in narrow windows.
 
-The large number has -2 sp tracking; root headline has -0.7 sp. Do not spread those
-tracking choices to body text. Avoid arbitrary per-screen font sizes/weights.
+Source: [Google Fonts Roboto Flex](https://github.com/google/fonts/tree/main/ofl/robotoflex).
+OFL attribution is bundled at `res/raw/roboto_flex_ofl.txt` and accessible from About.
+The font is unmodified; no extra static weight assets or font dependency are included.
 
-**Implemented:** the calorie anchor, macro amounts and shared EnergyValue /
-MacroDetail request tabular numerals (`tnum`) from the platform font. EnergyValue
-uses titleLarge for days and titleMedium for food, with a subordinate kcal unit
-and trailing alignment. Platform font feature support determines numeral rendering;
-no font dependency is added. bodySmall (12/16 sp) and labelSmall (11/16 sp, medium)
-are explicit. Locale formatting, explicit units and nullable macro goals remain.
-Text grows rather than shrinking to fit a fixed-height container.
+## Layout, shape and depth
 
-## Layout
+CalSpacing remains 4 / 8 / 12 / 16 / 20 / 24 / 32 dp. Settings sections use 32 dp
+separation and 12 dp related spacing; diary rows remain compact. CalShapes remain
+8 / 12 / 20 / 28 / 36 dp. Reading forms and review are bounded to 600 dp; diary to
+840 dp. Center content within safe horizontal insets. Root titles align to the 24 dp axis.
 
-### Implemented spacing and rhythm
+MainActivity requests portrait orientation; there is no landscape-specific screen layout.
+Android 16+ may ignore orientation restrictions on large displays: retain usable bounded,
+scrollable composition in system-controlled windows. Width and font scale still determine
+one/two-column nutrition fields. No landscape acceptance testing is required.
 
-CalSpacing formalizes 4 micro / 8 small (inline) / 12 related / 16 medium
-(group) / 20 dense / 24 page / 32 section dp. Use these roles when they express
-composition; local values are not mechanically replaced. Navigation retains its
-6 dp geometry exception. Settings uses 12 dp within related groups and 32 dp
-between sections; diary content uses a denser rhythm. CalTopBar aligns root
-titles to the 24 dp content axis and preserves the back affordance on child
-screens. Shapes and palettes are unchanged.
+Edge-to-edge hosts are transparent. Content scrolls behind floating controls with end
+padding based on their measured complete height plus a gap. Focused fields clear both
+controls and IME using overlay-aware BringIntoView. Below 280 dp usable IME height, the
+editor hides its app bar and pinned action until Done/Back restores space.
+Photo Review keeps an uncropped Fit image in a stable upper half and scrollable actions
+below. Camera keeps a sharp 4:3 frame matching the capture viewport and contrasting
+88 dp shutter. Native sheet/dialog scrims remain; no per-row shadows or borders.
 
-### Insets and floating controls
+## Navigation and motion
 
-Use edge-to-edge layouts with safe horizontal/cutout insets and correctly consumed
-Scaffold padding. A transparent floating host is deliberate. Content may scroll
-behind controls, with end padding measured from the entire control host plus a
-content gap. Last items and focused inputs must be able to settle unobstructed.
-Do not interpret a mid-scroll overlap alone as a defect.
+Home, Diary and Settings use a root HorizontalPager over independent Navigation 3 stacks.
+Swipes directly move pages; tab taps use the same spring-settled pager. The compact active
+capsule slides continuously with pager position, including in-flight gestures. Tab ripples
+are clipped to their capsules. The pill stays at the window bottom behind the IME; it never
+moves above the keyboard. FAB entry/exit uses scale/fade while its reserved row stays fixed. The floating
+pill remains horizontally centered and content-sized, with three labeled tabs, a transparent
+host and the separate 56 dp FAB above/right. Reserve the FAB row when hidden in Settings.
+Tab targets retain at least 52 dp height and nominal widths up to 120 dp; grow for text.
 
-Food-editor confirmation remains above IME/navigation bars in ordinary windows.
-When the visible height above IME falls below 280 dp, the editor temporarily hides
-its app bar and confirmation to leave room for the enlarged active field. IME
-Done or Back restores both. Retain overlay-aware BringIntoView behavior and apply
-the same focus-clearance principle to other forms.
-Avoid double-applied insets, fixed bottom spacers and clipping behind system bars.
+Swipe interception is enabled only on root destinations, without an open keyboard or
+Add Food sheet. Child editor, camera, review, date detail and settings tools retain their
+own gestures and Back. Inactive pages cannot handle Back or expose duplicate accessibility
+content, and are capped at STARTED. Preserve ViewModels, scroll state and selected dates.
+Do not exclude Android edge gestures or replace Navigation 3.
 
-### Adaptive direction
+`CalMotion` centralizes roles using Material3 MotionScheme and native Compose specs:
 
-Design for available window dimensions, including short landscape and split screen,
-rather than a device model. Preserve the pill and separate FAB, destination order,
-saved stacks, date context and accessible targets.
+| Role | Implemented behavior |
+| --- | --- |
+| Root navigation | Direct horizontal pager movement with a critically damped tab spring; root pages warm after splash |
+| Child push/pop | Directional slide with short effects fade; reverse direction for Back |
+| Predictive Back | Same spatial pop geometry; depth-based direction remains stable through cancellation/restart |
+| Selected indicator | Continuous pager translation; semantic foreground interpolation |
+| Sections/details | Spatial expand/shrink plus effects fade |
+| Lazy list changes | Stable keys and animateItem placement/appearance/removal |
+| Nutrition changes | Transition only when formatted value changes; no fabricated count-up arithmetic |
+| Buttons | Native ripple and expressive pressed shape in shared primary/tonal actions |
+| Add Food | Native modal sheet plus directional option/source content; FAB scale/icon coordination |
+| Loading | Isolated expressive LoadingIndicator with static determinate fallback when motion disabled |
+| Completion | Clear text/snackbar and selective confirmation haptic |
+| Theme | 600 ms radial reveal of the new theme over a bounded temporary old frame; cancelable for brightness and Themes |
+| Splash exit | Immediate compatibility-splash removal on Android 11; 80 ms native exit on Android 12+, without a branding delay |
 
-**Implemented in Stage 1:** CalLayout / calContent center Home, Diary and Day
-Detail in a maximum 840 dp viewport, and Settings in a maximum 600 dp reading
-viewport. Page margins remain inside these bounds; safe horizontal insets are
-outside. These are content constraints, not navigation breakpoints. Phone and
-short landscape use the same scrollable composition. Other flows retain their
-existing layout except the Stage 2 flows: editor and image-source fallback content
-use the 600 dp reading bound; Photo Review uses 600 dp in portrait and 840 dp in
-landscape. Portrait review gives half of its body to the Fit image and half to
-scrollable guidance/actions, retaining image geometry after confirmation.
-Supporting panes remain a future proposal requiring review;
-do not introduce panes solely to occupy width. Respect hinges and keep controls
-within reachable regions. Photo Review already switches to side-by-side image
-and actions when width exceeds height; preserve full-image Fit behavior.
+Spatial prominence uses expressive springs; frequent utilitarian effects use standard
+fast effects specs. No scattered per-screen durations or decorative bouncing. Native
+duration scaling is respected; animator-disabled mode snaps theme/tab transitions and
+uses static loading feedback. Recheck animation settings on resume. Do not add a duplicate
+reduced-motion preference or infer jank-free behavior from screenshots.
 
-### Screen composition contracts
+## Appearance and automatic settings
 
-| Screen | Goal and information order | Composition and action |
-| --- | --- | --- |
-| Home | Understand today's calories and remaining amount, then macros and entries | One calorie anchor; flat macro strip; readable list; separate Add Food FAB |
-| Diary | Find a date and scan its summary | Chronological flat rows; compact date + energy, quieter macros; retain direct Choose a day |
-| Day Detail | Understand and edit one date | Same summary language as Home; selected date obvious; rows open editor; FAB targets that date |
-| Settings | Change local preferences confidently | Profile, Nutrition Goals, Appearance, Language, About grouped by meaning; no decorative section cards |
-| Add Food launcher | Choose acquisition method quickly | Package first, meal secondary, manual clearly available; explain actual scan capability before effort |
-| Manual editor | Enter label values and consumed quantity correctly | Name → per-100-g group → amount eaten → computed portion → one confirmation action |
-| Camera | Capture a legible image | Image dominates; clear shutter and back; photo-selection alternative; no floating app navigation |
-| Photo Review | Verify the image and continue | Uncropped image → concise guidance → primary confirmation → secondary retake/reselect |
-| Local AI Lab | Inspect model/runtime/input/output | Dense functional sections, explicit state, raw/parsed output and measured metrics; no diary action |
+Brightness (System/Light/Dark) and palette (Just Cal/Material You) are independent connected
+ToggleButton groups. Required choices cannot be cleared. Minimum targets are 48 dp;
+FlowRow wraps English/Russian text instead of hiding options behind overflow menus.
+The Themes group offers Just Cal and Material You. Material You is disabled on Android 11; existing stored selections still render the branded fallback there.
 
-**Implemented:** Day Detail leads with the selected localized date and weekday;
-Home keeps the root title and full date. Empty states use quieter typography.
-Diary uses compact date/count + trailing energy rows with secondary macros.
-Food rows separate name, eaten weight, macro detail and trailing energy.
-**Implemented in Stage 2:** package review asks for the full, sharp nutrition
-label without glare; meal review asks for the complete meal. Pixel dimensions no
-longer occupy consumer hierarchy. Capability disclosure precedes confirmation;
-confirmation never creates a diary entry automatically. Package OCR opens editable
-confirmation in the existing editor, with quiet review guidance, model confidence,
-expandable raw text and an independently editable consumed amount. No new card or
-visual token is introduced. Charts and visual meal estimation are not implemented.
+Selections apply immediately and persist automatically. There is no Settings Save button.
+The selected control center anchors the same radial reveal for brightness and Themes;
+system-driven changes use the center. The previous rendered frame is captured once at
+no more than 0.6 MP / 1080 px longest edge and discarded after the 600 ms reveal.
+The new ColorScheme commits once beneath it; animation reads happen only in drawing.
+Repeated selections capture the visible composite and replace the unfinished reveal.
+Capture failure falls back to a surface fade; disabled animators apply the theme directly.
+System icon contrast follows the reveal. The branded splash retains light system icons
+until exit; the first consumer palette mounts only after preferences load.
 
-### Data & Backup and OCR Diagnostics
+Profile and nutrition inputs remain editable even during saving. Debounce valid edits
+550 ms, validate each edited field independently, preserve invalid/incomplete drafts and
+persist only affected keys. Clearing a macro removes only that goal. Keep edits when
+switching tabs or recreating the Activity; background saving continues away from Settings.
+Keep persistence silent on success; show actionable errors and retry only on failure. Language uses Android per-app
+locales immediately, with AndroidX storage on Android 11/12 and platform storage on 13+.
+Handle locale/layoutDirection and related screenLayout changes in the existing Activity so switching language does
+not restart the screen or show splash.
 
-Settings opens two separate child destinations using the existing Navigation 3 stack.
-Both retain CalTopBar, semantic colors, the 600 dp reading bound, safe insets and
-scrollable flat sections. Backup actions lead with export/import; merge is the
-default confirmation, while replacement uses a separate warning and acknowledgement.
-Recovery export remains visible when available. Busy, failure and completion are
-explicit textual states.
+## Screen contracts
 
-Diagnostics uses compact related views for overview, scan history, performance,
-recognition errors and retailer/brand groups. Dense rows and quiet metadata replace
-decorative dashboard cards. Details disclose captured fields and missing values;
-filtering, sorting and selection support report review. Tabs and horizontal swipes
-share one Compose Pager state. Shared Save/Share actions are pinned at the bottom in
-a transparent host, using the editor's measured inset/overlay geometry. Save is
-filled, Share is tonal; both have 56 dp minimum height and stack when width or font
-scale requires it. The list viewport extends behind the host and navigation area;
-end padding and focus scrolling clear the full measured host plus a content gap.
-Short windows hide the actions while IME is open, restoring them when editing ends.
+| Screen | Presentation and interaction |
+| --- | --- |
+| Home / Day Detail | Home date below the app bar at titleLarge; wider calorie numerals; expressive calorie hierarchy, animated amounts/progress, flat macros; connected tonal food rows with leading tiles, inner dividers and outer group corners; stable item placement and date-aware FAB |
+| Diary | Connected tonal day rows with leading date icon, aligned energy, inner dividers and quiet count/macros; tonal Choose a day |
+| Settings | Headings outside coherent tonal Profile/Goals/Appearance/Language groups; native navigation rows with leading icon tiles and inner dividers; animated macro disclosure, immediate choices and autosave |
+| Data & Backup | Clear export/import hierarchy, expressive action/loading feedback and completion disclosure; preserve merge default and explicit replace acknowledgement |
+| OCR Diagnostics | Count emphasis, compact interactive scan ListItems and stable item placement; native details sheet, animated disclosures, pinned Save/Share report actions |
+| Add Food | Package → Meal → Manual hierarchy, interactive expressive ListItems, native modal motion and source transition |
+| Food Editor / OCR confirmation | Name → per-100-g → consumed amount → animated portion preview; expressive explicit save, preserved IME/error focus, expandable raw OCR evidence |
+| Camera | Unchanged lifecycle/capture crop; native media controls, shutter press/busy feedback and capture-confirmation haptic |
+| Photo Review | Stable Fit image and portrait action hierarchy; expressive confirmation, animated offline OCR loading, actionable error/retry/manual fallback |
+| Shared dialogs / sheets | Semantic colors/variable typography, native modal motion, explicit destructive confirmation and accessible actions |
 
-Overview leads with the total scan count using headlineLarge and primary color,
-then flat status rows, local retention disclosure and the destructive clear action.
-Expressive emphasis comes from information priority, size and semantic color, without
-decorative cards or extra theme tokens. Details use a native ModalBottomSheet:
-result and duration first, then stage metrics and parsed fields. Raw text and
-model/runtime revisions and hashes are disclosed on demand. The sheet uses native
-safe/IME insets and a reachable close action. Existing branded/dynamic colors,
-typography, shapes and Navigation 3 behavior remain intact. The installed stable
-Material3 1.4.0 does not expose separate Expressive button/motion APIs; no experimental
-dependency is introduced.
+Saving/deleting food gives a brief parent snackbar after returning; OCR success opens
+editable confirmation instead of writing automatically. Do not vibrate on every tap.
+Keep native pressed/focus/disabled/selected/loading/error semantics and clear empty states.
+Native ripple and component shape changes provide feedback without delaying action.
 
-Detailed local capture remains the default. Clearing history and sensitive report
-content use explicit dialogs. Statistics always expose sample counts and do not
-imply accuracy or verification from unchanged fields/confidence. No new visual
-tokens are introduced.
+## Splash and accessibility
 
-## Elevation & Depth
+Official Android SplashScreen compat API uses the unmasked leaf vector on evergreen, avoiding
+a second adaptive-icon crop. The launcher adaptive/monochrome icon is unchanged. Splash exits
+into the loaded theme once preferences are ready. No separate Activity, extra timeout or
+duplicate Compose splash exists. Warm starts and animator-disabled exits remain direct.
 
-Use surface tone, whitespace and typography first. Main reading surfaces are flat.
-The calorie container is emphasis, not a raised card. Navigation alone has an
-explicit 2 dp shadow in its floating shell; FAB/sheets/dialogs use existing Material
-behavior. Editor confirmation has a transparent host. Preserve native modal scrims.
-
-Do not add shadows or borders to every list row. Existing row dividers may be
-retained until density is reviewed; a divider must aid scanning rather than act
-as decoration. No blur, glass, gradient canvas or per-row rendering effects.
-
-## Shapes
-
-Existing CalShapes: 8 / 12 / 20 / 28 / 36 dp from extraSmall to extraLarge.
-Inputs use medium (20 dp), portion preview large (28 dp), calorie summary
-extraLarge (36 dp). Navigation intentionally uses its own 32 dp shell and
-24 dp selection; the 56 dp FAB and camera shutter are circular.
-
-Preserve the recognizable floating controls. Do not make every element a pill.
-**Proposed:** document navigation/media exceptions beside shared shape roles,
-then evaluate whether form corners should be quieter. No radius change is
-approved by this audit; never replace the current scale with generic Material
-defaults without composition review.
-
-## Components
-
-### Floating navigation contract
-
-Keep the content-sized, horizontally centered three-destination pill with a
-transparent full-width host. The FAB is a separate action above/right; reserve
-its 56 dp row when hidden in Settings. Current host uses 16 dp horizontal and
-12 dp vertical padding, 12 dp row gap, 6 dp pill padding, 24 dp icons, tabs with
-at least 52 dp height and nominal widths constrained between 96 and 120 dp
-within available width (narrow windows may reduce the minimum). Tabs use 4 dp
-horizontal padding to leave room for Russian labels and enlarged text.
-
-The active fill is primary at 10% alpha over the navigation surface; active icon
-and label use primary, with a filled icon. Inactive item backgrounds are
-transparent and foreground is onSurfaceVariant. Keep restrained 160 ms color
-selection transitions. A shorter visible pill must not mean smaller touch targets.
-
-The current implementation has selectableGroup, selected state and Role.Tab,
-with visible localized labels. Preserve semantics and keyboard focus. Verify
-actual TalkBack announcements before claiming accessibility certification.
-Stable geometry is confirmed for the inspected English compact roots; larger
-fonts, Russian labels and narrow windows still require visual verification.
-Do not replace the pill with NavigationBar, Floating Toolbar or a rail by default.
-Telegram informs spatial relationships only; no copied assets or implementation.
-
-### Actions, forms and states
-
-Use existing Material3 Button for the one primary confirmation, FilledTonalButton
-for lower emphasis, OutlinedButton for retake/reselect and TextButton for tertiary
-actions. Destructive actions require explicit wording and confirmation.
-Use native OutlinedTextField labels, units, errors and keyboard semantics.
-
-Editor has a 60 dp minimum confirmation; Settings Save uses 56 dp; review actions
-use 48 dp minima. These differences are current choices, not proof that every
-button needs the same height. Preserve supported content growth.
-
-**Implemented in Stage 2:** the editor groups name, per-100-g inputs and consumed
-amount/preview with 32 dp section and 12 dp related spacing. Nutrition fields use
-two columns only when each has at least 160 dp times font scale; otherwise they
-stack. Explicit IME order is name → calories → protein → fat → carbs → amount;
-Done dismisses focus. Failed submission focuses the first invalid field, with
-localized error semantics and polite error announcements. The portion preview
-uses tabular headlineLarge energy and compact MacroDetail. Values and units stay
-together in shared macro detail. Settings macro disclosure exposes localized
-expanded/collapsed state. Camera retains its native icon targets and a contrasting
-black/white 88 dp shutter composition; busy capture exposes a taking-photo state.
-Camera preview is a fitted, sharp-cornered 4:3 frame matching the actual CameraX
-capture crop. The surrounding edge-to-edge canvas uses the semantic surface color;
-camera pixels and the contrasting shutter retain the media-control exception.
-A transparent bottom host places flash and gallery beside the 88 dp shutter, with
-48 dp native tonal icon targets and navigation/cutout clearance. Controls have no
-visible captions; localized accessibility names and flash selection state remain.
-Unsupported flash is explicitly disabled. The control row is vertically centered
-in the entire space below the 4:3 frame, excluding system navigation insets. All
-three button centers share one horizontal axis. Measured control height adapts
-the frame for short windows. Cancelling a directly opened system Photo Picker
-returns to the originating diary screen without an extra source page; cancelling
-the picker launched from the camera restores the camera. No gallery action remains in the top app bar. Tapping the viewfinder shows
-a brief contrasting focus ring at the selected point; localized feedback exposes
-focusing, acquired and unconfirmed states. The feedback never certifies label
-readability. A center-focus accessibility action is also available.
-
-Define each applicable state: default, pressed, focus, selected, disabled,
-loading, empty, error, submitting and success. Busy actions prevent duplicate
-submission; errors identify the field/problem and recovery; entered drafts survive
-recoverable failure. Do not display missing macro goals as zero. Recognition output
-must remain untrusted and reviewable before explicit diary save.
-
-**Implemented for Settings:** brightness, palette and language use selectableGroup
-with Role.RadioButton rows and visible native radio indicators. Entire rows are
-single targets with 48 dp minimum height. Profile/goals/appearance remain drafts
-until Save; nearby helper text states this. Language remains immediate, in a
-separate section after Save. Save feedback reserves a stable slot. Settings focus
-scrolling subtracts the measured floating-control overlay from available space.
-Local AI Lab backend selection is outside Stage 1 and remains unchanged.
-
-Add Food explains offline package-label OCR before source selection; Scan meal
-still explains that automatic meal recognition is unavailable. Package, meal and
-manual actions remain in the established order; manual logging stays directly
-accessible, including as package-review fallback.
-
-### Motion and performance
-
-Existing CalMotion uses 160 ms navigation fades/color changes and a no-bounce,
-medium-low-stiffness spring for calorie progress. NavDisplay retains its platform
-predictive-back transition. Lab uses a nested NavDisplay. Preserve continuity of
-each top-level stack; switching tabs must not reset the user's place.
-
-Motion communicates destination, selection and state. Keep direct manipulation
-responsive and cancelable; no decorative bounce, repeated count-up or delays before
-input. Use platform animation scaling and verify behavior with animations disabled;
-no bespoke reduced-motion preference is implemented. Static screenshots do not
-validate animation timing, gesture quality or frame performance.
-
-Keep lists lazy, image decoding bounded and off the main thread, and camera/inference
-resources lifecycle-scoped. Do not add blur, animated gradients or custom rendering
-without measured benefit. Do not claim jank-free performance without tracing.
-
-### Accessibility and review requirements
-
-Follow [official Compose accessibility defaults](https://developer.android.com/develop/ui/compose/accessibility/api-defaults)
-and [Android window-size guidance](https://developer.android.com/develop/ui/compose/layouts/adaptive/use-window-size-classes).
-Interactive regions must be at least 48 × 48 dp without overlapping neighbors.
-Name icon-only actions; hide decorative icons from spoken output. Expose headings,
-selection, expanded/collapsed state, errors and progress meaningfully. Never rely
-only on hue. Keep focus order aligned with reading and task order.
-
-Require text contrast of at least 4.5:1 for ordinary text and 3:1 for large text;
-meaningful controls/graphics need 3:1 where applicable. Validate actual foreground,
-background and alpha composition in both branded themes and representative dynamic
-schemes. Disabled styling is not judged as enabled text.
-
-Major UI changes need device/emulator screenshots with long names, populated/empty
-diaries, optional macro goals, errors and IME. Include EN/RU, font scaling up to
-200%, compact portrait, short landscape and expanded windows; test TalkBack,
-keyboard focus, gesture back and animation-disabled behavior where relevant.
-This is the future acceptance matrix, not a claim it passed in this audit.
-
-## Do's and Don'ts
-
-- Do preserve the leaf brand, semantic colors, calorie anchor and floating pill.
-- Do use whitespace/alignment before containers; give related values a common axis.
-- Do keep dates, units, consumed amounts and per-100-g values unambiguous.
-- Do show the real product capability before asking users to invest effort.
-- Do apply the same component behavior across palettes and destinations.
-- Do use relevant design skills and official platform guidance with product judgment.
-- Do not create a generic dashboard of equal-weight metric cards.
-- Do not add arbitrary colors, gradients, borders, excessive rounding or glass effects.
-- Do not shrink touch targets or text for visual compactness.
-- Do not replace Navigation 3, the brand, persistence, or AI boundaries for a visual task.
-- Do not treat proposed refinements or this roadmap as permission to implement them.
+Keep 48 dp accessible targets, localized names for icons, headings, checked/expanded/error
+semantics, logical focus order and text contrast. Hide inactive pager semantics and
+decorative graphics. Validate English/Russian, light/dark, Android 12+ dynamic colors,
+narrow/wide portrait windows, IME, root swipes, gesture Back and disabled animations.
+Font/UI scaling acceptance stops at **150%** per the approved scope; do not run 200%
+or landscape checks. Static images document composition; device gestures/traces validate
+motion separately. Do not claim TalkBack certification or leak/jank absence without evidence.

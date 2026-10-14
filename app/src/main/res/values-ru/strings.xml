@@ -60,7 +60,6 @@
     <string name="history_empty">Здесь начнётся ваша история</string>
     <string name="history_empty_hint">Дни с записями появятся здесь. Можно выбрать прошлую дату и добавить еду.</string>
     <string name="profile">Ваш профиль</string>
-    <string name="profile_hint">Только ваше имя. Аккаунт не нужен.</string>
     <string name="display_name">Имя (необязательно)</string>
     <string name="name_error">Не более 80 символов</string>
     <string name="nutrition_settings">Дневная цель</string>
@@ -68,11 +67,9 @@
     <string name="theme_system">Системное</string>
     <string name="theme_light">Светлое</string>
     <string name="theme_dark">Тёмное</string>
-    <string name="settings_saved">Настройки сохранены</string>
     <string name="privacy_title">Только на этом устройстве</string>
     <string name="privacy_description">Профиль, настройки и дневник хранятся локально. Just Cal работает без интернета.</string>
     <string name="macro_goals">Цели БЖУ · необязательно</string>
-    <string name="macro_goals_hint">Укажите только нужные цели. Оставьте поле пустым, чтобы убрать цель.</string>
     <string name="goal_not_set">Не задано</string>
     <string name="clear_macro_goal">Убрать цель: %1$s</string>
     <string name="macro_goal_error">Введите положительное число до 100 000 г, максимум 2 знака после запятой, или оставьте поле пустым</string>
@@ -111,15 +108,13 @@
     <string name="app_author">Автор: %1$s</string>
     <string name="repository">Исходный код на GitHub</string>
     <string name="brightness">Яркость</string>
-    <string name="color_style">Палитра</string>
+    <string name="color_style">Темы</string>
     <string name="color_just_cal">Just Cal</string>
     <string name="color_material_you">Material You</string>
-    <string name="color_style_hint">Material You использует цвета обоев на Android 12 и новее. На более ранних версиях — палитру Just Cal.</string>
     <string name="language">Язык</string>
     <string name="language_system">Как в системе</string>
     <string name="language_english">English</string>
     <string name="language_russian">Русский</string>
-    <string name="language_hint">Язык меняется сразу.</string>
     <string name="nutrition_with_unit">%1$s %2$s</string>
     <string name="scan_capability">Распознаём русские и английские этикетки без интернета. Проверьте значения перед сохранением. Для блюд доступна только проверка фото.</string>
     <string name="review_package_ocr">Прочитаем этикетку на устройстве, затем вы сможете проверить и исправить пищевую ценность. Ничего не сохраняется автоматически.</string>
@@ -132,8 +127,6 @@
     <string name="ocr_net_weight">Масса нетто упаковки: %1$s г · ниже можно изменить съеденный вес.</string>
     <string name="ocr_show_text">Показать распознанный текст</string>
     <string name="ocr_hide_text">Скрыть распознанный текст</string>
-    <string name="settings_save_hint">Профиль, цели и оформление применятся после сохранения.</string>
-    <string name="appearance_save_hint">Яркость и палитра применятся после сохранения.</string>
     <string name="macro_detail">Б %1$s г · Ж %2$s г · У %3$s г</string>
     <string name="review_package_guidance">Проверьте, что вся таблица пищевой ценности в кадре, текст чёткий и без бликов.</string>
     <string name="review_meal_guidance">Проверьте, что всё блюдо в кадре и фото чёткое.</string>
@@ -148,4 +141,7 @@
     <string name="camera_focusing">Фокусировка…</string>
     <string name="camera_focused">Фокус установлен</string>
     <string name="camera_focus_unconfirmed">Не удалось подтвердить фокус</string>
+    <string name="food_saved">Продукт сохранён</string>
+    <string name="food_deleted">Продукт удалён</string>
+    <string name="font_credits">Roboto Flex · лицензия шрифта</string>
 </resources>

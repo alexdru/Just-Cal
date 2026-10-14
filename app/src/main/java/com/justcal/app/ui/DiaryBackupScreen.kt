@@ -1,5 +1,7 @@
 package com.justcal.app.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import com.justcal.app.ui.theme.CalMotion
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -8,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.material3.*
+import com.justcal.app.ui.CalButton as Button
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -30,6 +33,7 @@ fun DiaryBackupScreen(viewModel: DiaryBackupViewModel, onBack: () -> Unit) {
         it?.let(viewModel::preview)
     }
     Scaffold(
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = { CalTopBar(onBack = onBack, maxWidth = CalLayout.readingWidth,
             title = { Text(stringResource(R.string.data_backup)) }) },
         contentWindowInsets = WindowInsets.safeDrawing,
@@ -39,7 +43,9 @@ fun DiaryBackupScreen(viewModel: DiaryBackupViewModel, onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(CalSpacing.medium)) {
             Text(stringResource(R.string.backup_description), style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
-            if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+            AnimatedVisibility(state.busy, enter = CalMotion.enter(), exit = CalMotion.exit()) {
+                CalLoading()
+            }
             Button(onClick = { recoveryExport = false; create.launch("just-cal-diary.json") },
                 enabled = !state.busy, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.export_diary))
@@ -57,7 +63,10 @@ fun DiaryBackupScreen(viewModel: DiaryBackupViewModel, onBack: () -> Unit) {
                 }
             }
             if (state.error) Text(stringResource(R.string.backup_error), color = MaterialTheme.colorScheme.error)
-            if (state.exported) Text(stringResource(R.string.backup_exported), color = MaterialTheme.colorScheme.primary)
+            AnimatedVisibility(state.exported, enter = CalMotion.enter(), exit = CalMotion.exit()) {
+                Text(stringResource(R.string.backup_exported), style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary)
+            }
             state.result?.let {
                 Text(stringResource(R.string.backup_result, it.imported, it.skipped, it.conflicting),
                     style = MaterialTheme.typography.bodyLarge)

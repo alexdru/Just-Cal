@@ -1,5 +1,8 @@
 package com.justcal.app.ui
 
+import androidx.compose.animation.*
+import com.justcal.app.ui.theme.CalMotion
+import com.justcal.app.ui.theme.CalLayout
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -21,7 +24,7 @@ fun AddFoodLauncher(
     dayEpoch: Long, mode: ScanMode?, onDismiss: () -> Unit,
     onMode: (ScanMode?) -> Unit, onManual: () -> Unit, onSource: (ScanRequest, ImageSource) -> Unit,
 ) {
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetMaxWidth = CalLayout.readingWidth, sheetState = rememberBottomSheetState(SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
             Row(Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
                 if (mode != null) IconButton(onClick = { onMode(null) }) {
@@ -34,13 +37,17 @@ fun AddFoodLauncher(
                 Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
-            if (mode == null) {
+            AnimatedContent(mode, transitionSpec = { CalMotion.destination(targetState != null) }, label = "food acquisition choices") { currentMode ->
+            Column {
+            if (currentMode == null) {
                 LauncherAction(R.drawable.ic_package, R.string.scan_package, R.string.scan_package_hint) { onMode(ScanMode.PACKAGE) }
                 LauncherAction(R.drawable.ic_meal, R.string.scan_meal, R.string.scan_meal_hint) { onMode(ScanMode.MEAL) }
                 LauncherAction(R.drawable.ic_add, R.string.add_manually, R.string.add_manually_hint, onManual)
             } else {
-                LauncherAction(R.drawable.ic_camera, R.string.take_photo) { onSource(ScanRequest(mode, dayEpoch), ImageSource.CAMERA) }
-                LauncherAction(R.drawable.ic_photo, R.string.choose_photo) { onSource(ScanRequest(mode, dayEpoch), ImageSource.PHOTO_PICKER) }
+                LauncherAction(R.drawable.ic_camera, R.string.take_photo) { onSource(ScanRequest(currentMode, dayEpoch), ImageSource.CAMERA) }
+                LauncherAction(R.drawable.ic_photo, R.string.choose_photo) { onSource(ScanRequest(currentMode, dayEpoch), ImageSource.PHOTO_PICKER) }
+            }
+            }
             }
         }
     }
@@ -49,13 +56,13 @@ fun AddFoodLauncher(
 @Composable
 private fun LauncherAction(icon: Int, title: Int, subtitle: Int? = null, onClick: () -> Unit) {
     ListItem(
-        headlineContent = { Text(stringResource(title)) },
+        onClick = onClick,
         supportingContent = subtitle?.let { { Text(stringResource(it)) } },
         leadingContent = { CalIcon(icon) },
-        modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp).clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = 8.dp),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 72.dp).padding(horizontal = 16.dp),
+        shapes = ListItemDefaults.shapes(shape = MaterialTheme.shapes.large),
         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-    )
+    ) { Text(stringResource(title), style = MaterialTheme.typography.titleMedium) }
 }
 
 fun ScanMode.label(): Int = when (this) {

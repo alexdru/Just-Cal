@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import com.justcal.app.ui.CalButton as Button
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -70,6 +71,7 @@ fun ImageSourceScreen(
         }
     }
     Scaffold(
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
             TopAppBar(title = { Text(stringResource(request.mode.label()), style = MaterialTheme.typography.titleLarge) },
                 navigationIcon = { IconButton(onClick = onBack) { CalIcon(R.drawable.ic_back, stringResource(R.string.close)) } },
@@ -79,7 +81,7 @@ fun ImageSourceScreen(
         when {
             state.busy -> Column(Modifier.fillMaxSize().padding(padding), verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally) {
-                CircularProgressIndicator()
+                CalLoading()
                 Text(stringResource(R.string.preparing_image), Modifier.padding(24.dp))
             }
             source == ImageSource.CAMERA && granted && !cameraError && !state.error -> {

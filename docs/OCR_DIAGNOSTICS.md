@@ -20,13 +20,13 @@ The diagnostics database resides in noBackupFilesDir, separate from diary Room a
 
 ## ZIP reports
 
-Save uses SAF CreateDocument. Share invokes Android Sharesheet through a private cache FileProvider with temporary read permissions. Both require explicit report preview. Choose all scans or selected scans. Default exports omit original photos, full text, product names, parsed personal values, correction values, sensitive device IDs and private paths. Optional full text comes only from retained detailed content and still requires explicit inclusion in the report preview. Optional photos are selected explicitly through Photo Picker for that export, at most five bounded attachments; their association with scans is not inferred. They may contain personal content and EXIF metadata and require the sensitive-content warning. Photos are not added to persistent diagnostic history.
+Save uses SAF CreateDocument. Share invokes Android Sharesheet through a private cache FileProvider with temporary read permissions. Both require explicit report preview. Choose all scans or selected scans. Consumer report exports include retained full OCR text, product/brand names, parsed nutrition and correction values by default, without an inclusion checkbox. Historical basic scans remain missing these details. Sensitive device IDs and private paths stay excluded; original photos are never attached automatically. Optional photos are selected explicitly through Photo Picker for that export, at most five bounded attachments; their association with scans is not inferred. They may contain personal content and EXIF metadata and require the sensitive-content warning. Photos are not added to persistent diagnostic history.
 
 Archive members:
 
 - `summary.json`: schemaVersion 1, creation timestamp, sample counts, outcome/timing summary, model/runtime information and content flags.
 - `scans.jsonl`: one structured scan per line, stable session ID, stages/status/confidence/missing/error/correction-field data.
-- `corrections.json`: session-linked correction records, with values removed from default reports.
+- `corrections.json`: session-linked correction records, including recorded values in consumer reports.
 - `README.txt`: units, null semantics, privacy and interpretation limitations.
 - `photos/selected-N.image`: only explicitly selected attachments, when requested.
 

@@ -1,8 +1,10 @@
 # Just Cal — visual audit and implementation roadmap
 
 Date: 2026-10-10. Baseline: app 0.4.0. Scope: design system and documentation only.
-Direction: **Refined Functional Minimalism**, defined in [DESIGN.md](../DESIGN.md).
-No UI redesign is approved or implemented by this document.
+Historical direction: **Refined Functional Minimalism**. This is the 0.4.0 baseline,
+not current implementation guidance. Its Save-bound settings, motion limits and acceptance
+roadmap are superseded by the approved Material 3 Expressive direction in
+[DESIGN.md](../DESIGN.md). No implementation is approved by this historical audit itself.
 
 ## Method and evidence
 

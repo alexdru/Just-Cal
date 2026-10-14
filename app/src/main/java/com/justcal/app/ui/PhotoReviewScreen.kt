@@ -2,10 +2,14 @@ package com.justcal.app.ui
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import com.justcal.app.ui.theme.CalMotion
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import com.justcal.app.ui.CalButton as Button
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -45,6 +49,7 @@ fun PhotoReviewScreen(
     val date = LocalDate.ofEpochDay(image.request.dayEpoch).format(
         DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(LocalConfiguration.current.locales[0]))
     Scaffold(
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
             TopAppBar(title = {
                 Column {
@@ -55,7 +60,6 @@ fun PhotoReviewScreen(
         },
     ) { padding ->
         BoxWithConstraints(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)) {
-            val landscape = maxWidth > maxHeight
             val maxActionsHeight = maxHeight * 0.5f
             val preview: @Composable (Modifier) -> Unit = { modifier ->
                 Box(modifier, contentAlignment = Alignment.Center) {
@@ -63,11 +67,11 @@ fun PhotoReviewScreen(
                         Image(it.asImageBitmap(), stringResource(R.string.photo_description),
                             Modifier.fillMaxSize().padding(CalSpacing.small), contentScale = ContentScale.Fit)
                     }
-                    if (bitmap == null && !failed) CircularProgressIndicator()
+                    if (bitmap == null && !failed) CalLoading()
                 }
             }
             val actions: @Composable (Modifier) -> Unit = { modifier ->
-                Column(modifier.verticalScroll(rememberScrollState()).padding(CalSpacing.page),
+                Column(modifier.verticalScroll(rememberScrollState()).padding(CalSpacing.page).animateContentSize(CalMotion.size()),
                     verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                     Text(stringResource(if (verified) R.string.photo_ready else R.string.review_photo),
                         Modifier.semantics { heading(); liveRegion = LiveRegionMode.Polite },
@@ -78,9 +82,12 @@ fun PhotoReviewScreen(
                         Text(stringResource(if (image.request.mode == ScanMode.PACKAGE) R.string.review_package_ocr else R.string.review_no_recognition),
                             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    if (packageState.busy) {
-                        LinearProgressIndicator(Modifier.fillMaxWidth())
-                        Text(stringResource(R.string.ocr_processing), Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+                    AnimatedVisibility(packageState.busy, enter = CalMotion.enter(), exit = CalMotion.exit()) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                            CalLoading(Modifier.size(48.dp))
+                            Text(stringResource(R.string.ocr_processing), Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                                style = MaterialTheme.typography.titleMedium)
+                        }
                     }
                     if (packageState.failed) Text(stringResource(R.string.ocr_failed),
                         Modifier.semantics { liveRegion = LiveRegionMode.Polite }, color = MaterialTheme.colorScheme.error)
@@ -114,10 +121,7 @@ fun PhotoReviewScreen(
                     }
                 }
             }
-            if (landscape) Row(Modifier.calContent(CalLayout.diaryWidth)) {
-                preview(Modifier.weight(1f).fillMaxHeight())
-                actions(Modifier.weight(1f).fillMaxHeight())
-            } else Column(Modifier.calContent(CalLayout.readingWidth)) {
+            Column(Modifier.calContent(CalLayout.readingWidth)) {
                 preview(Modifier.weight(1f).fillMaxWidth())
                 actions(Modifier.fillMaxWidth().height(maxActionsHeight))
             }

@@ -3,6 +3,8 @@ package com.justcal.app.data
 import android.content.Context
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
+import com.justcal.app.domain.valid
+import com.justcal.app.domain.validEditValues
 import com.justcal.app.domain.AppSettings
 import com.justcal.app.domain.Appearance
 import com.justcal.app.domain.ColorStyle
@@ -54,5 +56,30 @@ class GoalPreferences @Inject constructor(@ApplicationContext private val contex
             settings.carbsGoalGramsHundredths?.let { value -> it[carbsKey] = value } ?: it.remove(carbsKey)
         }
     }
+    suspend fun setAppearance(value: Appearance) {
+        context.goalStore.edit { it[appearanceKey] = value.name }
+    }
+
+    suspend fun setColorStyle(value: ColorStyle) {
+        context.goalStore.edit { it[colorStyleKey] = value.name }
+    }
+
+    /** Each transaction touches only edited valid keys, preserving concurrent unrelated updates. */
+    suspend fun saveEdits(draft: com.justcal.app.domain.SettingsDraft, fields: Set<com.justcal.app.domain.SettingsField>) {
+        require(fields.all { draft.valid(it) })
+        val values = draft.validEditValues()
+        context.goalStore.edit { preferences ->
+            fields.forEach { field ->
+                when (field) {
+                    com.justcal.app.domain.SettingsField.NAME -> preferences[nameKey] = values.displayName
+                    com.justcal.app.domain.SettingsField.CALORIES -> preferences[goalKey] = values.goalKcal
+                    com.justcal.app.domain.SettingsField.PROTEIN -> values.proteinGoalGramsHundredths?.let { preferences[proteinKey] = it } ?: preferences.remove(proteinKey)
+                    com.justcal.app.domain.SettingsField.FAT -> values.fatGoalGramsHundredths?.let { preferences[fatKey] = it } ?: preferences.remove(fatKey)
+                    com.justcal.app.domain.SettingsField.CARBS -> values.carbsGoalGramsHundredths?.let { preferences[carbsKey] = it } ?: preferences.remove(carbsKey)
+                }
+            }
+        }
+    }
+
     companion object { const val DEFAULT_GOAL = 2000 }
 }

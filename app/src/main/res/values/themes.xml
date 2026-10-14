@@ -5,4 +5,12 @@
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowBackground">#FAFAF4</item>
     </style>
+    <style name="Theme.JustCal.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#244D32</item>
+        <!-- Use the unmasked leaf vector: AdaptiveIconDrawable would be masked a second time. -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.JustCal</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
 </resources>

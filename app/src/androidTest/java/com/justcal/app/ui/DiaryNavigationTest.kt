@@ -1,7 +1,6 @@
 package com.justcal.app.ui
 
 import androidx.compose.ui.test.*
-import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -111,7 +110,6 @@ class DiaryNavigationTest {
             fab().assertDoesNotExist()
             compose.onNodeWithText(label(R.string.macro_goals)).performScrollTo().performClick()
             field(R.string.protein).performScrollTo().performTextReplacement("160")
-            compose.onNodeWithText(label(R.string.save_changes)).performScrollTo().performSemanticsAction(SemanticsActions.OnClick) { it() }
             compose.waitUntil(5000) { runBlocking { preferences.settings.first().proteinGoalGramsHundredths == 16000L } }
             val proteinOnly = runBlocking { preferences.settings.first() }
             assertNull(proteinOnly.fatGoalGramsHundredths)
@@ -125,14 +123,12 @@ class DiaryNavigationTest {
             field(R.string.fat).performScrollTo().performTextReplacement("65,25")
             field(R.string.carbs).performScrollTo().performTextReplacement("230.01")
             field(R.string.goal_field).performScrollTo().performTextReplacement("2300")
-            compose.onNodeWithText(label(R.string.save_changes)).performScrollTo().performSemanticsAction(SemanticsActions.OnClick) { it() }
             compose.waitUntil(5000) { runBlocking { preferences.settings.first().carbsGoalGramsHundredths == 23001L } }
             assertEquals(6525L, runBlocking { preferences.settings.first() }.fatGoalGramsHundredths)
             for ((id, cleared) in listOf(R.string.protein to 0, R.string.fat to 1, R.string.carbs to 2)) {
                 field(id).performScrollTo()
                 compose.onNodeWithContentDescription(compose.activity.getString(R.string.clear_macro_goal, label(id))).performClick()
-                compose.onNodeWithText(label(R.string.save_changes)).performScrollTo().performSemanticsAction(SemanticsActions.OnClick) { it() }
-                compose.waitUntil(5000) {
+                    compose.waitUntil(5000) {
                     val saved = runBlocking { preferences.settings.first() }
                     when (cleared) {
                         0 -> saved.proteinGoalGramsHundredths == null

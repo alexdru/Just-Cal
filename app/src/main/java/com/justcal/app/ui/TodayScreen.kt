@@ -1,10 +1,12 @@
 package com.justcal.app.ui
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -33,6 +35,7 @@ fun TodayScreen(
     val locale = LocalConfiguration.current.locales[0]
     val direction = androidx.compose.ui.platform.LocalLayoutDirection.current
     Scaffold(
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
             CalTopBar(
                 onBack = onBack,
@@ -40,8 +43,6 @@ fun TodayScreen(
                     Column {
                         if (onBack == null) {
                             Text(stringResource(R.string.home), style = MaterialTheme.typography.headlineLarge)
-                            Text(state.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale)),
-                                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         } else {
                             Text(state.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)),
                                 style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
@@ -62,14 +63,20 @@ fun TodayScreen(
                 top = padding.calculateTopPadding() + CalSpacing.dense,
                 bottom = padding.calculateBottomPadding() + 24.dp,
             ),
-            verticalArrangement = Arrangement.spacedBy(CalSpacing.medium),
+            verticalArrangement = Arrangement.spacedBy(0.dp),
         ) {
+            if (onBack == null) item(key = "home_date") {
+                Text(state.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale)),
+                    modifier = Modifier.padding(bottom = CalSpacing.medium),
+                    style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             item {
-                Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = MaterialTheme.shapes.extraLarge) {
+                Surface(modifier = Modifier.padding(bottom = CalSpacing.medium), color = MaterialTheme.colorScheme.primaryContainer, shape = MaterialTheme.shapes.extraLarge) {
                     Column(Modifier.fillMaxWidth().padding(CalSpacing.page), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(stringResource(if (onBack == null) R.string.consumed else R.string.consumed_day), style = MaterialTheme.typography.labelLarge)
                         FlowRow(verticalArrangement = Arrangement.spacedBy(0.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(nutritionText(state.totals.energyKcal, 0), style = MaterialTheme.typography.displayLarge)
+                            AnimatedNutrition(nutritionText(state.totals.energyKcal, 0), style = MaterialTheme.typography.displayLarge,
+                                modifier = Modifier.testTag("calorie_value").horizontalScroll(rememberScrollState()))
                             Text(stringResource(R.string.kcal), modifier = Modifier.align(Alignment.Bottom).padding(bottom = 10.dp), style = MaterialTheme.typography.titleLarge)
                         }
                         val progress by animateFloatAsState(state.progress, CalMotion.progress(), label = "daily energy progress")
@@ -93,9 +100,9 @@ fun TodayScreen(
                     }
                 }
             }
-            item { MacroSummary(state.totals, targets = state.settings) }
+            item { MacroSummary(state.totals, modifier = Modifier.padding(bottom = CalSpacing.medium), targets = state.settings) }
             item {
-                FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                FlowRow(Modifier.fillMaxWidth().padding(bottom = CalSpacing.medium), horizontalArrangement = Arrangement.SpaceBetween,
                     verticalArrangement = Arrangement.spacedBy(CalSpacing.micro)) {
                     SectionTitle(stringResource(R.string.diary))
                     Text(androidx.compose.ui.res.pluralStringResource(R.plurals.entries_count, state.entries.size, state.entries.size), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -114,8 +121,11 @@ fun TodayScreen(
                     Text(stringResource(R.string.empty_message), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            items(state.entries, key = { it.id }) { entry ->
-                FoodRow(entry, state.portions.getValue(entry.id), onClick = { onEdit(entry.id) })
+            itemsIndexed(state.entries, key = { _, entry -> entry.id }) { index, entry ->
+                FoodRow(entry, state.portions.getValue(entry.id),
+                    modifier = Modifier.animateItem(
+                        fadeInSpec = CalMotion.effects(), placementSpec = CalMotion.spatial(), fadeOutSpec = CalMotion.effects(),
+                    ).calGroupedRow(index, state.entries.size), onClick = { onEdit(entry.id) })
             }
         }
     }
@@ -123,24 +133,24 @@ fun TodayScreen(
 }
 
 @Composable
-private fun FoodRow(entry: DiaryEntry, portion: ConsumedNutrition, onClick: () -> Unit) {
+private fun FoodRow(entry: DiaryEntry, portion: ConsumedNutrition, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val weight = java.math.BigDecimal.valueOf(entry.eatenGramsHundredths, 2).stripTrailingZeros()
-    Column {
-        Row(
-            Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick).padding(vertical = CalSpacing.related),
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(CalSpacing.micro)) {
-                Text(entry.name, style = MaterialTheme.typography.titleMedium)
+    ListItem(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        leadingContent = { CalLeadingIcon(R.drawable.ic_meal) },
+        contentPadding = PaddingValues(vertical = 16.dp, horizontal = 16.dp),
+        supportingContent = {
+            Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.micro)) {
                 Text(stringResource(R.string.nutrition_with_unit,
-                    nutritionText(weight, weight.scale().coerceAtLeast(0)), stringResource(R.string.grams)),
-                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    nutritionText(weight, weight.scale().coerceAtLeast(0)), stringResource(R.string.grams)))
                 MacroDetail(portion)
             }
-            EnergyValue(portion.energyKcal, MaterialTheme.typography.titleMedium)
-        }
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-    }
+        },
+        trailingContent = { EnergyValue(portion.energyKcal, MaterialTheme.typography.titleLarge) },
+        colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+        shapes = ListItemDefaults.shapes(shape = MaterialTheme.shapes.medium),
+    ) { Text(entry.name, style = MaterialTheme.typography.titleMedium) }
 }
 
 @Composable

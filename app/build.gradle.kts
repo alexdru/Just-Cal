@@ -129,6 +129,7 @@ dependencies {
     implementation(platform(libs.compose.bom))
     androidTestImplementation(platform(libs.compose.bom))
     implementation(libs.core)
+    implementation(libs.splashscreen)
     implementation(libs.activity)
     implementation(libs.appcompat)
     implementation(libs.camera.core)

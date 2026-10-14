@@ -1,17 +1,11 @@
 package com.justcal.app.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import com.justcal.app.domain.ColorStyle
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -19,11 +13,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-object CalMotion {
-    const val navigationDurationMillis = 160
-    fun progress() = spring<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow)
-}
 
 object CalSpacing {
     val micro = 4.dp
@@ -74,7 +63,7 @@ internal val DarkColors = darkColorScheme(
     inverseSurface = Color(0xFFE4E8DB), inverseOnSurface = Color(0xFF2D3328),
     inversePrimary = Color(0xFF244D32), surfaceTint = Color(0xFFB3D599),
 )
-val CalTypography = Typography(
+internal val LegacyCalTypography = Typography(
     displayLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontWeight = FontWeight.Bold, fontSize = 64.sp, lineHeight = 72.sp, letterSpacing = (-2).sp, fontFeatureSettings = "tnum"),
     headlineLarge = TextStyle(fontWeight = FontWeight.Bold, fontSize = 32.sp, lineHeight = 40.sp, letterSpacing = (-0.7).sp),
     headlineMedium = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 28.sp, lineHeight = 36.sp),
@@ -86,7 +75,7 @@ val CalTypography = Typography(
     labelSmall = TextStyle(fontWeight = FontWeight.Medium, fontSize = 11.sp, lineHeight = 16.sp),
     labelLarge = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 14.sp, lineHeight = 20.sp),
 )
-private val CalShapes = Shapes(
+internal val CalShapes = Shapes(
     extraSmall = RoundedCornerShape(8.dp), small = RoundedCornerShape(12.dp),
     medium = RoundedCornerShape(20.dp), large = RoundedCornerShape(28.dp), extraLarge = RoundedCornerShape(36.dp),
 )
@@ -94,23 +83,13 @@ private val CalShapes = Shapes(
 /** Branded colors by default; dynamic colors are an independent, optional preference. */
 @Composable
 fun JustCalTheme(darkTheme: Boolean = isSystemInDarkTheme(), colorStyle: ColorStyle = ColorStyle.JUST_CAL,
-    content: @Composable () -> Unit) {
+    splashVisible: Boolean = false, content: @Composable () -> Unit) {
     val context = LocalContext.current
-    val view = LocalView.current
-    if (!view.isInEditMode) SideEffect {
-        val activity = context as? Activity
-        activity?.let {
-            WindowCompat.getInsetsController(it.window, view).apply {
-                isAppearanceLightStatusBars = !darkTheme
-                isAppearanceLightNavigationBars = !darkTheme
-            }
-        }
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val colors = androidx.compose.runtime.remember(context, darkTheme, colorStyle, configuration) {
+        if (colorStyle == ColorStyle.MATERIAL_YOU && Build.VERSION.SDK_INT >= 31) {
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        } else if (darkTheme) DarkColors else LightColors
     }
-    val colors = if (colorStyle == ColorStyle.MATERIAL_YOU && Build.VERSION.SDK_INT >= 31) {
-        if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-    } else if (darkTheme) DarkColors else LightColors
-    MaterialTheme(
-        colorScheme = colors, typography = CalTypography, shapes = CalShapes,
-        content = content,
-    )
+    AnimatedBrandTheme(colors, splashVisible, content)
 }

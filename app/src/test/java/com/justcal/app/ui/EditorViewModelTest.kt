@@ -122,20 +122,24 @@ class EditorViewModelTest {
         val repository = FakeDiary()
         fun field(value: String) = com.justcal.app.ocr.LabelValue(value, 0.98f, "label")
         val scan = com.justcal.app.ocr.PackageScanPrefill(
-            com.justcal.app.ocr.ParsedNutritionLabel(field("Food"), field("240"), field("183.2"),
+            com.justcal.app.ocr.ParsedNutritionLabel(field("FOOD FOOD"), field("240"), field("183.2"),
                 field("11"), field("6.4"), field("20.4"), com.justcal.app.ocr.LabelBasis.PER_100_G),
             "raw", 0.98f, com.justcal.app.ocr.OcrMetrics(1, 2, 3, 6))
         val handle = SavedStateHandle()
         val vm = EditorViewModel(repository, handle, clock, null, 123, scan)
         assertEquals("240", vm.state.value.draft.amount)
+        assertEquals("Food", vm.state.value.draft.name)
         assertFalse(vm.claimInitialFocus())
         assertEquals(0, repository.saves)
         vm.change(FoodField.AMOUNT, "120")
+        vm.change(FoodField.NAME, "My BRAND BRAND")
         val restored = EditorViewModel(repository, handle, clock, null, 123, scan)
         assertEquals("120", restored.state.value.draft.amount)
+        assertEquals("My BRAND BRAND", restored.state.value.draft.name)
         restored.save(); restored.save(); advanceUntilIdle()
         val saved = repository.rows.values.single()
         assertEquals(12000L, saved.eatenGramsHundredths)
+        assertEquals("My BRAND BRAND", saved.name)
         assertEquals(123L, saved.dayEpoch)
         assertEquals(EntrySource.PACKAGE_SCAN, saved.source)
     }

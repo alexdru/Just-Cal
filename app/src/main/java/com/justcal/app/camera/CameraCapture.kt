@@ -1,5 +1,10 @@
 package com.justcal.app.camera
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import com.justcal.app.ui.theme.CalMotion
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -63,6 +68,7 @@ fun CameraCapture(
     val context = LocalContext.current
     val view = LocalView.current
     val density = LocalDensity.current
+    val haptic = LocalHapticFeedback.current
     val owner = LocalLifecycleOwner.current
     val lifecycleState by owner.lifecycle.currentStateAsState()
     val resumed = lifecycleState.isAtLeast(Lifecycle.State.RESUMED)
@@ -75,6 +81,7 @@ fun CameraCapture(
     var surface by remember { mutableStateOf<SurfaceRequest?>(null) }
     var ready by remember { mutableStateOf(false) }
     var takingPhoto by remember { mutableStateOf(false) }
+    val shutterScale by animateFloatAsState(if (takingPhoto) 0.9f else 1f, CalMotion.fast(), label = "capture feedback")
     var hasFlash by remember { mutableStateOf(false) }
     var flash by rememberSaveable { mutableStateOf(false) }
     var controlsHeight by remember { mutableIntStateOf(0) }
@@ -97,9 +104,8 @@ fun CameraCapture(
         capture.flashMode = if (flash && hasFlash) ImageCapture.FLASH_MODE_ON else ImageCapture.FLASH_MODE_OFF
     }
     BoxWithConstraints(modifier.background(MaterialTheme.colorScheme.surface)) {
-        val landscape = maxWidth > maxHeight
-        val ratio = if (landscape) 4f / 3f else 3f / 4f
-        DisposableEffect(owner, resumed, landscape, rotation) {
+        val ratio = 3f / 4f
+        DisposableEffect(owner, resumed, rotation) {
             var active = resumed
             var provider: ProcessCameraProvider? = null
             val preview = Preview.Builder().setResolutionSelector(resolution).setTargetRotation(rotation).build()
@@ -125,7 +131,7 @@ fun CameraCapture(
                                 if (active) surface = request else request.willNotProvideSurface()
                             }
                             val viewport = ViewPort.Builder(
-                                if (landscape) Rational(4, 3) else Rational(3, 4), rotation,
+                                Rational(3, 4), rotation,
                             ).setScaleType(ViewPort.FILL_CENTER).build()
                             val group = UseCaseGroup.Builder().setViewPort(viewport)
                                 .addUseCase(preview).addUseCase(capture).build()
@@ -259,6 +265,7 @@ fun CameraCapture(
                                         override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                                             takingPhoto = false
                                             if (composed && owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                                                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                                                 latestCaptured(Uri.fromFile(file))
                                             } else images.discard(Uri.fromFile(file).toString())
                                         }
@@ -278,7 +285,7 @@ fun CameraCapture(
                         shape = CircleShape,
                         colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
                         contentPadding = PaddingValues(8.dp),
-                        modifier = Modifier.size(88.dp).background(Color.Black, CircleShape).padding(4.dp)
+                        modifier = Modifier.size(88.dp).graphicsLayer { scaleX = shutterScale; scaleY = shutterScale }.background(Color.Black, CircleShape).padding(4.dp)
                             .border(3.dp, Color.White, CircleShape).padding(6.dp)
                             .semantics { contentDescription = captureLabel; if (takingPhoto) stateDescription = capturingLabel },
                     ) {

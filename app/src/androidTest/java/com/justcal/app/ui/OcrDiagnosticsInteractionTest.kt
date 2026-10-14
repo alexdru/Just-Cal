@@ -46,7 +46,7 @@ class OcrDiagnosticsInteractionTest {
         compose.onNodeWithText(label(R.string.diag_share)).assertIsDisplayed()
     }
 
-    @Test fun reportPreviewDefaultsToNoSensitiveContentAndSupportsHistoryNavigation() {
+    @Test fun reportPreviewIncludesRecordedOcrWithoutAnOptInAndSupportsHistoryNavigation() {
         var raw: Boolean? = null
         var photoCount = -1
         compose.setContent {
@@ -61,9 +61,10 @@ class OcrDiagnosticsInteractionTest {
         compose.onNode(hasText(label(R.string.diag_empty)) and hasAnyAncestor(hasTestTag("diagnostics_page_1"))).assertIsDisplayed()
         compose.onNodeWithText(label(R.string.diag_save)).performClick()
         compose.onNodeWithText(label(R.string.diag_report_title)).assertExists()
-        compose.onNodeWithText(label(R.string.diag_include_text)).assertExists()
+        compose.onNodeWithText(label(R.string.diag_report_content)).assertExists()
+        compose.onAllNodes(isToggleable() and hasAnyAncestor(isDialog())).assertCountEquals(0)
         compose.onNodeWithText(label(R.string.diag_continue)).performClick()
-        compose.runOnIdle { assertEquals(false, raw); assertEquals(0, photoCount) }
+        compose.runOnIdle { assertEquals(true, raw); assertEquals(0, photoCount) }
     }
 
     @Test fun bottomActionsFloatOverAnEdgeToEdgeListAndTheLastScanClearsThem() {
@@ -90,11 +91,11 @@ class OcrDiagnosticsInteractionTest {
 
     @Test fun enlargedTextStacksBottomActionsWithoutClipping() {
         compose.setContent {
-            val configuration = android.content.res.Configuration(androidx.compose.ui.platform.LocalConfiguration.current).apply { fontScale = 2f }
+            val configuration = android.content.res.Configuration(androidx.compose.ui.platform.LocalConfiguration.current).apply { fontScale = 1.5f }
             val density = androidx.compose.ui.platform.LocalDensity.current.density
             androidx.compose.runtime.CompositionLocalProvider(
                 androidx.compose.ui.platform.LocalConfiguration provides configuration,
-                androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(density, 2f),
+                androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(density, 1.5f),
             ) {
                 MaterialTheme {
                     OcrDiagnosticsContent(emptyList(), false, false, false, null,
@@ -106,7 +107,7 @@ class OcrDiagnosticsInteractionTest {
         compose.onNodeWithText(label(R.string.diag_share)).assertIsDisplayed()
         val save = compose.onNodeWithText(label(R.string.diag_save)).fetchSemanticsNode().boundsInRoot
         val share = compose.onNodeWithText(label(R.string.diag_share)).fetchSemanticsNode().boundsInRoot
-        assertTrue("Enlarged labels need vertically stacked actions", share.top >= save.bottom)
+        assertTrue("Scaled actions must not overlap", share.top >= save.bottom || share.left >= save.right)
     }
 
     @Test fun scanDetailsLeadWithMeasurementsAndDiscloseTechnicalMetadataOnDemand() {

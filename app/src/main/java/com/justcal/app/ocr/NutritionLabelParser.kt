@@ -21,12 +21,39 @@ import kotlinx.serialization.Serializable
 ) {
     /** Missing / low-confidence / unsupported-basis values remain empty, never implicit zeroes. */
     fun draft() = FoodDraft(
-        name = name?.takeIf { it.confident }?.value.orEmpty(),
+        name = formatRecognizedName(name?.takeIf { it.confident }?.value.orEmpty()),
         energy = energyKcal?.takeIf { it.confident && basis == LabelBasis.PER_100_G }?.value.orEmpty(),
         protein = proteinGrams?.takeIf { it.confident && basis == LabelBasis.PER_100_G }?.value.orEmpty(),
         fat = fatGrams?.takeIf { it.confident && basis == LabelBasis.PER_100_G }?.value.orEmpty(),
         carbs = carbsGrams?.takeIf { it.confident && basis == LabelBasis.PER_100_G }?.value.orEmpty(),
         amount = netGrams?.takeIf { it.confident }?.value.orEmpty(),
+    )
+}
+
+private val nameWord = Regex("""[\p{L}\p{M}\p{N}]+(?:[-’'][\p{L}\p{M}\p{N}]+)*""")
+
+/** Format only the editable OCR prefill; keep extracted values and evidence intact. */
+private fun formatRecognizedName(value: String): String {
+    val text = value.trim().replace(Regex("\\s+"), " ").lowercase(Locale.ROOT)
+    val deduplicated = buildString {
+        var previousWord: String? = null
+        var end = 0
+        for (word in nameWord.findAll(text)) {
+            val separator = text.substring(end, word.range.first)
+            val repeated = word.value == previousWord && word.value.any(Char::isLetter) &&
+                separator.isNotEmpty() && separator.all(Char::isWhitespace)
+            if (!repeated) {
+                append(separator)
+                append(word.value)
+            }
+            previousWord = word.value
+            end = word.range.last + 1
+        }
+        append(text.substring(end))
+    }
+    val firstLetter = deduplicated.indexOfFirst(Char::isLetter)
+    return if (firstLetter < 0) deduplicated else deduplicated.replaceRange(
+        firstLetter, firstLetter + 1, deduplicated[firstLetter].titlecase(Locale.ROOT),
     )
 }
 

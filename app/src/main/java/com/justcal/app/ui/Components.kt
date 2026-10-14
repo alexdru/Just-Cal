@@ -2,8 +2,6 @@ package com.justcal.app.ui
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.ui.semantics.Role
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -70,7 +68,7 @@ private fun macroText(consumed: BigDecimal, goalHundredths: Long?): AnnotatedStr
 private fun MacroValue(label: String, value: AnnotatedString) {
     Column(Modifier.widthIn(min = 84.dp).semantics(mergeDescendants = true) {}) {
         Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.titleLarge.copy(fontFeatureSettings = "tnum"))
+        AnimatedNutrition(value, style = MaterialTheme.typography.titleLarge.copy(fontFeatureSettings = "tnum"))
     }
 }
 
@@ -92,7 +90,7 @@ fun CalTopBar(title: @Composable () -> Unit, onBack: (() -> Unit)? = null,
                     CalIcon(R.drawable.ic_back, stringResource(R.string.close))
                 } }
             },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
         )
     }
 }
@@ -100,8 +98,7 @@ fun CalTopBar(title: @Composable () -> Unit, onBack: (() -> Unit)? = null,
 @Composable
 fun EnergyValue(value: BigDecimal, style: TextStyle = MaterialTheme.typography.titleLarge) {
     Column(horizontalAlignment = Alignment.End) {
-        Text(nutritionText(value, 0), style = style.copy(fontFeatureSettings = "tnum"),
-            textAlign = TextAlign.End)
+        AnimatedNutrition(nutritionText(value, 0), style = style.copy(fontFeatureSettings = "tnum", textAlign = TextAlign.End))
         Text(stringResource(R.string.kcal), style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
@@ -113,20 +110,6 @@ fun MacroDetail(nutrition: ConsumedNutrition) {
         nutritionText(nutrition.fatGrams, 1), nutritionText(nutrition.carbsGrams, 1)),
         style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"),
         color = MaterialTheme.colorScheme.onSurfaceVariant)
-}
-
-/** One accessible radio target per row; the indicator itself is decorative. */
-@Composable
-fun SingleChoice(label: String, selected: Boolean, enabled: Boolean = true, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp)
-        .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick)
-        .padding(vertical = CalSpacing.micro),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
-        RadioButton(selected = selected, onClick = null, enabled = enabled)
-        Text(label, style = MaterialTheme.typography.bodyLarge,
-            color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f))
-    }
 }
 
 @Composable

@@ -31,9 +31,8 @@
     <string name="diag_save">Save report</string>
     <string name="diag_share">Share report</string>
     <string name="diag_report_title">Report content</string>
-    <string name="diag_report_preview">Scans: %1$d. Includes performance, status, model/runtime metadata, missing and corrected field names. Excludes photos, raw text, product names, nutrition values, private paths and device identifiers by default.</string>
-    <string name="diag_include_text">Include OCR text, product/brand names, nutrition values and detailed corrections</string>
-    <string name="diag_sensitive">Sensitive content may reveal products and personal information. Review the report before sending it to anyone.</string>
+    <string name="diag_report_preview">Scans: %1$d. Includes performance, status, model/runtime metadata and recorded OCR results.</string>
+    <string name="diag_report_content">Saved OCR text, product and brand names, nutrition values and detailed corrections are included. Private paths and device identifiers are excluded.</string>
     <string name="diag_no_photos">Original photos are not retained. You can explicitly select available photos for this report.</string>
     <string name="diag_continue">Continue</string>
     <string name="diag_saved">Report saved</string>

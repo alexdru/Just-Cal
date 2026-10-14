@@ -1,5 +1,7 @@
 package com.justcal.app.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import com.justcal.app.ui.theme.CalMotion
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,6 +37,8 @@ fun PackageRecognitionSummary(scan: PackageScanPrefill) {
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).semantics { stateDescription = stateLabel }) {
             Text(stringResource(if (expanded) R.string.ocr_hide_text else R.string.ocr_show_text))
         }
-        if (expanded) Text(scan.rawText, style = MaterialTheme.typography.bodyMedium)
+        AnimatedVisibility(expanded, enter = CalMotion.enter(), exit = CalMotion.exit()) {
+            Text(scan.rawText, style = MaterialTheme.typography.bodyMedium)
+        }
     }
 }

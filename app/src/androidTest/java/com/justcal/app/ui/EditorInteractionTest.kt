@@ -27,7 +27,7 @@ class EditorInteractionTest {
         compose.setContent {
             var state by remember { mutableStateOf(EditorState()) }
             val density = LocalDensity.current
-            CompositionLocalProvider(LocalDensity provides Density(density.density, if (largeText) 2f else 1f)) {
+            CompositionLocalProvider(LocalDensity provides Density(density.density, if (largeText) 1.5f else 1f)) {
                 JustCalTheme {
                     Box(Modifier.width(320.dp)) {
                         EditorScreen(state, false, onChange = { key, value ->

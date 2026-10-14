@@ -11,6 +11,39 @@ class NutritionLabelParserTest {
             OcrPoint(1000f, index * 30f + 20), OcrPoint(0f, index * 30f + 20)))
     })
 
+    @Test fun recognizedNameUsesSentenceCaseAndCollapsesOnlyAdjacentWords() {
+        val cases = mapOf(
+            "  ЙОГУРТ   йогурт ЙоГуРт С ВИШНЕЙ  " to "Йогурт с вишней",
+            "GREEK greek YOGURT YOGURT" to "Greek yogurt",
+            "СЫР С СЫРОМ" to "Сыр с сыром",
+            "РИС С РИСОМ РИС" to "Рис с рисом рис",
+            "«ЁЖИК ёжик» В СОУСЕ" to "«Ёжик» в соусе",
+            "БИО-ЙОГУРТ био-йогурт БИО БИО-ЙОГУРТ" to "Био-йогурт био био-йогурт",
+            "3D ПРОДУКТ ПРОДУКТ 20 20" to "3D продукт 20 20",
+            "МОЛОКО молоко, БЕЗ САХАРА" to "Молоко, без сахара",
+            " \n\t " to "",
+        )
+        cases.forEach { (raw, expected) ->
+            val label = ParsedNutritionLabel(name = LabelValue(raw, .98f, raw))
+            assertEquals(raw, expected, label.draft().name)
+            assertEquals(raw, label.name?.value)
+            assertEquals(raw, label.name?.evidence)
+        }
+    }
+
+    @Test fun nameFormattingIsIndependentOfDeviceLocaleAndKeepsUncertainNamesEmpty() {
+        val originalLocale = java.util.Locale.getDefault()
+        try {
+            java.util.Locale.setDefault(java.util.Locale.forLanguageTag("tr"))
+            val label = ParsedNutritionLabel(name = LabelValue("ICE ICE CREAM", .98f, "ICE ICE CREAM"))
+            assertEquals("Ice cream", label.draft().name)
+            assertEquals("", label.copy(name = label.name!!.copy(confidence = .5f)).draft().name)
+            assertEquals("", ParsedNutritionLabel().draft().name)
+        } finally {
+            java.util.Locale.setDefault(originalLocale)
+        }
+    }
+
     @Test fun russianDenseLabelDecimalCommasAndNetMass() {
         val label = parse("Масса нетто: 240 г", "Пищевая ценность 100 г продукта (средние значения): белки — 11 г; жиры — 6,4 г",
             "в т.ч. насыщенные жирные кислоты — 2,4 г; углеводы — 20,4 г; сахар — 1 г",

@@ -3,7 +3,7 @@ package com.justcal.app.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -16,6 +16,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.justcal.app.R
 import com.justcal.app.ui.theme.CalSpacing
+import com.justcal.app.ui.theme.CalMotion
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -29,6 +30,7 @@ fun HistoryScreen(state: HistoryState, onDay: (Long) -> Unit, onRetry: () -> Uni
     val direction = androidx.compose.ui.platform.LocalLayoutDirection.current
     val formatter = remember(locale) { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale) }
     Scaffold(
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = { CalTopBar(title = { Text(stringResource(R.string.history), style = MaterialTheme.typography.headlineLarge) }) },
         bottomBar = bottomBar,
     ) { padding ->
@@ -36,10 +38,10 @@ fun HistoryScreen(state: HistoryState, onDay: (Long) -> Unit, onRetry: () -> Uni
                 .calContent().consumeWindowInsets(padding),
             contentPadding = PaddingValues(CalSpacing.page, padding.calculateTopPadding() + 16.dp,
                 CalSpacing.page, padding.calculateBottomPadding() + 24.dp),
-            verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
+            verticalArrangement = Arrangement.spacedBy(0.dp)) {
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    FilledTonalButton(onClick = { calendar = true }, modifier = Modifier.heightIn(min = 48.dp)) {
+                Column(Modifier.padding(bottom = CalSpacing.medium), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    CalTonalButton(onClick = { calendar = true }, modifier = Modifier.heightIn(min = 48.dp)) {
                         CalIcon(R.drawable.ic_diary)
                         Spacer(Modifier.width(8.dp))
                         Text(stringResource(R.string.choose_day))
@@ -57,21 +59,27 @@ fun HistoryScreen(state: HistoryState, onDay: (Long) -> Unit, onRetry: () -> Uni
                     Text(stringResource(R.string.history_empty_hint), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            items(state.days, key = { it.dayEpoch }) { day ->
-                Column(Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = { onDay(day.dayEpoch) })
-                    .padding(vertical = CalSpacing.related), verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            val date = LocalDate.ofEpochDay(day.dayEpoch)
-                            Text(if (date == LocalDate.now()) stringResource(R.string.today) else date.format(formatter),
-                                style = MaterialTheme.typography.titleMedium)
-                            Text(pluralStringResource(R.plurals.entries_count, day.entriesCount, day.entriesCount),
-                                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            itemsIndexed(state.days, key = { _, day -> day.dayEpoch }) { index, day ->
+                val date = LocalDate.ofEpochDay(day.dayEpoch)
+                ListItem(
+                    onClick = { onDay(day.dayEpoch) },
+                    modifier = Modifier.fillMaxWidth().animateItem(
+                        fadeInSpec = CalMotion.effects(), placementSpec = CalMotion.spatial(), fadeOutSpec = CalMotion.effects(),
+                    ).calGroupedRow(index, state.days.size),
+                    leadingContent = { CalLeadingIcon(R.drawable.ic_diary) },
+                    contentPadding = PaddingValues(vertical = 16.dp, horizontal = 16.dp),
+                    supportingContent = {
+                        Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.micro)) {
+                            Text(pluralStringResource(R.plurals.entries_count, day.entriesCount, day.entriesCount))
+                            MacroDetail(day.totals)
                         }
-                        EnergyValue(day.totals.energyKcal)
-                    }
-                    MacroDetail(day.totals)
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    },
+                    trailingContent = { EnergyValue(day.totals.energyKcal) },
+                    colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                    shapes = ListItemDefaults.shapes(shape = MaterialTheme.shapes.medium),
+                ) {
+                    Text(if (date == LocalDate.now()) stringResource(R.string.today) else date.format(formatter),
+                        style = MaterialTheme.typography.titleMedium)
                 }
             }
         }
