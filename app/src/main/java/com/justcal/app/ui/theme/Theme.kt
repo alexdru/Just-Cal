@@ -83,7 +83,7 @@ internal val CalShapes = Shapes(
 /** Branded colors by default; dynamic colors are an independent, optional preference. */
 @Composable
 fun JustCalTheme(darkTheme: Boolean = isSystemInDarkTheme(), colorStyle: ColorStyle = ColorStyle.JUST_CAL,
-    splashVisible: Boolean = false, content: @Composable () -> Unit) {
+    splashVisible: Boolean = false, selectionKey: Any? = null, content: @Composable () -> Unit) {
     val context = LocalContext.current
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val colors = androidx.compose.runtime.remember(context, darkTheme, colorStyle, configuration) {
@@ -91,5 +91,5 @@ fun JustCalTheme(darkTheme: Boolean = isSystemInDarkTheme(), colorStyle: ColorSt
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         } else if (darkTheme) DarkColors else LightColors
     }
-    AnimatedBrandTheme(colors, splashVisible, content)
+    AnimatedBrandTheme(colors, splashVisible, selectionKey ?: (darkTheme to colorStyle), content)
 }

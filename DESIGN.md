@@ -1,5 +1,5 @@
 ---
-version: 0.12.2
+version: 0.12.9
 name: Just Cal
 description: Modern Material 3 Expressive for an offline-first native Android food diary.
 colors:
@@ -225,7 +225,7 @@ Do not exclude Android edge gestures or replace Navigation 3.
 | Add Food | Native modal sheet plus directional option/source content; FAB scale/icon coordination |
 | Loading | Isolated expressive LoadingIndicator with static determinate fallback when motion disabled |
 | Completion | Clear text/snackbar and selective confirmation haptic |
-| Theme | 600 ms radial reveal of the new theme over a bounded temporary old frame; cancelable for brightness and Themes |
+| Theme | 600 ms radial reveal over native drawing commands of the previous theme; cancelable for brightness and Themes |
 | Splash exit | Immediate compatibility-splash removal on Android 11; 80 ms native exit on Android 12+, without a branding delay |
 
 Spatial prominence uses expressive springs; frequent utilitarian effects use standard
@@ -237,14 +237,13 @@ reduced-motion preference or infer jank-free behavior from screenshots.
 ## Appearance and automatic settings
 
 Brightness (System/Light/Dark) and palette (Just Cal/Material You) are independent connected
-ToggleButton groups. Required choices cannot be cleared. Minimum targets are 48 dp;
+ToggleButton groups. Required choices cannot be cleared. Pressed choices keep rounded capsule corners with a small spatial scale response and native ripple. Minimum targets are 48 dp;
 FlowRow wraps English/Russian text instead of hiding options behind overflow menus.
 The Themes group offers Just Cal and Material You. Material You is disabled on Android 11; existing stored selections still render the branded fallback there.
 
 Selections apply immediately and persist automatically. There is no Settings Save button.
 The selected control center anchors the same radial reveal for brightness and Themes;
-system-driven changes use the center. The previous rendered frame is captured once at
-no more than 0.6 MP / 1080 px longest edge and discarded after the 600 ms reveal.
+system-driven changes use the center. The entire Appearance panel follows this same circle: background, text and button colors must not switch early. Checked state stays current in both the old and new palettes, without a frozen previous choice. Small draw-only panel layers preserve the old palette outside the circle and retain interrupted color coverage on rapid selections. Replay includes the opaque parent surface around the panel, so its native rounded contour stays unchanged without a temporary outline. They have no accessibility, focus or preference actions. A frame is captured only for a committed palette change, never on pointer down; cancelled touches allocate no image. The old frame is captured from the Compose graphics layer at native resolution and discarded after the 600 ms reveal. Text, icons and strokes retain their original sharpness; never downsample or raster-scale the UI for this transition. Keep one temporary image within 24 MiB; oversized windows use the surface fade.
 The new ColorScheme commits once beneath it; animation reads happen only in drawing.
 Repeated selections capture the visible composite and replace the unfinished reveal.
 Capture failure falls back to a surface fade; disabled animators apply the theme directly.
@@ -269,13 +268,13 @@ not restart the screen or show splash.
 | Settings | Headings outside coherent tonal Profile/Goals/Appearance/Language groups; native navigation rows with leading icon tiles and inner dividers; animated macro disclosure, immediate choices and autosave |
 | Data & Backup | Clear export/import hierarchy, expressive action/loading feedback and completion disclosure; preserve merge default and explicit replace acknowledgement |
 | OCR Diagnostics | Count emphasis, compact interactive scan ListItems and stable item placement; native details sheet, animated disclosures, pinned Save/Share report actions |
-| Add Food | Package → Meal → Manual hierarchy, interactive expressive ListItems, native modal motion and source transition |
+| Add Food | Concise Package → Meal → Manual actions without explanatory subtitles; official Material Symbols Rounded in tonal leading tiles; native modal motion and source transition. The entire Package/Meal source header is one Back target with rounded ripple and merged button semantics |
 | Food Editor / OCR confirmation | Name → per-100-g → consumed amount → animated portion preview; expressive explicit save, preserved IME/error focus, expandable raw OCR evidence |
 | Camera | Unchanged lifecycle/capture crop; native media controls, shutter press/busy feedback and capture-confirmation haptic |
 | Photo Review | Stable Fit image and portrait action hierarchy; expressive confirmation, animated offline OCR loading, actionable error/retry/manual fallback |
 | Shared dialogs / sheets | Semantic colors/variable typography, native modal motion, explicit destructive confirmation and accessible actions |
 
-Saving/deleting food gives a brief parent snackbar after returning; OCR success opens
+Saving/deleting food gives a rounded inverse-surface parent snackbar with a confirmation icon after returning. The native Material3 SnackbarHost supplies MotionScheme entrance/exit, accessible announcements, timeouts and queuing; OCR success opens
 editable confirmation instead of writing automatically. Do not vibrate on every tap.
 Keep native pressed/focus/disabled/selected/loading/error semantics and clear empty states.
 Native ripple and component shape changes provide feedback without delaying action.

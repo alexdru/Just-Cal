@@ -30,15 +30,15 @@ See [DESIGN.md](../DESIGN.md) for actual typography, component, portrait layout 
 contracts and [ARCHITECTURE.md](ARCHITECTURE.md) for retained Navigation 3 stacks, pager
 lifecycle, key-specific immediate persistence and bounded theme reveal rendering.
 Only the Settings entry of Local AI Lab shares the redesigned group; the destination is unchanged. OCR calculations, storage, backup compatibility, CameraX and
-application signing/identity are preserved. The corrective UI version is 0.12.2 / code 19.
+application signing/identity are preserved. The current corrective UI version is 0.12.8 / code 25.
 
 Roboto Flex uses one official OFL variable binary with verified Russian cmap coverage.
 Root MotionScheme is expressive; fast utility effects remain standard. Root swipes and
 tap navigation share one pager state; child screens retain Native Navigation 3 Back.
 Brightness and Themes share a 600 ms radial reveal from the selected control over a temporary
-old frame bounded to 0.6 MP / 1080 px longest edge, with one palette commit. No per-frame
-ColorScheme recomposition; repeated selections replace the visible transition.
-valid text settings debounce and persist automatically without global Save.
+old frame captured from the root Compose GraphicsLayer at native resolution, with one palette commit. No software View.draw, downsampling or raster scaling; text and icon sharpness stays constant. A single transient image is limited to 24 MiB; larger windows use the surface fade. No per-frame
+ColorScheme recomposition; repeated selections replace the visible transition. The Appearance panel uses small native GraphicsLayer recordings in retained palettes with the current selected option. These share the global circle and visible scroll bounds; no separate panel color cutout is exposed. Interrupted color regions are preserved while identical palettes share a layer. Drawing copies have no semantics, focus or preference actions. Capture happens only after a committed palette change, never on pointer down; explicit selection identity also handles unchanged effective colors. Choice feedback keeps capsule clipping throughout press/release with a small spring scale response.
+Valid text settings debounce and persist automatically without global Save.
 Native SplashScreen uses the unmasked leaf vector on Android 11+, without a separate
 Activity or delay. Locale/layoutDirection/screenLayout updates stay in the same Activity.
 Tab ripple is capsule-clipped; FAB exits in 90 ms from the requested tab, without waiting
@@ -79,6 +79,14 @@ mean 6.81 ms, p95 21.46 ms, maximum 90.06 ms. These measure debug CPU work, not
 presented frames or a zero-jank guarantee. The final cold debug launch measured 1.615 s (earlier samples 1.6–1.8 s);
 Android 11 no longer adds a branding exit animation. Release startup/frame benchmarking
 and OnePlus 12 remain unverified in this correction. No Lab runtime was inspected or run.
+
+For 0.12.8, native-resolution root GraphicsLayer capture replaces the downsampled software screenshot. A physical one-pixel/detail regression fails against 0.12.7 (73% maximum channel difference), then passes with unscaled layer capture; the same test also checks Cyrillic text retains its old palette and pixel detail outside the circle. All 17 component/choice tests pass on OnePlus 7T and API 37; 12 focused UI unit tests, debug/instrumentation builds and lint pass (0 errors / 9 existing warnings). Recording on 7T confirms visible text throughout the radial transition. The temporary capture uses up to 24 MiB and is discarded at completion; oversized windows use the surface fade.
+
+For 0.12.7, a contour pixel regression first fails against 0.12.6 (43% maximum channel difference), then passes with opaque rectangular replay and native rounded-edge drawing. All 16 component/choice tests pass on OnePlus 7T and API 37; 12 focused UI unit tests, debug/instrumentation builds and lint pass (0 errors / 9 existing warnings). Native-size crops of a recorded 7T light/dark sequence show no temporary panel outline while its colors follow the same reveal circle.
+
+For 0.12.6, debug and instrumentation APKs build, 12 focused UI unit tests pass, and lint reports 0 errors / 9 existing warnings. All 24 component/settings/navigation cases pass on both OnePlus 7T and API 37. The new panel-color pixel regression first fails against 0.12.5's early-color cutout, then passes with palette-layer replay; the earlier checked-state regressions still pass. Rapid three-palette replacement preserves prior color coverage, exposes only one set of semantic targets, invokes each action once and finishes in the latest palette. A recorded 7T light/dark sequence confirms that the partially scrolled Appearance panel follows the global circle without an early rectangular color change. No pointer-down image allocation or per-frame ColorScheme interpolation is added.
+
+Completion retains rounded inverse-surface snackbars with native SnackbarHost MotionScheme/accessibility. The concise Add Food sheet and official Material Symbols Rounded were verified in 0.12.4, with bundled Apache-2.0 attribution. An earlier API 37 rapid hardware-key input test intermittently reordered `alex`; its isolated retry and latest complete Settings runs pass, so this is not claimed fixed. OnePlus 12 / OxygenOS 16 remains unverified.
 
 ## Official sources
 

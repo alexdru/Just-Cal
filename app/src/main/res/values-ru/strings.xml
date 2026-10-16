@@ -75,11 +75,8 @@
     <string name="macro_goal_error">Введите положительное число до 100 000 г, максимум 2 знака после запятой, или оставьте поле пустым</string>
     <string name="macro_progress">%1$s / %2$s</string>
     <string name="scan_package">Сканировать упаковку</string>
-    <string name="scan_package_hint">Этикетка / готовая еда</string>
     <string name="scan_meal">Сканировать блюдо</string>
-    <string name="scan_meal_hint">Еда на тарелке</string>
     <string name="add_manually">Добавить вручную</string>
-    <string name="add_manually_hint">Ввести пищевую ценность</string>
     <string name="mode_package">Упаковка</string>
     <string name="mode_meal">Блюдо</string>
     <string name="take_photo">Сделать фото</string>
@@ -116,7 +113,6 @@
     <string name="language_english">English</string>
     <string name="language_russian">Русский</string>
     <string name="nutrition_with_unit">%1$s %2$s</string>
-    <string name="scan_capability">Распознаём русские и английские этикетки без интернета. Проверьте значения перед сохранением. Для блюд доступна только проверка фото.</string>
     <string name="review_package_ocr">Прочитаем этикетку на устройстве, затем вы сможете проверить и исправить пищевую ценность. Ничего не сохраняется автоматически.</string>
     <string name="ocr_processing">Распознаём этикетку без интернета…</string>
     <string name="ocr_failed">Не удалось прочитать этикетку. Повторите попытку, выберите более чёткое фото или введите значения вручную.</string>

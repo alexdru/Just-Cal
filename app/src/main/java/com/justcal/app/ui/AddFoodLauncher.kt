@@ -10,6 +10,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -26,23 +28,32 @@ fun AddFoodLauncher(
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss, sheetMaxWidth = CalLayout.readingWidth, sheetState = rememberBottomSheetState(SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
-            Row(Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
-                if (mode != null) IconButton(onClick = { onMode(null) }) {
-                    CalIcon(R.drawable.ic_back, stringResource(R.string.close))
+            val headerAction = if (mode != null) {
+                Modifier.clip(MaterialTheme.shapes.large).clickable(
+                    role = Role.Button,
+                    onClickLabel = stringResource(R.string.close),
+                ) { onMode(null) }
+            } else Modifier
+            Row(
+                Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    .fillMaxWidth().then(headerAction).padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (mode != null) Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                    CalIcon(R.drawable.ic_back, null)
                 }
-                Text(stringResource(if (mode == null) R.string.add_food else mode.label()),
-                    Modifier.padding(vertical = 10.dp), style = MaterialTheme.typography.headlineSmall)
+                Text(
+                    stringResource(mode?.label() ?: R.string.add_food),
+                    Modifier.padding(vertical = 10.dp),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
             }
-            Text(stringResource(if (mode == ScanMode.MEAL) R.string.review_no_recognition else R.string.scan_capability),
-                Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
             AnimatedContent(mode, transitionSpec = { CalMotion.destination(targetState != null) }, label = "food acquisition choices") { currentMode ->
             Column {
             if (currentMode == null) {
-                LauncherAction(R.drawable.ic_package, R.string.scan_package, R.string.scan_package_hint) { onMode(ScanMode.PACKAGE) }
-                LauncherAction(R.drawable.ic_meal, R.string.scan_meal, R.string.scan_meal_hint) { onMode(ScanMode.MEAL) }
-                LauncherAction(R.drawable.ic_add, R.string.add_manually, R.string.add_manually_hint, onManual)
+                LauncherAction(R.drawable.ic_package, R.string.scan_package) { onMode(ScanMode.PACKAGE) }
+                LauncherAction(R.drawable.ic_meal, R.string.scan_meal) { onMode(ScanMode.MEAL) }
+                LauncherAction(R.drawable.ic_edit, R.string.add_manually, onManual)
             } else {
                 LauncherAction(R.drawable.ic_camera, R.string.take_photo) { onSource(ScanRequest(currentMode, dayEpoch), ImageSource.CAMERA) }
                 LauncherAction(R.drawable.ic_photo, R.string.choose_photo) { onSource(ScanRequest(currentMode, dayEpoch), ImageSource.PHOTO_PICKER) }
@@ -54,11 +65,10 @@ fun AddFoodLauncher(
 }
 
 @Composable
-private fun LauncherAction(icon: Int, title: Int, subtitle: Int? = null, onClick: () -> Unit) {
+private fun LauncherAction(icon: Int, title: Int, onClick: () -> Unit) {
     ListItem(
         onClick = onClick,
-        supportingContent = subtitle?.let { { Text(stringResource(it)) } },
-        leadingContent = { CalIcon(icon) },
+        leadingContent = { CalLeadingIcon(icon) },
         modifier = Modifier.fillMaxWidth().heightIn(min = 72.dp).padding(horizontal = 16.dp),
         shapes = ListItemDefaults.shapes(shape = MaterialTheme.shapes.large),
         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),

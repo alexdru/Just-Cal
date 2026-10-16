@@ -75,11 +75,8 @@
     <string name="macro_goal_error">Enter a positive number up to 100,000 g, with at most 2 decimal places, or leave blank</string>
     <string name="macro_progress">%1$s / %2$s</string>
     <string name="scan_package">Scan package</string>
-    <string name="scan_package_hint">Nutrition label / prepared food</string>
     <string name="scan_meal">Scan meal</string>
-    <string name="scan_meal_hint">Food on a plate</string>
     <string name="add_manually">Add manually</string>
-    <string name="add_manually_hint">Enter nutrition yourself</string>
     <string name="mode_package">Package</string>
     <string name="mode_meal">Meal</string>
     <string name="take_photo">Take photo</string>
@@ -120,7 +117,6 @@
     <string name="language_english">English</string>
     <string name="language_russian">Русский</string>
     <string name="nutrition_with_unit">%1$s %2$s</string>
-    <string name="scan_capability">Read Russian and English package labels offline, then check the values before saving. Meal photos support review only.</string>
     <string name="review_package_ocr">Read the label on this device, then review and correct its nutrition. Nothing is saved automatically.</string>
     <string name="ocr_processing">Reading the label offline…</string>
     <string name="ocr_failed">Couldn’t read the label. Try again, choose a sharper photo or enter the values manually.</string>

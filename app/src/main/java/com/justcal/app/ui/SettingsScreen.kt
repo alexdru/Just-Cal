@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import com.justcal.app.ui.theme.CalMotion
+import com.justcal.app.ui.theme.ThemeRevealControls
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
@@ -133,10 +134,13 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit,
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                     SectionTitle(stringResource(R.string.appearance))
+                    ThemeRevealControls { snapshot ->
                     CalGroup {
                     Text(stringResource(R.string.brightness), style = MaterialTheme.typography.titleMedium)
                     SettingsChoiceGroup(
                         options = Appearance.entries,
+                        themeSelection = true,
+                        interactive = !snapshot,
                         selected = state.draft.appearance,
                         enabled = !state.loading,
                         label = { stringResource(when (it) {
@@ -148,11 +152,14 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit,
                     Text(stringResource(R.string.color_style), style = MaterialTheme.typography.titleMedium)
                     SettingsChoiceGroup(
                         options = ColorStyle.entries,
+                        themeSelection = true,
+                        interactive = !snapshot,
                         selected = state.draft.colorStyle,
                         optionEnabled = { it != ColorStyle.MATERIAL_YOU || android.os.Build.VERSION.SDK_INT >= 31 },
                         enabled = !state.loading,
                         label = { stringResource(if (it == ColorStyle.JUST_CAL) R.string.color_just_cal else R.string.color_material_you) },
                     ) { onChange(state.draft.copy(colorStyle = it)) }
+                    }
                     }
                 }
                 if (state.error) {

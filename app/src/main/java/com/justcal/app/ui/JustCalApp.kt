@@ -125,7 +125,8 @@ fun JustCalApp(splashVisible: Boolean = false) {
     var launcherDay by rememberSaveable { mutableStateOf<Long?>(null) }
     var launcherMode by rememberSaveable { mutableStateOf<ScanMode?>(null) }
 
-    JustCalTheme(darkTheme = dark, colorStyle = colorStyle, splashVisible = splashVisible) {
+    JustCalTheme(darkTheme = dark, colorStyle = colorStyle, splashVisible = splashVisible,
+        selectionKey = themeState) {
         val messages = remember { androidx.compose.material3.SnackbarHostState() }
         // Decorate every stack even while inactive, retaining its entry state and ViewModels.
         val entries = stacks.mapValues { (tab, stack) ->
@@ -338,7 +339,7 @@ fun JustCalApp(splashVisible: Boolean = false) {
                     )
                 }
             }
-            androidx.compose.material3.SnackbarHost(messages,
+            CalSnackbarHost(messages,
                 Modifier.align(Alignment.BottomCenter).padding(horizontal = 24.dp)
                     .padding(bottom = if (showNavigation) barDp else 24.dp))
             if (showNavigation) Box(

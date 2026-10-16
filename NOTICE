@@ -18,3 +18,10 @@ This software is based in part on the work of the Independent JPEG Group.
 OCR model revisions and hashes: docs/PACKAGE_OCR.md.
 Full runtime/model license and notice texts are distributed in
 app/src/main/assets/ocr/licenses and included in the APK.
+
+Material Symbols Rounded by Google: document_scanner, restaurant, edit_note,
+photo_camera, photo_library, delete, arrow_back, chevron_right, close, check_circle.
+Source: https://github.com/google/material-design-icons
+Licensed under Apache License 2.0. Android tint metadata was adapted for Compose;
+directional symbols are auto-mirrored.
+Full license: app/src/main/assets/licenses/material-symbols-LICENSE.txt.
