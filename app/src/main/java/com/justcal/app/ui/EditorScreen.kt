@@ -47,8 +47,11 @@ fun EditorScreen(
     state: EditorState, editing: Boolean, onChange: (FoodField, String) -> Unit,
     onSave: () -> Unit, onDelete: () -> Unit, onBack: () -> Unit, onRetry: () -> Unit,
     scan: PackageScanPrefill? = null, claimInitialFocus: () -> Boolean = { false },
+    onChangeDate: (Long) -> Unit = {}, onDuplicate: (Long) -> Unit = {},
 ) {
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
+    var actions by rememberSaveable { mutableStateOf(false) }
+    var dateAction by rememberSaveable { mutableStateOf<String?>(null) }
     val focus = LocalFocusManager.current
     val fieldFocus = remember { FoodField.entries.associateWith { FocusRequester() } }
     val keyboard = LocalSoftwareKeyboardController.current
@@ -95,8 +98,19 @@ fun EditorScreen(
                     },
                     navigationIcon = { IconButton(onClick = onBack) { CalIcon(R.drawable.ic_back, stringResource(R.string.close)) } },
                     actions = {
-                        if (editing && !state.missing) IconButton(onClick = { confirmDelete = true }, enabled = !state.busy && !state.loading) {
-                            CalIcon(R.drawable.ic_delete, stringResource(R.string.delete_food))
+                        if (editing && !state.missing) Box {
+                            IconButton(onClick = { actions = true }, enabled = !state.busy && !state.loading && !state.completed) {
+                                CalIcon(R.drawable.ic_more, stringResource(R.string.entry_actions))
+                            }
+                            EntryActionsMenu(expanded = actions, onDismiss = { actions = false }) { action ->
+                                focus.clearFocus()
+                                keyboard?.hide()
+                                when (action) {
+                                    EntryAction.DUPLICATE -> dateAction = "duplicate"
+                                    EntryAction.CHANGE_DATE -> dateAction = "move"
+                                    EntryAction.DELETE -> confirmDelete = true
+                                }
+                            }
                         }
                     },
                 )
@@ -194,12 +208,20 @@ fun EditorScreen(
             }
         }
     }
-    if (confirmDelete) AlertDialog(
-        onDismissRequest = { confirmDelete = false },
-        title = { Text(stringResource(R.string.delete_title)) },
-        text = { Text(stringResource(R.string.delete_message)) },
-        confirmButton = { TextButton(onClick = { confirmDelete = false; onDelete() }) { Text(stringResource(R.string.delete_confirm), color = MaterialTheme.colorScheme.error) } },
-        dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.cancel)) } },
+    dateAction?.let { action ->
+        EntryDateDialog(
+            initialDay = if (action == "duplicate") java.time.LocalDate.now().toEpochDay() else state.dayEpoch ?: java.time.LocalDate.now().toEpochDay(),
+            duplicate = action == "duplicate",
+            onDismiss = { dateAction = null },
+            onConfirm = { day ->
+                dateAction = null
+                if (action == "duplicate") onDuplicate(day) else onChangeDate(day)
+            },
+        )
+    }
+    if (confirmDelete) EntryDeleteDialog(
+        onDismiss = { confirmDelete = false },
+        onConfirm = { confirmDelete = false; onDelete() },
     )
 }
 

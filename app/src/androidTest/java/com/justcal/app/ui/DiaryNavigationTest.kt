@@ -82,7 +82,8 @@ class DiaryNavigationTest {
             compose.onNodeWithText(label(R.string.save_changes)).performClick()
             compose.waitUntil(5000) { compose.onAllNodes(hasText(editedTotal) and !hasClickAction()).fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithText(name).performScrollTo().performClick()
-            compose.onNodeWithContentDescription(label(R.string.delete_food)).performClick()
+            compose.onNodeWithContentDescription(label(R.string.entry_actions)).performClick()
+            compose.onNodeWithText(label(R.string.delete_food)).performClick()
             compose.onNodeWithText(label(R.string.delete_confirm)).performClick()
             compose.waitUntil(5000) { compose.onAllNodesWithText(name).fetchSemanticsNodes().isEmpty() }
             back()
@@ -95,6 +96,52 @@ class DiaryNavigationTest {
                     database.diaryDao().observeAll().first().filter { it.name == name }.forEach { database.diaryDao().delete(it.id) }
                 }
             } finally { database.close() }
+        }
+    }
+
+    @Test fun duplicateThenMoveKeepsDraftIdentityAndNavigation() {
+        val name = "Entry actions verification " + UUID.randomUUID()
+        val today = LocalDate.now()
+        val destination = today.plusDays(1)
+        val database = Room.databaseBuilder(compose.activity.applicationContext, DiaryDatabase::class.java, "just-cal.db").build()
+        val repository = com.justcal.app.data.RoomDiaryRepository(database.diaryDao())
+        try {
+            val id = runBlocking { repository.save(DiaryEntry(name = name,
+                per100g = NutritionPer100g(20000, 1000, 500, 2000), eatenGramsHundredths = 12500,
+                dayEpoch = today.toEpochDay(), createdAtMillis = System.currentTimeMillis(), source = EntrySource.PACKAGE_SCAN)) }
+            val original = runBlocking { requireNotNull(database.diaryDao().get(id)) }
+            compose.waitUntil(5000) { compose.onAllNodesWithText(name).fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithText(name).performScrollTo().performClick()
+            field(R.string.food_name).performTextReplacement(name + " edited")
+            field(R.string.food_name).performImeAction()
+            compose.onNodeWithContentDescription(label(R.string.entry_actions)).performClick()
+            compose.onNodeWithText(label(R.string.duplicate_entry)).performClick()
+            compose.onNodeWithText(label(R.string.duplicate_entry)).performClick()
+            compose.waitUntil(5000) { runBlocking { database.diaryDao().getAll().count { it.name == name } == 2 } }
+            val copy = runBlocking { database.diaryDao().getAll().single { it.name == name && it.id != id } }
+            assertNotEquals(original.portableId, copy.portableId)
+            assertEquals(original.copy(id = copy.id, portableId = copy.portableId, createdAtMillis = copy.createdAtMillis), copy)
+            field(R.string.food_name).assertTextContains(name + " edited")
+            compose.onNodeWithContentDescription(label(R.string.entry_actions)).performClick()
+            compose.onNodeWithText(label(R.string.change_entry_date)).performClick()
+            compose.onNode(hasText(dateText(destination, FormatStyle.FULL), substring = true, ignoreCase = true) and hasClickAction()).performClick()
+            compose.onNodeWithText(label(R.string.done)).performClick()
+            compose.activityRule.scenario.recreate()
+            compose.onNodeWithText(dateText(destination, FormatStyle.MEDIUM)).assertExists()
+            field(R.string.food_name).assertTextContains(name + " edited")
+            compose.onNodeWithText(label(R.string.save_changes)).performClick()
+            compose.waitUntil(5000) { runBlocking { database.diaryDao().get(id)?.dayEpoch == destination.toEpochDay() } }
+            assertEquals(original.copy(name = name + " edited", dayEpoch = destination.toEpochDay()),
+                runBlocking { database.diaryDao().get(id) })
+            compose.onNodeWithText(name).assertExists()
+            tab(R.string.history).performClick()
+            tab(R.string.home).performClick()
+            compose.onNodeWithText(name).assertExists()
+        } finally {
+            runBlocking {
+                database.diaryDao().getAll().filter { it.name.startsWith(name) }.forEach { database.diaryDao().delete(it.id) }
+            }
+            database.close()
         }
     }
 

@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.justcal.app.data.backup.*
 import com.justcal.app.domain.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
@@ -51,6 +52,38 @@ class DiaryBackupPersistenceTest {
         repository.save(requireNotNull(repository.get(restoredId)).copy(name = "Edited"))
         assertEquals(original.portableId, database.diaryDao().getAll().single().portableId)
         assertTrue(id > 0)
+    }
+
+    @Test fun duplicateMoveTotalsAndBackupRoundTrip() = runBlocking {
+        val repository = RoomDiaryRepository(database.diaryDao())
+        val id = add()
+        val original = requireNotNull(database.diaryDao().get(id))
+        val today = java.time.LocalDate.now().toEpochDay()
+        val destination = today + 30
+        val copyId = repository.duplicate(id, today, 456)
+        val secondId = repository.duplicate(id, destination, 789)
+        val copy = requireNotNull(database.diaryDao().get(copyId))
+        val second = requireNotNull(database.diaryDao().get(secondId))
+        assertEquals(3, setOf(original.id, copy.id, second.id).size)
+        assertEquals(3, setOf(original.portableId, copy.portableId, second.portableId).size)
+        assertEquals(original.copy(id = copy.id, portableId = copy.portableId, dayEpoch = today, createdAtMillis = 456), copy)
+        val initialTotal = NutritionCalculator.total(listOf(original.toDomain()))
+        repository.changeDate(id, destination)
+        val moved = requireNotNull(database.diaryDao().get(id))
+        assertEquals(original.copy(dayEpoch = destination), moved)
+        val all = database.diaryDao().getAll()
+        assertEquals(initialTotal + initialTotal, NutritionCalculator.total(repository.observeDay(destination).first()))
+        assertEquals(initialTotal, NutritionCalculator.total(repository.observeDay(today).first()))
+        assertTrue(repository.observeDay(original.dayEpoch).first().isEmpty())
+        val out = ByteArrayOutputStream()
+        backup.export(out)
+        val snapshot = backup.preview(ByteArrayInputStream(out.toByteArray()))
+        database.diaryDao().deleteAll()
+        assertEquals(3, backup.importBackup(snapshot).imported)
+        val restored = database.diaryDao().getAll()
+        assertEquals(all.associateBy { it.portableId }.mapValues { it.value.copy(id = 0) },
+            restored.associateBy { it.portableId }.mapValues { it.value.copy(id = 0) })
+        assertEquals(3, backup.importBackup(snapshot).skipped)
     }
 
     @Test fun replacementCreatesRecoverableBackupAndInvalidImportLeavesData() = runBlocking {

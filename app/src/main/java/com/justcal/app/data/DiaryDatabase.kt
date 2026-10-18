@@ -47,8 +47,16 @@ interface DiaryDao {
     suspend fun deleteAll()
     @Insert
     suspend fun insert(entry: DiaryEntryEntity): Long
+    @Transaction
+    suspend fun duplicate(id: Long, dayEpoch: Long, createdAtMillis: Long): Long {
+        val original = checkNotNull(get(id)) { "The entry no longer exists" }
+        return insert(original.copy(id = 0, portableId = UUID.randomUUID().toString(),
+            dayEpoch = dayEpoch, createdAtMillis = createdAtMillis))
+    }
     @Update
     suspend fun update(entry: DiaryEntryEntity): Int
+    @Query("UPDATE diary_entries SET dayEpoch = :dayEpoch WHERE id = :id")
+    suspend fun changeDate(id: Long, dayEpoch: Long): Int
     @Query("DELETE FROM diary_entries WHERE id = :id")
     suspend fun delete(id: Long)
 }

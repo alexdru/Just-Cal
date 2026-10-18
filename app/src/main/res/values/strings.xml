@@ -144,4 +144,11 @@
     <string name="food_saved">Food saved</string>
     <string name="food_deleted">Food deleted</string>
     <string name="font_credits">Roboto Flex · font license</string>
+    <string name="entry_actions">Entry actions</string>
+    <string name="duplicate_entry">Duplicate</string>
+    <string name="duplicate_date_title">Duplicate saved entry to</string>
+    <string name="change_entry_date">Change date</string>
+    <string name="entry_duplicated">Entry duplicated</string>
+    <string name="entry_date_changed">Entry date changed</string>
+    <string name="entry_action_error">Couldn’t update this entry. Try again.</string>
 </resources>

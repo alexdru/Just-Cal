@@ -28,6 +28,8 @@ data class EditorState(
     val missing: Boolean = false,
     val storageError: Boolean = false,
     val dayEpoch: Long? = null,
+    val duplicated: Boolean = false,
+    val dateChanged: Boolean = false,
 )
 
 @HiltViewModel(assistedFactory = EditorViewModel.Factory::class)
@@ -41,7 +43,7 @@ class EditorViewModel @AssistedInject constructor(
     private val diagnostics: com.justcal.app.diagnostics.OcrDiagnosticsRepository? = null,
 ) : ViewModel() {
     private var original: DiaryEntry? = null
-    private fun restoredDraft() = FoodField.entries.fold(scan?.label?.draft() ?: FoodDraft()) { draft, field ->
+    private fun restoredDraft(base: FoodDraft = scan?.label?.draft() ?: FoodDraft()) = FoodField.entries.fold(base) { draft, field ->
         draft.with(field, savedState[field.name] ?: draft.value(field))
     }
     private val mutableState = MutableStateFlow(EditorState(draft = restoredDraft(), loading = entryId != null, dayEpoch = dayEpoch))
@@ -57,9 +59,9 @@ class EditorViewModel @AssistedInject constructor(
         viewModelScope.launch {
             try {
                 original = repository.get(requireNotNull(entryId))
-                val draft = if (savedState.get<Boolean>("hasDraft") == true) restoredDraft()
+                val draft = if (savedState.get<Boolean>("hasDraft") == true) restoredDraft(original?.let(FoodDraft::from) ?: FoodDraft())
                     else original?.let(FoodDraft::from) ?: FoodDraft()
-                mutableState.update { it.copy(draft = draft, loading = false, missing = original == null, dayEpoch = original?.dayEpoch) }
+                mutableState.update { it.copy(draft = draft, loading = false, missing = original == null, dayEpoch = savedState.get<Long>("entryDay") ?: original?.dayEpoch) }
                 updatePreview()
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
@@ -90,6 +92,31 @@ class EditorViewModel @AssistedInject constructor(
         mutableState.update { it.copy(preview = food?.let { input -> NutritionCalculator.consumed(input.per100g, input.eatenGramsHundredths) }) }
     }
 
+    fun changeDate(day: Long) {
+        if (original == null || state.value.busy || state.value.completed) return
+        java.time.LocalDate.ofEpochDay(day)
+        savedState["entryDay"] = day
+        mutableState.update { it.copy(dayEpoch = day) }
+    }
+
+    fun duplicate(day: Long) {
+        val id = original?.id ?: return
+        if (state.value.busy || state.value.completed || state.value.duplicated) return
+        java.time.LocalDate.ofEpochDay(day)
+        mutableState.update { it.copy(busy = true, storageError = false) }
+        viewModelScope.launch {
+            try {
+                repository.duplicate(id, day, clock.millis())
+                mutableState.update { it.copy(busy = false, duplicated = true) }
+            } catch (error: Exception) {
+                if (error is CancellationException) throw error
+                mutableState.update { it.copy(busy = false, storageError = true) }
+            }
+        }
+    }
+
+    fun acknowledgeDuplicate() { mutableState.update { it.copy(duplicated = false) } }
+
     fun save() {
         if (state.value.busy || state.value.loading || state.value.completed || state.value.missing) return
         if (entryId != null && original == null) return
@@ -104,13 +131,14 @@ class EditorViewModel @AssistedInject constructor(
                     name = food.name,
                     per100g = food.per100g,
                     eatenGramsHundredths = food.eatenGramsHundredths,
-                    dayEpoch = original?.dayEpoch ?: dayEpoch ?: clock.instant().atZone(ZoneId.systemDefault()).toLocalDate().toEpochDay(),
+                    dayEpoch = state.value.dayEpoch ?: dayEpoch ?: clock.instant().atZone(ZoneId.systemDefault()).toLocalDate().toEpochDay(),
                     createdAtMillis = original?.createdAtMillis ?: clock.millis(),
                     source = original?.source ?: if (scan != null) EntrySource.PACKAGE_SCAN else EntrySource.MANUAL,
                 )
                 repository.save(entry)
                 scan?.let { diagnostics?.corrections(it, state.value.draft) }
-                mutableState.update { it.copy(busy = false, completed = true) }
+                mutableState.update { it.copy(busy = false, completed = true,
+                    dateChanged = original != null && entry.dayEpoch != original?.dayEpoch) }
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
                 mutableState.update { it.copy(busy = false, storageError = true) }

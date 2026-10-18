@@ -30,6 +30,7 @@ fun TodayScreen(
     state: TodayState, onEdit: (Long) -> Unit,
     onGoal: (Int) -> Unit, onRetry: () -> Unit,
     onBack: (() -> Unit)? = null, bottomBar: @Composable () -> Unit,
+    onEntryAction: (DiaryEntry, EntryAction) -> Unit = { _, _ -> }, actionsBusy: Boolean = false,
 ) {
     var showGoal by rememberSaveable { mutableStateOf(false) }
     val locale = LocalConfiguration.current.locales[0]
@@ -108,7 +109,7 @@ fun TodayScreen(
                     Text(androidx.compose.ui.res.pluralStringResource(R.plurals.entries_count, state.entries.size, state.entries.size), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            if (state.loading) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
+            if (state.loading || actionsBusy) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
             if (state.error) item {
                 Column {
                     Text(stringResource(R.string.load_error), color = MaterialTheme.colorScheme.error)
@@ -125,7 +126,8 @@ fun TodayScreen(
                 FoodRow(entry, state.portions.getValue(entry.id),
                     modifier = Modifier.animateItem(
                         fadeInSpec = CalMotion.effects(), placementSpec = CalMotion.spatial(), fadeOutSpec = CalMotion.effects(),
-                    ).calGroupedRow(index, state.entries.size), onClick = { onEdit(entry.id) })
+                    ).calGroupedRow(index, state.entries.size), onClick = { onEdit(entry.id) },
+                    enabled = !actionsBusy, onAction = { onEntryAction(entry, it) })
             }
         }
     }
@@ -133,24 +135,34 @@ fun TodayScreen(
 }
 
 @Composable
-private fun FoodRow(entry: DiaryEntry, portion: ConsumedNutrition, modifier: Modifier = Modifier, onClick: () -> Unit) {
+private fun FoodRow(
+    entry: DiaryEntry, portion: ConsumedNutrition, modifier: Modifier = Modifier, onClick: () -> Unit,
+    enabled: Boolean, onAction: (EntryAction) -> Unit,
+) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
     val weight = java.math.BigDecimal.valueOf(entry.eatenGramsHundredths, 2).stripTrailingZeros()
-    ListItem(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        leadingContent = { CalLeadingIcon(R.drawable.ic_meal) },
-        contentPadding = PaddingValues(vertical = 16.dp, horizontal = 16.dp),
-        supportingContent = {
-            Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.micro)) {
-                Text(stringResource(R.string.nutrition_with_unit,
-                    nutritionText(weight, weight.scale().coerceAtLeast(0)), stringResource(R.string.grams)))
-                MacroDetail(portion)
-            }
-        },
-        trailingContent = { EnergyValue(portion.energyKcal, MaterialTheme.typography.titleLarge) },
-        colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
-        shapes = ListItemDefaults.shapes(shape = MaterialTheme.shapes.medium),
-    ) { Text(entry.name, style = MaterialTheme.typography.titleMedium) }
+    Box(modifier.fillMaxWidth()) {
+        ListItem(
+            onClick = onClick,
+            enabled = enabled,
+            onLongClick = { expanded = true },
+            onLongClickLabel = stringResource(R.string.entry_actions),
+            modifier = Modifier.fillMaxWidth(),
+            leadingContent = { CalLeadingIcon(R.drawable.ic_meal) },
+            contentPadding = PaddingValues(vertical = 16.dp, horizontal = 16.dp),
+            supportingContent = {
+                Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.micro)) {
+                    Text(stringResource(R.string.nutrition_with_unit,
+                        nutritionText(weight, weight.scale().coerceAtLeast(0)), stringResource(R.string.grams)))
+                    MacroDetail(portion)
+                }
+            },
+            trailingContent = { EnergyValue(portion.energyKcal, MaterialTheme.typography.titleLarge) },
+            colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+            shapes = ListItemDefaults.shapes(shape = MaterialTheme.shapes.medium),
+        ) { Text(entry.name, style = MaterialTheme.typography.titleMedium) }
+        EntryActionsMenu(expanded = expanded && enabled, onDismiss = { expanded = false }, onAction = onAction)
+    }
 }
 
 @Composable

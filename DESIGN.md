@@ -263,7 +263,7 @@ not restart the screen or show splash.
 
 | Screen | Presentation and interaction |
 | --- | --- |
-| Home / Day Detail | Opaque surface app-bar host across the window, with scrolling content hidden beneath it; Home date below the app bar at titleLarge; wider calorie numerals; expressive calorie hierarchy, animated amounts/progress, flat macros; connected tonal food rows with leading tiles, inner dividers and outer group corners; stable item placement and date-aware FAB |
+| Home / Day Detail | Opaque surface app-bar host across the window, with scrolling content hidden beneath it; Home date below the app bar at titleLarge; wider calorie numerals; expressive calorie hierarchy, animated amounts/progress, flat macros; connected tonal food rows with leading tiles, inner dividers and outer group corners; long press opens the same compact Expressive action menu as the food editor, with rounded copy/calendar/delete icons; stable item placement and date-aware FAB |
 | Diary | Connected tonal day rows with leading date icon, aligned energy, inner dividers and quiet count/macros; tonal Choose a day |
 | Settings | Headings outside coherent tonal Profile/Goals/Appearance/Language groups; native navigation rows with leading icon tiles and inner dividers; animated macro disclosure, immediate choices and autosave |
 | Data & Backup | Clear export/import hierarchy, expressive action/loading feedback and completion disclosure; preserve merge default and explicit replace acknowledgement |

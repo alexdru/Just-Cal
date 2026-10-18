@@ -141,6 +141,7 @@ fun JustCalApp(splashVisible: Boolean = false) {
                         entry<MainTab> { root ->
                             MainScreen(
                                 root, settingsViewModel, bar = reserveBar,
+                                onMessage = { message -> scope.launch { messages.showSnackbar(message) } },
                                 onLab = { if (stack.lastOrNull() == root) stack.add(LocalAiLab) },
                                 onBackup = { if (stack.lastOrNull() == root) {
                                     settingsViewModel.flushEdits()
@@ -162,7 +163,12 @@ fun JustCalApp(splashVisible: Boolean = false) {
                                 it.create(route.dayEpoch)
                             }
                             val state by viewModel.state.collectAsStateWithLifecycle()
+                            val actions = hiltViewModel<DiaryEntryActionsViewModel>()
+                            val actionState by actions.state.collectAsStateWithLifecycle()
+                            DiaryEntryActionDialogs(actionState, actions::confirm, actions::dismiss,
+                                actions::acknowledgeResult, onMessage = { message -> scope.launch { messages.showSnackbar(message) } })
                             TodayScreen(state,
+                                onEntryAction = actions::request, actionsBusy = actionState.busy,
                                 onEdit = { id ->
                                     if (stack.lastOrNull() == route) stack.add(FoodEditor(id = id, origin = tab))
                                 },
@@ -257,9 +263,17 @@ fun JustCalApp(splashVisible: Boolean = false) {
                             }
                             var removed by remember { mutableStateOf(false) }
                             val completeMessage = androidx.compose.ui.res.stringResource(
-                                if (removed) com.justcal.app.R.string.food_deleted else com.justcal.app.R.string.food_saved,
+                                if (removed) com.justcal.app.R.string.food_deleted else if (state.dateChanged) com.justcal.app.R.string.entry_date_changed else com.justcal.app.R.string.food_saved,
                             )
                             val haptic = LocalHapticFeedback.current
+                            val duplicateMessage = androidx.compose.ui.res.stringResource(com.justcal.app.R.string.entry_duplicated)
+                            LaunchedEffect(state.duplicated) {
+                                if (state.duplicated) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                                    viewModel.acknowledgeDuplicate()
+                                    scope.launch { messages.showSnackbar(duplicateMessage) }
+                                }
+                            }
                             LaunchedEffect(state.completed) {
                                 if (state.completed) {
                                     haptic.performHapticFeedback(HapticFeedbackType.Confirm)
@@ -269,7 +283,8 @@ fun JustCalApp(splashVisible: Boolean = false) {
                             }
                             EditorScreen(state, route.id != null, viewModel::change, viewModel::save,
                                 { removed = true; viewModel.delete() }, close, viewModel::retryLoad, scan = route.scan,
-                                claimInitialFocus = viewModel::claimInitialFocus)
+                                claimInitialFocus = viewModel::claimInitialFocus,
+                                onChangeDate = viewModel::changeDate, onDuplicate = viewModel::duplicate)
                         }
                     },
                 )
@@ -378,14 +393,20 @@ fun JustCalApp(splashVisible: Boolean = false) {
 private fun MainScreen(
     tab: MainTab, settingsViewModel: SettingsViewModel,
     bar: @Composable () -> Unit, onLab: () -> Unit,
-    onBackup: () -> Unit, onDiagnostics: () -> Unit, onEdit: (Long) -> Unit, onDay: (Long) -> Unit,
+    onBackup: () -> Unit, onDiagnostics: () -> Unit, onEdit: (Long) -> Unit,
+    onMessage: (String) -> Unit, onDay: (Long) -> Unit,
 ) {
     when (tab) {
         MainTab.HOME -> {
             val viewModel = hiltViewModel<TodayViewModel>()
             val state by viewModel.state.collectAsStateWithLifecycle()
             LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refreshDate() }
-            TodayScreen(state, onEdit, viewModel::setGoal, viewModel::retry, bottomBar = bar)
+            val actions = hiltViewModel<DiaryEntryActionsViewModel>()
+            val actionState by actions.state.collectAsStateWithLifecycle()
+            DiaryEntryActionDialogs(actionState, actions::confirm, actions::dismiss,
+                actions::acknowledgeResult, onMessage)
+            TodayScreen(state, onEdit, viewModel::setGoal, viewModel::retry, bottomBar = bar,
+                onEntryAction = actions::request, actionsBusy = actionState.busy)
         }
         MainTab.DIARY -> {
             val viewModel = hiltViewModel<HistoryViewModel>()

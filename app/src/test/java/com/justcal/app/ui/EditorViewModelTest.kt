@@ -153,6 +153,69 @@ class EditorViewModelTest {
         assertFalse(vm.claimInitialFocus())
     }
 
+    @Test fun movingRestoresDateAndPartialDraftThenSavesSameEntryOnce() = runTest(dispatcher) {
+        val repository = FakeDiary()
+        val original = DiaryEntry(7, "Food", NutritionPer100g(100, 20, 30, 40), 3750, 12, 99, EntrySource.PACKAGE_SCAN)
+        repository.rows[7] = original
+        val handle = SavedStateHandle()
+        val first = EditorViewModel(repository, handle, clock, 7)
+        advanceUntilIdle()
+        first.change(FoodField.NAME, "Edited")
+        first.changeDate(123)
+        assertEquals(original, repository.rows[7])
+        val restored = EditorViewModel(repository, handle, clock, 7)
+        advanceUntilIdle()
+        assertEquals(first.state.value.draft, restored.state.value.draft)
+        assertEquals(123L, restored.state.value.dayEpoch)
+        restored.save(); restored.save()
+        advanceUntilIdle()
+        assertEquals(original.copy(name = "Edited", dayEpoch = 123), repository.rows[7])
+        assertEquals(1, repository.saves)
+        assertTrue(restored.state.value.dateChanged)
+    }
+
+    @Test fun duplicateCopiesSavedFoodAndKeepsUnsavedDraftWithSubmissionGuard() = runTest(dispatcher) {
+        val repository = FakeDiary()
+        val original = DiaryEntry(7, "Food", NutritionPer100g(100, 20, 30, 40), 3750, 12, 99, EntrySource.PACKAGE_SCAN)
+        repository.rows[7] = original
+        val vm = EditorViewModel(repository, SavedStateHandle(), clock, 7)
+        advanceUntilIdle()
+        vm.change(FoodField.NAME, "Unsaved")
+        vm.changeDate(77)
+        val today = clock.instant().atZone(ZoneOffset.UTC).toLocalDate().toEpochDay()
+        vm.duplicate(today); vm.duplicate(today)
+        advanceUntilIdle()
+        vm.duplicate(today)
+        advanceUntilIdle()
+        assertEquals(1, repository.saves)
+        val copy = repository.rows.values.single { it.id != 7L }
+        assertEquals(original.copy(id = copy.id, dayEpoch = today, createdAtMillis = clock.millis()), copy)
+        assertEquals(original, repository.rows[7])
+        assertEquals("Unsaved", vm.state.value.draft.name)
+        assertEquals(77L, vm.state.value.dayEpoch)
+        assertFalse(vm.state.value.completed)
+        vm.acknowledgeDuplicate()
+        vm.duplicate(today + 10)
+        advanceUntilIdle()
+        assertEquals(3, repository.rows.size)
+        assertEquals(2, repository.saves)
+    }
+
+    @Test fun failedDuplicateCanRetryWithoutLosingDraft() = runTest(dispatcher) {
+        val repository = FakeDiary()
+        repository.rows[7] = DiaryEntry(7, "Food", NutritionPer100g(100, 0, 0, 0), 10000, 12, 99)
+        val vm = EditorViewModel(repository, SavedStateHandle(), clock, 7)
+        advanceUntilIdle()
+        repository.fail = true
+        vm.duplicate(123); advanceUntilIdle()
+        assertTrue(vm.state.value.storageError)
+        assertEquals(1, repository.rows.size)
+        repository.fail = false
+        vm.duplicate(123); advanceUntilIdle()
+        assertTrue(vm.state.value.duplicated)
+        assertEquals("Food", vm.state.value.draft.name)
+    }
+
     private class FakeDiary : DiaryRepository {
         val rows = mutableMapOf<Long, DiaryEntry>()
         var fail = false
@@ -167,6 +230,11 @@ class EditorViewModelTest {
             val id = entry.id.takeIf { it != 0L } ?: (rows.size + 1L)
             rows[id] = entry.copy(id = id)
             return id
+        }
+        override suspend fun duplicate(id: Long, dayEpoch: Long, createdAtMillis: Long): Long =
+            save(requireNotNull(rows[id]).copy(id = 0, dayEpoch = dayEpoch, createdAtMillis = createdAtMillis))
+        override suspend fun changeDate(id: Long, dayEpoch: Long) {
+            rows[id] = requireNotNull(rows[id]).copy(dayEpoch = dayEpoch)
         }
         override suspend fun delete(id: Long) {
             if (fail) error("Storage unavailable")

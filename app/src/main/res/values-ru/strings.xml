@@ -140,4 +140,11 @@
     <string name="food_saved">Продукт сохранён</string>
     <string name="food_deleted">Продукт удалён</string>
     <string name="font_credits">Roboto Flex · лицензия шрифта</string>
+    <string name="entry_actions">Действия с записью</string>
+    <string name="duplicate_entry">Дублировать</string>
+    <string name="duplicate_date_title">Копия сохранённой записи на дату</string>
+    <string name="change_entry_date">Изменить дату</string>
+    <string name="entry_duplicated">Запись продублирована</string>
+    <string name="entry_date_changed">Дата записи изменена</string>
+    <string name="entry_action_error">Не удалось выполнить действие с записью. Повторите попытку.</string>
 </resources>
