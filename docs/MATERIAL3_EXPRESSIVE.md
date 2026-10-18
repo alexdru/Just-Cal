@@ -30,14 +30,14 @@ See [DESIGN.md](../DESIGN.md) for actual typography, component, portrait layout 
 contracts and [ARCHITECTURE.md](ARCHITECTURE.md) for retained Navigation 3 stacks, pager
 lifecycle, key-specific immediate persistence and bounded theme reveal rendering.
 Only the Settings entry of Local AI Lab shares the redesigned group; the destination is unchanged. OCR calculations, storage, backup compatibility, CameraX and
-application signing/identity are preserved. The current corrective UI version is 0.12.8 / code 25.
+application signing/identity are preserved. The current corrective UI version is 0.12.11 / code 28.
 
 Roboto Flex uses one official OFL variable binary with verified Russian cmap coverage.
 Root MotionScheme is expressive; fast utility effects remain standard. Root swipes and
 tap navigation share one pager state; child screens retain Native Navigation 3 Back.
 Brightness and Themes share a 600 ms radial reveal from the selected control over a temporary
 old frame captured from the root Compose GraphicsLayer at native resolution, with one palette commit. No software View.draw, downsampling or raster scaling; text and icon sharpness stays constant. A single transient image is limited to 24 MiB; larger windows use the surface fade. No per-frame
-ColorScheme recomposition; repeated selections replace the visible transition. The Appearance panel uses small native GraphicsLayer recordings in retained palettes with the current selected option. These share the global circle and visible scroll bounds; no separate panel color cutout is exposed. Interrupted color regions are preserved while identical palettes share a layer. Drawing copies have no semantics, focus or preference actions. Capture happens only after a committed palette change, never on pointer down; explicit selection identity also handles unchanged effective colors. Choice feedback keeps capsule clipping throughout press/release with a small spring scale response.
+ColorScheme recomposition; repeated selections replace the visible transition. The Appearance panel uses small native GraphicsLayer recordings in retained palettes with the current selected option. These share the global circle and visible scroll bounds; no separate panel color cutout is exposed. Interrupted color regions are preserved while identical palettes share a layer. Drawing copies have no semantics, focus or preference actions. Capture happens only after a committed palette change, never on pointer down; explicit selection identity also handles unchanged effective colors. Choice feedback retains native connected/capsule geometry and tonal fill. A single 120 ms outline animation is shared across live/old-palette copies, with no nested native shape spring or scale animation; press-to-checked handoff keeps the same animation target.
 Valid text settings debounce and persist automatically without global Save.
 Native SplashScreen uses the unmasked leaf vector on Android 11+, without a separate
 Activity or delay. Locale/layoutDirection/screenLayout updates stay in the same Activity.
@@ -79,6 +79,10 @@ mean 6.81 ms, p95 21.46 ms, maximum 90.06 ms. These measure debug CPU work, not
 presented frames or a zero-jank guarantee. The final cold debug launch measured 1.615 s (earlier samples 1.6–1.8 s);
 Android 11 no longer adds a branding exit animation. Release startup/frame benchmarking
 and OnePlus 12 remain unverified in this correction. No Lab runtime was inspected or run.
+
+For 0.12.11, 23 component/choice/rendering cases pass on 7T, including frame-by-frame equality of live/draw-only press and release silhouettes, bounded settling after rapid changes and deferring theme capture until the control motion settles. This avoids a readback stall halfway through the outline morph. Debug/instrumentation builds, 12 UI unit tests and lint pass (0 errors / 8 existing warnings). The native connected contours, earlier theme/selection regressions, populated header and navigation-shadow checks remain covered.
+
+For 0.12.10, three pixel regressions first reproduce the transparent scrolled app bar, lost navigation shadow and invisible connected segments against 0.12.9. A 12-entry Home fixture checks scrolling both the calorie summary and final diary rows behind an unchanged opaque header, and retains row actions. Native connected choice shapes/visible tonal fill and content-drawn dropShadow restore the other two regressions. The 20 component/choice/rendering cases pass on 7T, together with 12 UI unit tests, debug/instrumentation builds and lint (0 errors / 8 existing warnings). Populated scroll screenshots and Settings groups were inspected on 7T; user diary data is untouched.
 
 For 0.12.8, native-resolution root GraphicsLayer capture replaces the downsampled software screenshot. A physical one-pixel/detail regression fails against 0.12.7 (73% maximum channel difference), then passes with unscaled layer capture; the same test also checks Cyrillic text retains its old palette and pixel detail outside the circle. All 17 component/choice tests pass on OnePlus 7T and API 37; 12 focused UI unit tests, debug/instrumentation builds and lint pass (0 errors / 9 existing warnings). Recording on 7T confirms visible text throughout the radial transition. The temporary capture uses up to 24 MiB and is discarded at completion; oversized windows use the surface fade.
 

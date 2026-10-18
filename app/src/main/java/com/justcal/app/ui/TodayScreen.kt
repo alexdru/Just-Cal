@@ -57,7 +57,7 @@ fun TodayScreen(
     ) { padding ->
         LazyColumn(
             Modifier.padding(start = padding.calculateStartPadding(direction), end = padding.calculateEndPadding(direction))
-                .calContent().consumeWindowInsets(padding),
+                .calContent().consumeWindowInsets(padding).testTag("today_list"),
             contentPadding = PaddingValues(
                 start = CalSpacing.page, end = CalSpacing.page,
                 top = padding.calculateTopPadding() + CalSpacing.dense,

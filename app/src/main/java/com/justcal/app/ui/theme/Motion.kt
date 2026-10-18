@@ -15,12 +15,14 @@ object CalMotion {
     const val navigationDurationMillis = 160 // Legacy Lab compatibility only.
     const val themeRevealMillis = 600
     const val fabExitMillis = 90
+    const val choiceShapeMillis = 120
     const val debounceMillis = 550L
     const val splashExitMillis = 80L
     val expressive = MotionScheme.expressive()
     val standard = MotionScheme.standard()
     fun <T> tab(): FiniteAnimationSpec<T> = spring(dampingRatio = 1f, stiffness = 500f)
     fun progress() = standard.defaultEffectsSpec<Float>()
+    fun choiceShape(): FiniteAnimationSpec<Float> = tween(choiceShapeMillis, easing = FastOutSlowInEasing)
     fun <T> spatial(): FiniteAnimationSpec<T> = expressive.defaultSpatialSpec()
     fun <T> fast(): FiniteAnimationSpec<T> = expressive.fastSpatialSpec()
     fun <T> effects(): FiniteAnimationSpec<T> = standard.fastEffectsSpec()

@@ -3,6 +3,10 @@ package com.justcal.app.ui
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
@@ -13,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.stringResource
@@ -68,8 +73,13 @@ fun FloatingNavigation(
                 }
                 }
             }
-            Surface(shape = RoundedCornerShape(32.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh, shadowElevation = 2.dp) {
+            // Draw the quiet shadow as content so native layer snapshots retain it too.
+            Surface(modifier = Modifier.testTag("floating_navigation_pill").dropShadow(
+                shape = RoundedCornerShape(32.dp),
+                shadow = Shadow(radius = 4.dp, color = Color.Black.copy(alpha = 0.18f),
+                    offset = DpOffset(0.dp, 2.dp)),
+            ), shape = RoundedCornerShape(32.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh) {
                 Box(Modifier.padding(6.dp).width(tabWidth * 3).height(IntrinsicSize.Min)) {
                     Box(Modifier.width(tabWidth).fillMaxHeight()
                         .graphicsLayer { translationX = position().coerceIn(0f, 2f) * tabWidth.toPx() }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Density
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -129,6 +130,93 @@ class SettingsChoiceGroupTest {
             assertCapsule()
             compose.mainClock.advanceTimeBy(600)
             assertCapsule()
+            compose.onNodeWithText("Light").assertIsOn()
+        } finally {
+            compose.mainClock.autoAdvance = true
+        }
+    }
+
+    @Test fun oldPaletteCopySharesTheLivePressAndReleaseOutline() {
+        compose.setContent {
+            val motions = remember { mutableMapOf<Pair<List<*>, Any?>, SettingsChoiceMotion>() }
+            var selected by remember { mutableStateOf("A") }
+            androidx.compose.material3.MaterialTheme(colorScheme = androidx.compose.material3.lightColorScheme(
+                primary = androidx.compose.ui.graphics.Color.Blue,
+                surfaceContainerHighest = androidx.compose.ui.graphics.Color.Blue,
+            )) {
+                CompositionLocalProvider(LocalSettingsChoiceMotions provides motions) {
+                    androidx.compose.foundation.layout.Column(Modifier.background(androidx.compose.ui.graphics.Color.White)) {
+                        Box(Modifier.testTag("live")) {
+                            SettingsChoiceGroup(listOf("A", "B"), selected, label = { it }) { selected = it }
+                        }
+                        Box(Modifier.testTag("old_palette")) {
+                            SettingsChoiceGroup(listOf("A", "B"), selected, interactive = false, label = { it }) {}
+                        }
+                    }
+                }
+            }
+        }
+        fun button(parent: String) = compose.onNode(
+            hasText("B") and hasAnyAncestor(hasTestTag(parent)),
+        )
+        fun outline(parent: String): List<Boolean> {
+            val pixels = button(parent).captureToImage().toPixelMap()
+            return buildList {
+                for (y in 0 until pixels.height / 3) {
+                    for (x in 0 until pixels.height / 3) add(pixels[x, y].red < 0.9f)
+                }
+            }
+        }
+        compose.mainClock.autoAdvance = false
+        try {
+            button("live").performTouchInput { down(center) }
+            repeat(5) {
+                compose.mainClock.advanceTimeBy(32)
+                assertEquals("Draw-only palettes must follow the same in-flight outline",
+                    outline("live"), outline("old_palette"))
+            }
+            button("live").performTouchInput { up() }
+            repeat(5) {
+                compose.mainClock.advanceTimeBy(32)
+                assertEquals("Release must not restart rounding in another palette",
+                    outline("live"), outline("old_palette"))
+            }
+            button("live").assertIsOn()
+        } finally {
+            compose.mainClock.autoAdvance = true
+        }
+    }
+
+    @Test fun roundingSettlesPromptlyAfterRapidSelectionChanges() {
+        var selected by mutableStateOf("System")
+        compose.setContent {
+            androidx.compose.material3.MaterialTheme(colorScheme = androidx.compose.material3.lightColorScheme(
+                primary = androidx.compose.ui.graphics.Color.Blue,
+                surfaceContainerHighest = androidx.compose.ui.graphics.Color.Blue,
+            )) {
+                Box(Modifier.background(androidx.compose.ui.graphics.Color.White)) {
+                    SettingsChoiceGroup(listOf("System", "Light", "Dark"), selected, label = { it }) { selected = it }
+                }
+            }
+        }
+        compose.mainClock.autoAdvance = false
+        try {
+            compose.onNodeWithText("Dark").performClick()
+            compose.mainClock.advanceTimeBy(32)
+            compose.onNodeWithText("Light").performClick()
+            compose.mainClock.advanceTimeBy(160)
+            fun silhouette(): List<Boolean> {
+                val pixels = compose.onNodeWithText("Light").captureToImage().toPixelMap()
+                return buildList {
+                    for (y in 0 until pixels.height / 3) {
+                        for (x in 0 until pixels.height / 3) add(pixels[x, y].red < 0.9f)
+                    }
+                }
+            }
+            val promptlySettled = silhouette()
+            compose.mainClock.advanceTimeBy(800)
+            assertEquals("Rounding must finish promptly without a long spring tail",
+                silhouette(), promptlySettled)
             compose.onNodeWithText("Light").assertIsOn()
         } finally {
             compose.mainClock.autoAdvance = true

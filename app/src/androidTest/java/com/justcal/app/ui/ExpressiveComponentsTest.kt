@@ -138,6 +138,38 @@ class ExpressiveComponentsTest {
         }
     }
 
+    @Test fun themeCaptureWaitsForControlOutlineToSettle() {
+        var dark by mutableStateOf(false)
+        val settled = kotlinx.coroutines.CompletableDeferred<Unit>()
+        compose.setContent {
+            val colors = androidx.compose.material3.lightColorScheme(
+                surface = if (dark) Color.Black else Color.White,
+            )
+            com.justcal.app.ui.theme.AnimatedBrandTheme(colors, false) {
+                val origin = com.justcal.app.ui.theme.LocalThemeRevealOrigin.current
+                androidx.compose.runtime.SideEffect {
+                    origin.awaitControlMotion = { settled.await() }
+                }
+                androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize()) {}
+            }
+        }
+        compose.mainClock.autoAdvance = false
+        try {
+            compose.runOnIdle { dark = true }
+            compose.mainClock.advanceTimeBy(200)
+            val waiting = compose.onRoot().captureToImage().toPixelMap()
+            org.junit.Assert.assertTrue("Capture must wait while the control is still moving",
+                waiting[waiting.width / 2, waiting.height / 2].red > 0.95f)
+            compose.runOnIdle { settled.complete(Unit) }
+            compose.mainClock.advanceTimeBy(1000)
+            val finished = compose.onRoot().captureToImage().toPixelMap()
+            org.junit.Assert.assertTrue("The reveal must complete after the control settles",
+                finished[finished.width / 2, finished.height / 2].red < 0.05f)
+        } finally {
+            compose.mainClock.autoAdvance = true
+        }
+    }
+
     @Test fun radialThemeRevealKeepsOldFrameOutsideTheExpandingCircle() {
         var dark by mutableStateOf(false)
         compose.setContent {

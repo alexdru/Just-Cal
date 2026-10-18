@@ -1,10 +1,12 @@
 package com.justcal.app.ui
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -80,7 +82,8 @@ fun Modifier.calContent(maxWidth: Dp = CalLayout.diaryWidth): Modifier =
 @Composable
 fun CalTopBar(title: @Composable () -> Unit, onBack: (() -> Unit)? = null,
     maxWidth: Dp = CalLayout.diaryWidth) {
-    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+    Box(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface).testTag("cal_top_bar"),
+        contentAlignment = Alignment.TopCenter) {
         TopAppBar(
             modifier = Modifier.widthIn(max = maxWidth).fillMaxWidth()
                 .padding(horizontal = if (onBack == null) CalSpacing.small else 0.dp),

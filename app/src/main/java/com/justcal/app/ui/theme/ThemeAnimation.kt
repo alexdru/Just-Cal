@@ -36,6 +36,7 @@ class ThemeRevealOrigin {
     var position: Offset? = null
     internal var controlsArea by mutableStateOf(Path())
     internal var controlsPosition = Offset.Zero
+    internal var awaitControlMotion: (suspend () -> Unit)? = null
     internal var regions by mutableStateOf<List<ThemePaletteRegion>>(emptyList())
     internal val controlLayers = mutableMapOf<List<Color>, GraphicsLayer>()
 }
@@ -109,6 +110,15 @@ internal fun AnimatedBrandTheme(
         } else {
             // Capturing the currently rendered composite also replaces an unfinished
             // transition without flashing an older palette on rapid selections.
+            // Let selection morphs finish before GPU readback can stall a frame.
+            // The first frame gives the control's selection effect time to start.
+            origin.awaitControlMotion?.let { awaitMotion ->
+                withFrameNanos { }
+                awaitMotion()
+                // Let the final outline reach the recorded root layer before capture.
+                withFrameNanos { }
+                withFrameNanos { }
+            }
             // Keep interrupted color coverage for the small live control layers as well.
             val size = Size(canvasSize.width.toFloat(), canvasSize.height.toFloat())
             val oldRegions = origin.freezeRegions(displayed, size,

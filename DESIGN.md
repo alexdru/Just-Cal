@@ -1,5 +1,5 @@
 ---
-version: 0.12.9
+version: 0.12.11
 name: Just Cal
 description: Modern Material 3 Expressive for an offline-first native Android food diary.
 colors:
@@ -237,7 +237,7 @@ reduced-motion preference or infer jank-free behavior from screenshots.
 ## Appearance and automatic settings
 
 Brightness (System/Light/Dark) and palette (Just Cal/Material You) are independent connected
-ToggleButton groups. Required choices cannot be cleared. Pressed choices keep rounded capsule corners with a small spatial scale response and native ripple. Minimum targets are 48 dp;
+ToggleButton groups. Required choices cannot be cleared. Unselected choices retain connected leading/middle/trailing corners with a visible surfaceContainerHighest fill. Selected and pressed choices use capsule shapes with one bounded 120 ms outline transition and native ripple. The real control and old-palette draw copies share press/roundness state; releasing a newly selected choice must not restart the morph. There is no additional scale animation or nested shape spring. Theme-frame capture waits until the control outlines finish, so readback cannot pause a morph halfway; no outer capsule clip may erase the connected contours. Minimum targets are 48 dp;
 FlowRow wraps English/Russian text instead of hiding options behind overflow menus.
 The Themes group offers Just Cal and Material You. Material You is disabled on Android 11; existing stored selections still render the branded fallback there.
 
@@ -263,7 +263,7 @@ not restart the screen or show splash.
 
 | Screen | Presentation and interaction |
 | --- | --- |
-| Home / Day Detail | Home date below the app bar at titleLarge; wider calorie numerals; expressive calorie hierarchy, animated amounts/progress, flat macros; connected tonal food rows with leading tiles, inner dividers and outer group corners; stable item placement and date-aware FAB |
+| Home / Day Detail | Opaque surface app-bar host across the window, with scrolling content hidden beneath it; Home date below the app bar at titleLarge; wider calorie numerals; expressive calorie hierarchy, animated amounts/progress, flat macros; connected tonal food rows with leading tiles, inner dividers and outer group corners; stable item placement and date-aware FAB |
 | Diary | Connected tonal day rows with leading date icon, aligned energy, inner dividers and quiet count/macros; tonal Choose a day |
 | Settings | Headings outside coherent tonal Profile/Goals/Appearance/Language groups; native navigation rows with leading icon tiles and inner dividers; animated macro disclosure, immediate choices and autosave |
 | Data & Backup | Clear export/import hierarchy, expressive action/loading feedback and completion disclosure; preserve merge default and explicit replace acknowledgement |
