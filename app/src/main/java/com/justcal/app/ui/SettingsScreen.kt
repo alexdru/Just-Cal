@@ -86,7 +86,7 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit,
                 .testTag("settings_scroll").verticalScroll(rememberScrollState()).padding(horizontal = CalSpacing.page)
                 .padding(top = CalSpacing.medium, bottom = overlaySpace),
                 verticalArrangement = Arrangement.spacedBy(CalSpacing.section)) {
-                if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
+                if (state.loading) CalLoadingRow()
                 Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                     SectionTitle(stringResource(R.string.profile))
                     CalGroup {
@@ -190,6 +190,7 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit,
                         }
                     }
                 }
+                UpdateSettings()
                 AboutSettings()
             }
         }

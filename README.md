@@ -36,7 +36,8 @@ A content-sized Compose navigation pill stays horizontally centered on Home, Dia
 - CameraX rear-camera capture and Android Photo Picker feed a shared local image preparation and review flow. Camera access is requested only for taking a photo; choosing a photo needs no broad storage permission.
 - Package review runs bundled PP-OCRv5 offline text detection and Russian/English eslav recognition, then deterministic nutrition parsing. The existing editor shows editable confirmation, raw recognized text, uncertainty and net weight; explicit save retains the selected diary date. Scan meal keeps its photo-ready endpoint. See [docs/PACKAGE_OCR.md](docs/PACKAGE_OCR.md).
 - New manual entries start with an empty required Amount eaten and focus the empty Food name once. Existing entries preserve their saved amount and do not reopen the keyboard automatically.
-- Private temporary images use URI references, EXIF-aware decoding and bounded downsampling. No network permission, uploads, cloud backup, accounts or external food database.
+- Private temporary images use URI references, EXIF-aware decoding and bounded downsampling. Diary, OCR and Local AI remain offline, without uploads, cloud backup, accounts or an external food database.
+- Settings → Updates checks the official GitHub Releases on app resume, at most once daily, with an off switch and a manual check. Downloads are explicit; size, SHA-256, package, version and signing certificate are verified before Android asks to install. Network access is confined to update metadata and APK delivery; GitHub receives a normal request including IP address and app version. See [docs/APP_UPDATES.md](docs/APP_UPDATES.md).
 
 ## Experimental Local AI Lab
 

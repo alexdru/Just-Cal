@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.Alignment
@@ -38,13 +39,41 @@ fun CalTonalButton(
         modifier = modifier.heightIn(min = 48.dp), enabled = enabled, content = content)
 }
 
-/** Only this boundary opts into the experimental morphing loading indicator. */
+/** Contained loading for waiting; reduced motion keeps a static shape and indeterminate semantics. */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun CalLoading(modifier: Modifier = Modifier) {
-    if (LocalMotionEnabled.current) LoadingIndicator(modifier)
-    else CircularProgressIndicator(progress = { 0.35f }, modifier = modifier
+fun CalLoading(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
+) {
+    if (LocalMotionEnabled.current) ContainedLoadingIndicator(modifier = modifier,
+        indicatorColor = color, containerColor = containerColor)
+    else ContainedLoadingIndicator(progress = { 0.35f }, indicatorColor = color, containerColor = containerColor, modifier = modifier
         .clearAndSetSemantics { progressBarRangeInfo = androidx.compose.ui.semantics.ProgressBarRangeInfo.Indeterminate })
+}
+
+/** Linear flat-and-wavy progress driven by measured download bytes. */
+@Composable
+fun CalProgress(progress: () -> Float, modifier: Modifier = Modifier) {
+    LinearWavyProgressIndicator(progress = progress, modifier = modifier,
+        waveSpeed = if (LocalMotionEnabled.current) WavyProgressIndicatorDefaults.LinearDeterminateWavelength else 0.dp)
+}
+
+/** A linear work indicator for ongoing processing, distinct from compact loading feedback. */
+@Composable
+fun CalWorkProgressRow(modifier: Modifier = Modifier) {
+    if (LocalMotionEnabled.current) LinearWavyProgressIndicator(modifier.fillMaxWidth())
+    else LinearWavyProgressIndicator(progress = { 0.35f }, waveSpeed = 0.dp,
+        modifier = modifier.fillMaxWidth().clearAndSetSemantics {
+            progressBarRangeInfo = androidx.compose.ui.semantics.ProgressBarRangeInfo.Indeterminate
+        })
+}
+
+/** Shared centered loading row for brief data waits. */
+@Composable
+fun CalLoadingRow(modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CalLoading(Modifier.size(48.dp)) }
 }
 
 /** Animate presentation only; every target is already formatted from exact domain arithmetic. */

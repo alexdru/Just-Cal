@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.stringResource
@@ -43,6 +44,7 @@ fun FloatingNavigation(
     selected: MainTab, onSelect: (MainTab) -> Unit, onAdd: (() -> Unit)?,
     position: () -> Float = { selected.ordinal.toFloat() },
     launcherOpen: Boolean = false,
+    onPillHeightChanged: (Int) -> Unit = {},
 ) {
     val fabAngle by animateFloatAsState(if (launcherOpen) 45f else 0f, CalMotion.fast(), label = "add food invitation")
     val fabScale by animateFloatAsState(if (launcherOpen) 0.92f else 1f, CalMotion.fast(), label = "add food depth")
@@ -74,7 +76,7 @@ fun FloatingNavigation(
                 }
             }
             // Draw the quiet shadow as content so native layer snapshots retain it too.
-            Surface(modifier = Modifier.testTag("floating_navigation_pill").dropShadow(
+            Surface(modifier = Modifier.testTag("floating_navigation_pill").onSizeChanged { onPillHeightChanged(it.height) }.dropShadow(
                 shape = RoundedCornerShape(32.dp),
                 shadow = Shadow(radius = 4.dp, color = Color.Black.copy(alpha = 0.18f),
                     offset = DpOffset(0.dp, 2.dp)),

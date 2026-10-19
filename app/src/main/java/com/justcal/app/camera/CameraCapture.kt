@@ -16,6 +16,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import com.justcal.app.ui.CalIcon
+import com.justcal.app.ui.CalLoading
 import com.justcal.app.ui.theme.CalLayout
 import com.justcal.app.ui.theme.CalSpacing
 import java.util.concurrent.TimeUnit
@@ -226,7 +227,7 @@ fun CameraCapture(
                     drawCircle(Color.White, radius = (size.minDimension / 2) - 3.dp.toPx(), style = Stroke(2.dp.toPx()))
                 }
             }
-            if (!ready) CircularProgressIndicator(Modifier.align(Alignment.Center), color = Color.White)
+            if (!ready) CalLoading(Modifier.align(Alignment.Center), color = Color.White, containerColor = Color.Black)
         }
         val captureLabel = stringResource(R.string.capture_photo)
         val capturingLabel = stringResource(R.string.capturing_photo)
@@ -289,7 +290,7 @@ fun CameraCapture(
                             .border(3.dp, Color.White, CircleShape).padding(6.dp)
                             .semantics { contentDescription = captureLabel; if (takingPhoto) stateDescription = capturingLabel },
                     ) {
-                        if (takingPhoto) CircularProgressIndicator(Modifier.size(28.dp), color = Color.Black)
+                        if (takingPhoto) CalLoading(Modifier.size(28.dp), color = Color.Black, containerColor = Color.White)
                     }
                     Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                         FilledTonalIconButton(onClick = onGallery, enabled = !takingPhoto,

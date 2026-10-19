@@ -109,7 +109,7 @@ fun TodayScreen(
                     Text(androidx.compose.ui.res.pluralStringResource(R.plurals.entries_count, state.entries.size, state.entries.size), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            if (state.loading || actionsBusy) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
+            if (state.loading || actionsBusy) item { CalLoadingRow() }
             if (state.error) item {
                 Column {
                     Text(stringResource(R.string.load_error), color = MaterialTheme.colorScheme.error)

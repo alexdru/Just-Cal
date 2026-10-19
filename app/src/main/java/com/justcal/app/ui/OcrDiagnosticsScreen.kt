@@ -291,7 +291,7 @@ private fun DiagnosticReportActions(selected: Int, busy: Boolean, error: Boolean
         .padding(horizontal = CalSpacing.page, vertical = CalSpacing.related)) {
             Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
                 if (selected > 0) Text(stringResource(R.string.diag_selected, selected), style = MaterialTheme.typography.labelLarge)
-                if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+                if (busy) CalWorkProgressRow()
                 if (error) Text(stringResource(R.string.diag_error), color = MaterialTheme.colorScheme.error)
                 if (saved) Text(stringResource(R.string.diag_saved), color = MaterialTheme.colorScheme.primary)
                 BoxWithConstraints {

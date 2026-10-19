@@ -1,0 +1,8 @@
+<resources>
+    <string name="update_mock_notes">Тестовый релиз.\n\n• Улучшено добавление еды.\n• Доработана навигация.</string>
+    <string name="update_mock_available">Доступно</string>
+    <string name="update_mock_current">Нет обновлений</string>
+    <string name="update_mock_downloading">Загрузка</string>
+    <string name="update_mock_ready">Готово</string>
+    <string name="update_mock_error">Ошибка</string>
+</resources>

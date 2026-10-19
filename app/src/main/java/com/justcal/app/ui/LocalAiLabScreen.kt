@@ -111,7 +111,7 @@ private fun LabFormScreen(
             Text(stringResource(R.string.lab_intro), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(stringResource(if (state.cancelling) R.string.lab_cancelling else state.phase.label()),
                 style = MaterialTheme.typography.titleMedium)
-            if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+            if (state.busy) CalWorkProgressRow()
             if (state.phase == AiLabPhase.IMPORTING) {
                 Text(stringResource(R.string.lab_imported, Formatter.formatFileSize(context, state.importedBytes)))
             }

@@ -48,7 +48,7 @@ fun HistoryScreen(state: HistoryState, onDay: (Long) -> Unit, onRetry: () -> Uni
                     }
                 }
             }
-            if (state.loading) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
+            if (state.loading) item { CalLoadingRow() }
             if (state.error) item {
                 Text(stringResource(R.string.load_error), color = MaterialTheme.colorScheme.error)
                 TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }

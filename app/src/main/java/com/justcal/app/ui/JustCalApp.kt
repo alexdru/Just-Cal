@@ -67,6 +67,7 @@ private fun SettingsState.themeState() = ThemeState(loading, draft.appearance, d
 @Composable
 fun JustCalApp(splashVisible: Boolean = false) {
     val settingsViewModel = hiltViewModel<SettingsViewModel>()
+    val updateViewModel = hiltViewModel<UpdateViewModel>()
     // This is an initial snapshot only; subsequent updates are observed below.
     val initialTheme = remember(settingsViewModel) { settingsViewModel.state.value.themeState() }
     // Saving/profile emissions belong to Settings, not every Navigation 3 entry.
@@ -98,6 +99,10 @@ fun JustCalApp(splashVisible: Boolean = false) {
     var tabJob by remember { mutableStateOf<Job?>(null) }
     var requestedTab by remember { mutableStateOf<MainTab?>(null) }
     var barHeight by remember { mutableIntStateOf(0) }
+    var pillHeight by remember { mutableIntStateOf(0) }
+    val settingsSnackbarBottom = with(LocalDensity.current) {
+        pillHeight.toDp() + WindowInsets.navigationBars.getBottom(this).toDp() + 24.dp
+    }
     val barDp = with(LocalDensity.current) { barHeight.toDp() }
     val reserveBar: @Composable () -> Unit = { Spacer(Modifier.fillMaxWidth().height(barDp)) }
     val stacks = MainTab.entries.associateWith { tab ->
@@ -127,6 +132,7 @@ fun JustCalApp(splashVisible: Boolean = false) {
 
     JustCalTheme(darkTheme = dark, colorStyle = colorStyle, splashVisible = splashVisible,
         selectionKey = themeState) {
+        CompositionLocalProvider(LocalUpdateViewModel provides updateViewModel) {
         val messages = remember { androidx.compose.material3.SnackbarHostState() }
         // Decorate every stack even while inactive, retaining its entry state and ViewModels.
         val entries = stacks.mapValues { (tab, stack) ->
@@ -292,6 +298,8 @@ fun JustCalApp(splashVisible: Boolean = false) {
         }
         val current = stacks.getValue(selected).lastOrNull()
         val showNavigation = current is MainTab || current is DiaryDate
+        AppUpdateHost(updateViewModel, automaticPromptAllowed = current is MainTab && launcherDay == null && !splashVisible &&
+            WindowInsets.ime.getBottom(LocalDensity.current) == 0, messages = messages)
         // A root handler has no role in a child gesture. Remove it entirely so a
         // cancelled child preview cannot leave a stale root handler in the event chain.
         if (current is MainTab) {
@@ -356,7 +364,11 @@ fun JustCalApp(splashVisible: Boolean = false) {
             }
             CalSnackbarHost(messages,
                 Modifier.align(Alignment.BottomCenter).padding(horizontal = 24.dp)
-                    .padding(bottom = if (showNavigation) barDp else 24.dp))
+                    .padding(bottom = when {
+                        !showNavigation -> 24.dp
+                        current == MainTab.SETTINGS -> settingsSnackbarBottom
+                        else -> barDp
+                    }))
             if (showNavigation) Box(
                 Modifier.align(Alignment.BottomCenter),
             ) {
@@ -369,6 +381,7 @@ fun JustCalApp(splashVisible: Boolean = false) {
                     }),
                     position = { pager.currentPage + pager.currentPageOffsetFraction },
                     launcherOpen = launcherDay != null,
+                    onPillHeightChanged = { pillHeight = it },
                 )
                 }
             }
@@ -385,6 +398,7 @@ fun JustCalApp(splashVisible: Boolean = false) {
                     launcherDay = null
                     stacks.getValue(selected).add(ImageAcquisition(request, source))
                 })
+        }
         }
     }
 }

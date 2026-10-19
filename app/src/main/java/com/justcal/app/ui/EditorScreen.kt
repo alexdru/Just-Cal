@@ -158,7 +158,7 @@ fun EditorScreen(
                         .padding(top = 16.dp, bottom = buttonSpace),
                     verticalArrangement = Arrangement.spacedBy(CalSpacing.section),
                 ) {
-                    if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
+                    if (state.loading) CalLoadingRow()
                     if (state.missing) Text(stringResource(R.string.missing_entry), color = MaterialTheme.colorScheme.error)
                     if (state.storageError) {
                         Text(stringResource(R.string.storage_error), color = MaterialTheme.colorScheme.error)

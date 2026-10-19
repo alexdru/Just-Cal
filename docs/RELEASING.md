@@ -26,6 +26,12 @@ sdkmanager --list --channel=3
 
 SDK package IDs and Gradle API levels are distinct. Check the live catalog before changing package IDs; do not downgrade the app's compile SDK to work around SDK provisioning.
 
+## In-app GitHub updates
+
+The direct-distribution updater consumes the latest non-draft, non-prerelease release from `alexdru/Just-Cal`, with tag `vMAJOR.MINOR.PATCH`. Keep the production APK asset named exactly `Just-Cal-vMAJOR.MINOR.PATCH.apk` and ensure GitHub's asset `digest` is a SHA-256 checksum. AAB, debug and ocrCheck assets are not eligible. The existing publication workflow already supplies this contract. Retain the persistent signing key; the updater rejects APKs with a different current signer, even if a signing lineage is present. See [APP_UPDATES.md](APP_UPDATES.md) for behavior and acceptance checks.
+
+The `REQUEST_INSTALL_PACKAGES` permission serves user-confirmed self-updates in the GitHub distribution. A future Play distribution requires a separate update/permission policy; do not publish this direct-update configuration to Play unchanged.
+
 ## Native OCR packaging
 
 APK/AAB builds include bundled offline OCR models and their license notices. The supported native ABI is `arm64-v8a` (including OnePlus 7T/12 and ARM64 emulators). Upstream OpenCV's x86 builds include Intel IPP under incompatible binary-only terms; restoring x86 support requires an OpenCV build without IPP and a fresh native license/16-KiB alignment check. Do not remove the ABI filter merely to run an x86 emulator. See [PACKAGE_OCR.md](PACKAGE_OCR.md).

@@ -223,7 +223,7 @@ Do not exclude Android edge gestures or replace Navigation 3.
 | Nutrition changes | Transition only when formatted value changes; no fabricated count-up arithmetic |
 | Buttons | Native ripple and expressive pressed shape in shared primary/tonal actions |
 | Add Food | Native modal sheet plus directional option/source content; FAB scale/icon coordination |
-| Loading | Isolated expressive LoadingIndicator with static determinate fallback when motion disabled |
+| Loading and progress | CalLoading / CalLoadingRow use ContainedLoadingIndicator for waiting; APK downloads use full-width determinate LinearWavyProgressIndicator (flat-and-wavy) with measured numeric progress. CalWorkProgressRow uses LinearWavyProgressIndicator for ongoing AI processing and OCR report export. Reduced motion keeps static progress feedback. Settings snackbars sit 12 dp above the measured navigation pill, without reserving the hidden FAB row; scroll content still reserves the complete floating host |
 | Completion | Clear text/snackbar and selective confirmation haptic |
 | Theme | 600 ms radial reveal over native drawing commands of the previous theme; cancelable for brightness and Themes |
 | Splash exit | Immediate compatibility-splash removal on Android 11; 80 ms native exit on Android 12+, without a branding delay |

@@ -1,0 +1,8 @@
+<resources>
+    <string name="update_mock_notes">Test release.\n\n• Improved food logging.\n• Refined navigation.</string>
+    <string name="update_mock_available">Available</string>
+    <string name="update_mock_current">Up to date</string>
+    <string name="update_mock_downloading">Download</string>
+    <string name="update_mock_ready">Ready</string>
+    <string name="update_mock_error">Error</string>
+</resources>

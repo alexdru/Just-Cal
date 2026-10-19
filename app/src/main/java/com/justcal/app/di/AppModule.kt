@@ -22,5 +22,6 @@ object AppModule {
     @Provides fun dao(database: DiaryDatabase): DiaryDao = database.diaryDao()
     @Provides @Singleton fun repository(dao: DiaryDao): DiaryRepository = RoomDiaryRepository(dao)
     @Provides fun packageOcr(engine: com.justcal.app.ocr.PaddlePackageOcrEngine): com.justcal.app.ocr.PackageOcrEngine = engine
+    @Provides fun updates(repository: GitHubUpdateRepository): com.justcal.app.domain.AppUpdateRepository = repository
     @Provides fun clock(): Clock = Clock.systemUTC()
 }
