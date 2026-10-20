@@ -236,6 +236,8 @@ reduced-motion preference or infer jank-free behavior from screenshots.
 
 ## Appearance and automatic settings
 
+The Macros disclosure (Индивидуальные цели для БЖУ in Russian) starts collapsed even when targets are saved; the user's expansion choice is retained while navigating. Update check buttons show no idle icon; the default LoadingIndicator appears only while checking. Symmetric reserved slots keep the label centered and stationary. Update sheets have text-only titles and retry actions. A bottom sheet opens only for an available update or a manual error. A current-version result uses an icon-free snackbar.
+
 Brightness (System/Light/Dark) and palette (Just Cal/Material You) are independent connected
 ToggleButton groups. Required choices cannot be cleared. Unselected choices retain connected leading/middle/trailing corners with a visible surfaceContainerHighest fill. Selected and pressed choices use capsule shapes with one bounded 120 ms outline transition and native ripple. The real control and old-palette draw copies share press/roundness state; releasing a newly selected choice must not restart the morph. There is no additional scale animation or nested shape spring. Theme-frame capture waits until the control outlines finish, so readback cannot pause a morph halfway; no outer capsule clip may erase the connected contours. Minimum targets are 48 dp;
 FlowRow wraps English/Russian text instead of hiding options behind overflow menus.

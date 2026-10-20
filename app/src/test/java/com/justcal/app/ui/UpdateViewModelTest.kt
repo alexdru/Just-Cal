@@ -45,15 +45,18 @@ class UpdateViewModelTest {
         assertTrue(vm.state.value.showSheet)
     }
 
-    @Test fun manualNoUpdateClosesCheckingSheetAndEmitsSnackbarForCurrentOrOlderReleases() = runTest(dispatcher) {
+    @Test fun manualNoUpdateNeverOpensSheetAndEmitsSnackbarForCurrentOrOlderReleases() = runTest(dispatcher) {
         val repo = FakeUpdates(null)
         val vm = UpdateViewModel(repo, clock)
         val feedback = mutableListOf<UpdateFeedback>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.feedback.collect { feedback.add(it) } }
         vm.check()
-        assertTrue(vm.state.value.showSheet)
+        assertFalse(vm.state.value.showSheet)
         assertTrue(vm.state.value.checking)
-        assertEquals(0, repo.requests)
+        vm.check(); runCurrent()
+        assertFalse(vm.state.value.showSheet)
+        assertTrue(vm.state.value.checking)
+        assertEquals(1, repo.requests)
         advanceUntilIdle()
         assertFalse(vm.state.value.showSheet)
         assertTrue(vm.state.value.checked)
@@ -80,7 +83,10 @@ class UpdateViewModelTest {
         assertFalse(vm.state.value.checked)
         assertFalse(vm.state.value.checking)
         repo.fail = false
-        vm.check(); advanceUntilIdle()
+        vm.check()
+        assertFalse(vm.state.value.showSheet)
+        assertTrue(vm.state.value.checking)
+        advanceUntilIdle()
         assertTrue(vm.state.value.showSheet)
         assertTrue(vm.state.value.checked)
         assertEquals(update, vm.state.value.update)
@@ -100,14 +106,14 @@ class UpdateViewModelTest {
         }
     }
 
-    @Test fun manualTapRevealsRunningAutomaticRequestWithoutStartingAnother() = runTest(dispatcher) {
+    @Test fun manualTapJoinsRunningAutomaticRequestAndOnlyOpensSheetForAvailableRelease() = runTest(dispatcher) {
         val repo = FakeUpdates(update)
         val vm = UpdateViewModel(repo, clock)
         vm.check(automatic = true); runCurrent()
         assertTrue(vm.state.value.checking)
         assertFalse(vm.state.value.showSheet)
         vm.check()
-        assertTrue(vm.state.value.showSheet)
+        assertFalse(vm.state.value.showSheet)
         assertFalse(vm.state.value.automaticPrompt)
         advanceUntilIdle()
         assertEquals(1, repo.requests)
@@ -128,6 +134,38 @@ class UpdateViewModelTest {
         vm.dismiss(); advanceUntilIdle()
         assertFalse(vm.state.value.showSheet)
         assertTrue(feedback.isEmpty())
+    }
+
+    @Test fun manualJoinBeforeAutomaticJobStartsStillGetsOneCurrentSnackbar() = runTest(dispatcher) {
+        val repo = FakeUpdates(null).apply { prefs = UpdatePreferences(automatic = false) }
+        val vm = UpdateViewModel(repo, clock)
+        val feedback = mutableListOf<UpdateFeedback>()
+        val sheets = mutableListOf<Boolean>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            vm.feedback.collect { feedback.add(it) }
+        }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            vm.state.collect { sheets.add(it.showSheet) }
+        }
+        vm.check(automatic = true)
+        vm.check()
+        vm.check()
+        advanceUntilIdle()
+        assertEquals(1, repo.requests)
+        assertFalse(sheets.any { it })
+        assertEquals(listOf(UpdateFeedback.CurrentVersion), feedback)
+    }
+
+    @Test fun manualAvailableReleaseStaysInButtonUntilResponse() = runTest(dispatcher) {
+        val repo = FakeUpdates(update)
+        val vm = UpdateViewModel(repo, clock)
+        vm.check(); runCurrent()
+        assertTrue(vm.state.value.checking)
+        assertFalse(vm.state.value.showSheet)
+        advanceUntilIdle()
+        assertFalse(vm.state.value.checking)
+        assertTrue(vm.state.value.showSheet)
+        assertEquals(update, vm.state.value.update)
     }
 
     @Test fun automaticAvailableReleaseOpensSheetButNoUpdateDoesNot() = runTest(dispatcher) {

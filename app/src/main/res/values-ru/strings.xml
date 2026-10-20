@@ -69,7 +69,7 @@
     <string name="theme_dark">Тёмное</string>
     <string name="privacy_title">Только на этом устройстве</string>
     <string name="privacy_description">Профиль, настройки и дневник хранятся локально. Just Cal работает без интернета.</string>
-    <string name="macro_goals">Цели БЖУ · необязательно</string>
+    <string name="macro_goals">Индивидуальные цели для БЖУ</string>
     <string name="goal_not_set">Не задано</string>
     <string name="clear_macro_goal">Убрать цель: %1$s</string>
     <string name="macro_goal_error">Введите положительное число до 100 000 г, максимум 2 знака после запятой, или оставьте поле пустым</string>
@@ -169,7 +169,7 @@
     <string name="updates_storage_error">Не удалось сохранить файлы или настройки обновления. Проверьте свободное место и повторите попытку.</string>
     <string name="updates_installer_error">Не удалось открыть установщик или разрешение на установку. Повторите попытку.</string>
     <string name="updates_checking">Проверка обновлений</string>
-    <string name="updates_mock">Проверить плашку · mock</string>
+    <string name="updates_mock">Проверить bottom sheet · mock</string>
     <string name="updates_check_failed">Не удалось проверить обновления</string>
     <string name="updates_install_help_title">Установка обновления</string>
     <string name="updates_install_help">1. По запросу Android включите «Разрешить из этого источника» для Just Cal и вернитесь назад.</string>

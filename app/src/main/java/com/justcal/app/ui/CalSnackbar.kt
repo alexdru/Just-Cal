@@ -15,7 +15,7 @@ import com.justcal.app.ui.theme.CalLayout
 /** Optional semantic icon; ordinary diary confirmations retain their existing check mark. */
 internal data class CalSnackbarVisuals(
     override val message: String,
-    val icon: Int,
+    val icon: Int?,
     override val actionLabel: String? = null,
     override val withDismissAction: Boolean = false,
     override val duration: SnackbarDuration = SnackbarDuration.Short,
@@ -45,7 +45,8 @@ internal fun CalSnackbar(data: SnackbarData) {
         }) else null,
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            CalIcon((data.visuals as? CalSnackbarVisuals)?.icon ?: R.drawable.ic_check)
+            val icon = if (data.visuals is CalSnackbarVisuals) (data.visuals as CalSnackbarVisuals).icon else R.drawable.ic_check
+            icon?.let { CalIcon(it) }
             Text(data.visuals.message, modifier = Modifier.weight(1f, fill = false),
                 style = MaterialTheme.typography.titleMedium)
         }

@@ -12,7 +12,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 import com.justcal.app.BuildConfig
 import com.justcal.app.R
 import com.justcal.app.ui.theme.CalLayout
@@ -44,19 +43,13 @@ internal fun UpdateSheet(
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = CalSpacing.page).padding(bottom = CalSpacing.page),
             verticalArrangement = Arrangement.spacedBy(CalSpacing.medium)) {
-            Row(verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
-                Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
-                    if (state.checking) CalLoading(Modifier.size(40.dp)) else CalIcon(R.drawable.ic_update)
-                }
-                Text(when {
-                    state.checking -> stringResource(R.string.updates_checking)
-                    release != null && state.apkUri != null -> stringResource(R.string.updates_ready)
-                    release != null -> stringResource(R.string.updates_available, release.version.toString())
-                    state.error != null -> stringResource(R.string.updates_check_failed)
-                    else -> stringResource(R.string.updates_current)
-                }, Modifier.weight(1f).semantics { heading() }, style = MaterialTheme.typography.titleLarge)
-            }
+            Text(when {
+                state.checking -> stringResource(R.string.updates_checking)
+                release != null && state.apkUri != null -> stringResource(R.string.updates_ready)
+                release != null -> stringResource(R.string.updates_available, release.version.toString())
+                state.error != null -> stringResource(R.string.updates_check_failed)
+                else -> stringResource(R.string.updates_current)
+            }, Modifier.fillMaxWidth().semantics { heading() }, style = MaterialTheme.typography.titleLarge)
             Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                 mockControls?.invoke()
@@ -111,8 +104,6 @@ internal fun UpdateSheet(
                     }
                 } else if (state.error != null) {
                     CalTonalButton(onClick = onCheck, modifier = Modifier.fillMaxWidth()) {
-                        CalIcon(R.drawable.ic_update)
-                        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
                         Text(stringResource(R.string.retry))
                     }
                 }

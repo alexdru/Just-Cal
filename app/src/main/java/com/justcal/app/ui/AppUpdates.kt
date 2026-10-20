@@ -13,10 +13,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import com.justcal.app.ui.theme.LocalMotionEnabled
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -29,18 +37,18 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 internal val LocalUpdateViewModel = staticCompositionLocalOf<UpdateViewModel?> { null }
 
-private data class UpdateSettingsUi(val loaded: Boolean, val automatic: Boolean, val saving: Boolean)
-private fun UpdateState.settingsUi() = UpdateSettingsUi(loaded, automatic, savingPreference)
+private data class UpdateSettingsUi(val loaded: Boolean, val automatic: Boolean, val saving: Boolean, val checking: Boolean)
+private fun UpdateState.settingsUi() = UpdateSettingsUi(loaded, automatic, savingPreference, checking)
 
 @Composable
 internal fun UpdateSettings() {
     val viewModel = LocalUpdateViewModel.current ?: return
-    // Check/download emissions belong to the sheet; the underlying group keeps its exact appearance.
+    // Only the checking indicator changes; download progress cannot recompose this group.
     val initial = remember(viewModel) { viewModel.state.value.settingsUi() }
     val state by remember(viewModel) {
         viewModel.state.map { it.settingsUi() }.distinctUntilChanged()
     }.collectAsStateWithLifecycle(initialValue = initial)
-    UpdateSettingsContent(state.loaded, state.automatic, state.saving,
+    UpdateSettingsContent(state.loaded, state.automatic, state.saving, state.checking,
         onCheck = { viewModel.check() }, onAutomatic = viewModel::setAutomatic)
 }
 
@@ -50,6 +58,7 @@ internal fun UpdateSettingsContent(
     loaded: Boolean,
     automatic: Boolean,
     saving: Boolean,
+    checking: Boolean,
     onCheck: () -> Unit,
     onAutomatic: (Boolean) -> Unit,
 ) {
@@ -63,14 +72,35 @@ internal fun UpdateSettingsContent(
                 Text(stringResource(R.string.updates_automatic), Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
                 Switch(checked = automatic, onCheckedChange = null, enabled = enabled)
             }
-            CalTonalButton(onClick = onCheck, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
-                CalIcon(R.drawable.ic_update)
-                Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-                Text(stringResource(R.string.updates_check))
+            val checkingLabel = stringResource(R.string.updates_checking)
+            CalTonalButton(onClick = onCheck, enabled = enabled,
+                modifier = Modifier.fillMaxWidth().testTag("update_check_button").semantics {
+                    if (checking) stateDescription = checkingLabel
+                }) {
+                UpdateCheckButtonContent(checking, stringResource(R.string.updates_check))
             }
             UpdateMockAction()
         }
     }
+}
+
+/** Symmetric slots keep the label centered and stationary when the indicator appears. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+internal fun RowScope.UpdateCheckButtonContent(checking: Boolean, label: String) {
+    Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) {
+        if (checking) {
+            val color = LocalContentColor.current
+            if (LocalMotionEnabled.current) LoadingIndicator(Modifier.fillMaxSize(), color = color)
+            else LoadingIndicator(progress = { 0.35f }, color = color,
+                modifier = Modifier.fillMaxSize().clearAndSetSemantics {
+                    progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate
+                })
+        }
+    }
+    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+    Text(label, Modifier.weight(1f, fill = false))
+    Spacer(Modifier.width(24.dp + ButtonDefaults.IconSpacing))
 }
 
 @Composable
@@ -90,7 +120,8 @@ internal fun AppUpdateHost(
                 UpdateFeedback.CurrentVersion -> R.string.updates_current
                 is UpdateFeedback.Failure -> updateErrorText(feedback.error)
             })
-            this@LaunchedEffect.launch { messages.showSnackbar(CalSnackbarVisuals(message, R.drawable.ic_update)) }
+            val icon = if (feedback == UpdateFeedback.CurrentVersion) null else R.drawable.ic_update
+            this@LaunchedEffect.launch { messages.showSnackbar(CalSnackbarVisuals(message, icon)) }
         }
     }
     val installer = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {

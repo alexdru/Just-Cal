@@ -69,7 +69,7 @@
     <string name="theme_dark">Dark</string>
     <string name="privacy_title">Only on this device</string>
     <string name="privacy_description">Your profile, settings and diary stay locally. Just Cal works offline.</string>
-    <string name="macro_goals">Macro goals · optional</string>
+    <string name="macro_goals">Individual macro goals</string>
     <string name="goal_not_set">Not set</string>
     <string name="clear_macro_goal">Clear goal: %1$s</string>
     <string name="macro_goal_error">Enter a positive number up to 100,000 g, with at most 2 decimal places, or leave blank</string>
@@ -173,7 +173,7 @@
     <string name="updates_storage_error">Couldn’t save update files or preferences. Check free space and try again.</string>
     <string name="updates_installer_error">Couldn’t open the installer or installation settings. Try again.</string>
     <string name="updates_checking">Checking for updates</string>
-    <string name="updates_mock">Preview update sheet · mock</string>
+    <string name="updates_mock">Preview update bottom sheet · mock</string>
     <string name="updates_check_failed">Couldn’t check for updates</string>
     <string name="updates_install_help_title">Installing this update</string>
     <string name="updates_install_help">1. If Android asks, enable “Allow from this source” for Just Cal, then go back.</string>

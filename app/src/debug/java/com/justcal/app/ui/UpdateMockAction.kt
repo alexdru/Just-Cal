@@ -1,6 +1,5 @@
 package com.justcal.app.ui
 
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.stringResource
@@ -33,7 +32,7 @@ internal fun UpdateMockAction() {
             viewModel?.notifyCurrentVersion()
             return
         }
-        state = UpdateState(loaded = true, showSheet = true, checked = value != MockStage.CHECKING && value != MockStage.ERROR,
+        state = UpdateState(loaded = true, showSheet = value != MockStage.CHECKING, checked = value != MockStage.CHECKING && value != MockStage.ERROR,
             checking = value == MockStage.CHECKING,
             update = if (value == MockStage.ERROR) null else release,
             downloading = value == MockStage.DOWNLOADING, progress = 0.46f,
@@ -47,7 +46,9 @@ internal fun UpdateMockAction() {
             showStage(MockStage.AVAILABLE)
         }
     }
-    TextButton(onClick = ::check) { Text(stringResource(R.string.updates_mock)) }
+    TextButton(onClick = ::check) {
+        UpdateCheckButtonContent(state.checking, stringResource(R.string.updates_mock))
+    }
     if (state.showSheet) {
         UpdateSheet(state, canInstall = true,
             onDismiss = { operation?.cancel(); state = state.copy(showSheet = false) },
@@ -75,7 +76,7 @@ internal fun UpdateMockAction() {
                         MockStage.READY -> R.string.update_mock_ready
                         MockStage.ERROR -> R.string.update_mock_error
                     })
-                }, onSelect = ::showStage)
+                }, onSelect = { if (it == MockStage.CHECKING) check() else showStage(it) })
             })
     }
 }

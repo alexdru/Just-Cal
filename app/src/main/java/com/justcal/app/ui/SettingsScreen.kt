@@ -48,15 +48,8 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit,
     val direction = LocalLayoutDirection.current
     val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
     var showMacros by rememberSaveable { mutableStateOf(false) }
-    var macrosInitialized by rememberSaveable { mutableStateOf(false) }
     val macroAngle by animateFloatAsState(if (showMacros) 90f else 0f, CalMotion.fast(), label = "macro disclosure")
     val macroExpansion = stringResource(if (showMacros) R.string.expanded else R.string.collapsed)
-    LaunchedEffect(state.loading) {
-        if (!state.loading && !macrosInitialized) {
-            showMacros = listOf(state.draft.proteinGoal, state.draft.fatGoal, state.draft.carbsGoal).any { it.isNotBlank() }
-            macrosInitialized = true
-        }
-    }
     Scaffold(
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
