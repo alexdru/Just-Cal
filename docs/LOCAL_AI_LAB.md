@@ -1,66 +1,148 @@
-# Experimental Local AI Lab
+# AI Models and AI Playground
 
-Local AI Lab is isolated developer functionality in Settings. Production Add Food recognition is not implemented. The Lab does not write nutrition or images to the diary.
+AI Models manages private model files in Settings. AI Playground is the experimental image/prompt screen; its saved route remains `LocalAiLab`. It never writes to the diary. Production recognition uses a separate `FoodRecognitionRouter`, the existing editor and explicit Save.
 
-## Runtime and model
+## Current audit — 0.17.1 (2026-10-22–23)
 
-The app uses `com.google.ai.edge.litertlm:litertlm-android:0.17.1`. The initial target is a **Gemma 4 E2B vision .litertlm** model, obtained separately by the developer. A text-only model or an unrelated file renamed to .litertlm is not compatible. Model compatibility, RAM requirements and GPU support depend on the actual artifact and device; successful compilation is not proof of inference.
+The follow-up [quality audit](ai-verification/2026-10-22/quality-audit.md) supersedes the earlier milestone completion notes below. It includes reproducible machine-readable reports, separate model-response and validator outcomes, current implementation gaps and the device workflow result. The meal gate remains name-only; the package VLM gate remains closed. The real-model photo → Models → review → edited editor → Activity recreation → explicit single Save workflow now passed in 28.177 s and again in 30.908 s on the final build, including original diary date and empty initial amount. Its earlier timeout came from clicking the disabled Use photo button before preview decoding completed; the test now waits for readiness. A fresh GPU Paddle crop regression on 2026-10-23 reproduced 196.8 → 1968 and degenerate repeated text on the second crop. The raw outputs and deterministic parser results are linked in the audit; nonempty smoke success is separate from numerical quality.
 
-Sources used for the adapter:
+Production admission is bound to the pinned artifact hash, LiteRT-LM version and versioned task contract, with a reviewed evidence reference. Changing runtime/task invalidates the old admission; matching metadata or an image smoke is insufficient. An optional package VLM deadline now preserves completed OCR after cleanup without swallowing caller cancellation. Invalid/refused meal responses retain bounded raw evidence and a validation category in detailed local diagnostics; they do not open an empty successful editor. Sanitized exports omit raw responses and prompts.
 
-- [Official Gemma 4 model documentation](https://developers.google.com/edge/litert-lm/models/gemma-4)
-- [Pinned Kotlin getting-started guide](https://github.com/google-ai-edge/LiteRT-LM/blob/v0.17.1/docs/api/kotlin/getting_started.md)
-- [Pinned conversation implementation](https://github.com/google-ai-edge/LiteRT-LM/blob/v0.17.1/kotlin/java/com/google/ai/edge/litertlm/Conversation.kt)
-- [Pinned response-format API](https://github.com/google-ai-edge/LiteRT-LM/blob/v0.17.1/kotlin/java/com/google/ai/edge/litertlm/ResponseFormat.kt)
+## Models and privacy
 
-No installed LiteRT-LM skill was found in the available local skill directories during implementation; the official documentation and pinned SDK source were used directly.
+The bundled, versioned `assets/ai_models.json` contains pinned **Gemma 4 E2B** and **PaddleOCR-VL-1.6** descriptors, revisions, exact byte counts, SHA-256 and source/license links. Weights are never bundled in the APK. No catalog request, model download or inference starts automatically. Download/Resume requires a user action. There are no cloud inference APIs, accounts or telemetry.
 
-The model is never bundled, automatically downloaded, uploaded or sent to a cloud API. Android's SAF file picker grants access to one chosen document; the import immediately streams it into backup-excluded private storage. A content URI is not a native path. The original document remains unchanged. Keep enough disk space for the original model, the private copy and native cache. Known document sizes receive a storage preflight; unknown sizes still use a bounded streaming copy and report IO failures.
+SAF import streams a self-contained `.litertlm` document into backup-excluded private storage, computes its hash and inspects the actual SDK container before installation. Text-only/embedding, invalid container, unsupported runtime/context and unavailable image backend pairs are rejected. Renaming a file does not establish compatibility. Unknown valid vision files remain Playground experiments; matching a curated hash applies its profile. Legacy UUID/name metadata remains readable without reimport and is validated lazily. Original documents are preserved.
 
-CPU/GPU selects both the language and vision backend. GPU declarations for `libvndksupport.so` and `libOpenCL.so` are optional in the manifest as documented by LiteRT-LM. GPU errors remain visible; no CPU fallback changes the selected backend.
+Downloads use HTTPS and an explicit host allowlist, bounded redirects, identity encoding, pinned length/hash, private streaming files and atomic commit. Range/If-Range resume validates 206 Content-Range and ETag; 200 or a changed validator restarts, 416 restarts an incomplete file or verifies an already complete file. HTML/login responses are rejected. Verification precedes installation. Pause retains a checkpoint; Cancel joins the writer before removing only its partial file. Process recreation restores interrupted transfers as paused and never restarts inference. Storage preflight uses StorageManager with a 512 MiB reserve, with further space checks while copying; that reserve is not an assertion about model peak RAM.
 
-## Using the Lab
+API 34+ uses a user-initiated JobService; API 30–33 uses a non-sticky dataSync foreground service. Notifications offer progress and Pause; Models offers Pause/Resume/Cancel and retry. OS stops may interrupt work. Android 14+ job execution still needs device coverage; the available physical device is API 30. On this device direct HTTPS download testing stopped at a DNS failure for huggingface.co; verified model fixtures were transferred by USB for offline inference tests. This is not evidence that the full in-app transfer completed.
 
-1. Open Settings → Local AI Lab and import a compatible .litertlm document. Check its displayed filename and size.
-2. Choose CPU or GPU and tap Load model. Initialization runs in the background; wait for Ready or inspect the explicit error.
-3. Choose photo or Take photo. Both use Just Cal's shared image pipeline. The Lab shows the prepared image; selecting another replaces the owned private snapshot.
-4. Enter a free-form prompt, or choose Nutrition extraction and optionally edit its prompt.
-5. Run inference. The screen appends actual SDK response chunks. Run again to create a fresh conversation without reloading the engine.
-6. Cancel waits for native termination and conversation cleanup before enabling another run. Partial output remains visible.
-7. Unload before switching backend/model or deleting a private model copy. Removing a model also removes its runtime cache.
-8. Leaving the Lab cancels/joins active work and closes the engine. Re-entering restores the private model catalog and requires loading again. Configuration recreation retains the current ViewModel; process death cannot restore a native engine or image.
+Deleting an installed model is serialized against the process-wide runtime lease, removes its private model/cache and clears only task selections referencing that UUID. It never deletes the original SAF document or other models. Model installation does not select a recognition task.
 
-No model, importing, selected-but-unloaded, loading, ready, running, cancelling/cancelled, unloading, removing and error are distinct states. Acquisition and native work do not block the main thread. Cleanup can take time; the UI does not claim cancellation has finished early.
+## Runtime
 
-## Nutrition preset and parsing
+The adapter pins **LiteRT-LM 0.18.1**, verified by compilation, arm64/API 30 image runs and a device ELF alignment test. Relevant APIs are the pinned [ModelInfo](https://github.com/google-ai-edge/LiteRT-LM/blob/v0.18.1/kotlin/java/com/google/ai/edge/litertlm/ModelInfo.kt), [Kotlin guide](https://github.com/google-ai-edge/LiteRT-LM/blob/v0.18.1/docs/api/kotlin/getting_started.md) and [Config](https://github.com/google-ai-edge/LiteRT-LM/blob/v0.18.1/kotlin/java/com/google/ai/edge/litertlm/Config.kt).
 
-SDK 0.17.1 supports constrained JSON through `ConversationConfig(enableResponseFormat = true)` and `ResponseFormat.json(schema)`; the Nutrition extraction preset enables both. It requests exactly:
+Before native initialization, ModelInfo is opened/closed off the main thread and converted into app-owned capabilities: LLM type, image input, context, minimum runtime and separate TEXT/VISION backends. Auto intersects these capabilities and profile restrictions; there is no CPU/GPU picker. For the pinned Gemma artifact the actual metadata advertises TEXT CPU/GPU but VISION CPU only, so Auto chooses CPU/CPU. The pinned Paddle artifact advertises both pairs and ran GPU/GPU. Historical GPU evidence on 0.17.1 does not override current container metadata.
 
-```json
-{
-  "productName": null,
-  "caloriesKcal": null,
-  "nutritionBasisGrams": null,
-  "proteinGrams": null,
-  "fatGrams": null,
-  "carbohydrateGrams": null,
-  "packageWeightGrams": null
-}
-```
+Context/output budgets are profile-specific, static contexts are respected, thinking is disabled and Paddle uses `OCR:` with greedy sampling. Custom/unknown artifacts close their engine after every independent run. One process-wide permit covers Playground, production and deletion. Auto permits at most one recoverable init/delegate retry for an allowed general-vision pair; malformed files, low-memory/OOM and cancellation do not trigger fallback. Cache identity includes hash, SDK, backend, device and profile/configuration. Successful backend/image probes are recorded for this SDK/device; a previous interrupted native operation is surfaced without automatic retry.
 
-The prompt treats image text as data, asks for visible/confident information only, uses null for missing/uncertain values, prohibits invented or calculated missing nutrition numbers, and keeps the stated nutrition weight basis separate from package weight. Calories must be kcal. All nutrition fields must describe one basis.
+Cancellation and deadlines wait for native terminal completion before conversation/engine/image cleanup. A timeout cannot make stuck JNI safe to free. Raw partial output is retained, with no invented completed benchmark. Leaving a recognition entry joins cancellation before releasing its owned image. Native types and large Bitmaps remain inside adapters/image boundaries.
 
-Constrained decoding guarantees neither nutritional correctness nor consistent units. The parser independently rejects unexpected/missing fields, quoted numbers, negative/nonfinite/out-of-budget values, zero weight bases, trailing prose and incomplete output. It preserves exact decimal values as BigDecimal. Raw output is always retained; a parsed result is shown only when validation succeeds. No totals, serving conversions or persistence follow from this result.
+## AI screen layout — 0.16.2 (2026-10-22)
 
-## Metrics
+Settings → AI Integration uses meaningful memory/science icons and native
+Material 3 Expressive segmented rows with narrow gaps instead of divider lines.
+AI Models starts with package/meal recognition defaults; each opens a task sheet.
+Installed models follow, then catalog entries not already installed, then SAF
+import. Catalog sheets retain source/license, Download/Resume/Retry and safe
+Pause/Cancel; installed details retain validation/hash and confirmed removal.
+Installing never changes the selected recognition task.
 
-- Initialization: monotonic wall time around native Engine.initialize.
-- Inference duration: app monotonic elapsed time, including verification/decode/encoding and response consumption.
-- First visible response: app elapsed time to the first nonempty streamed response, distinct from native TTFT.
-- Native TTFT, prefill tokens/s, decode tokens/s: actual Conversation.getBenchmarkInfo values with SDK benchmarking enabled, available after completion.
-- Selected backend: explicit CPU/GPU selection used to initialize the engine.
+Both AI screens use edge-to-edge scroll viewports with safe-area/app-bar/end
+spacing inside scroll content. The Playground bounds its scroll viewport to the
+IME once, retaining prompt focus clearance. Navigation, explicit task admission,
+runtime cleanup and offline inference contracts are unchanged. The shared diary
+and history row decoration also uses small inner corners and narrow gaps.
 
-Unsupported, invalid or unavailable native values show Unavailable. Cancelled runs do not display a fabricated completed benchmark. These measurements include instrumentation overhead and are not a device-comparison study.
+Verification on OnePlus 7T / Android 11: ten Settings/navigation UI tests passed,
+including the task sheet and prompt clearance above the IME; the final build
+repeated that IME test and passed the diary date/CRUD workflow. Eleven distinct
+UI scenarios passed across these runs. Both AI screens were visually checked
+in light and dark themes; the original System theme was restored. The full
+149-unit suite passed before resource cleanup, followed by 36 focused UI unit
+tests, final debug/application-test builds and lint. No new lint warnings or
+errors remain. Recognition quality/model benchmarks were not repeated for
+this UI change. Version: 0.16.2 (42).
+
+## Playground
+
+1. Install/import models in AI Models, then return to AI Playground.
+2. Select a model and load it with Auto, or choose bundled PaddleOCR without loading a VLM.
+3. Choose camera or Photo Picker using the existing bounded local image pipeline.
+4. Choose package transcription, meal description or a custom experiment. Prompts are editable. Package transcription locates a bounded nutrition crop from OCR coordinates; unsupported/unreliable regions require a closer photo.
+5. Run/Cancel; inspect raw text, strict structured output where supported, actual backend and measured metrics. A previous answer can be disclosed for comparison.
+6. Diagnostics records bounded raw/prompt evidence and model/runtime/backend/timing information locally; default sanitized exports omit prompts and raw responses. Photos remain an explicit export choice.
+7. Unload before switching/removing models. Leaving closes the session. Process death restores neither native engines nor images.
+
+The seven-field constrained nutrition preset remains experimental. Exact keys, decimal numbers/nulls, units/basis and bounds are independently checked. All-null and repeated output are failed extraction, not successful nutrition recognition. Custom files cannot use an assumed Gemma JSON profile.
+
+Production package scanning retains bundled PP-OCRv5 as its baseline. A guarded crop/transcription merge path exists, but the catalog does **not** admit VLM package fallback: measured results have not recovered two previously missing fields without errors. OCR/VLM numerical conflicts become empty fields with retained evidence; serving and per-100-g bases never mix. VLM net mass never initializes consumed amount.
+
+Meal support is limited to a separately validated, editable **name-only** suggestion. The strict meal schema accepts only isFood/singleDish/name; non-food, unclear/multiple dishes or invalid output lead to manual entry. No photo-derived weight, total calories or numerical nutrient estimate is enabled. Model selection stays explicit in Settings. FoodValidator and NutritionCalculator remain the only path to a saved diary entry.
+
+## Measurements on 2026-10-22
+
+Device: OnePlus 7T HD1900, Android 11/API 30. Same supplied Russian package photographs, one sample per case/configuration; these are not general performance claims. Full raw outputs/metrics are emitted by the opt-in device test and retained in its local results.
+
+Pinned artifacts:
+
+| Model | Revision | Bytes | SHA-256 |
+| --- | --- | ---: | --- |
+| Gemma 4 E2B | 6e5c4f1e395deb959c494953478fa5cec4b8008f | 2,588,147,712 | 181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c |
+| PaddleOCR-VL-1.6 | eb04490d43ce6197686ddc878e1093eacc7610a2 | 1,390,305,472 | 314df8b34d6911990d488e825602550a5bbcc5d6700cb1a8914e853e9043f4f1 |
+
+| Engine / input | Initialization | Case 1 | Case 2 | Case 3 | Observed quality |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Bundled PP-OCRv5 | 593 / 303 / 304 ms | 8,640 ms | 8,887 ms | 10,096 ms | 15/15 numeric fields correct, names recognized |
+| Gemma, CPU, complete photo | 13,420 ms | 65,389 ms | 59,442 ms | 43,902 ms | Incorrect nutrition in all three; case 2 also repeats text |
+| Paddle VLM, GPU, complete photo | 20,958 ms | 121,811 ms | 119,078 ms | 120,436 ms | Case 1 reads main numbers; cases 2/3 degenerate/repeat and miss nutrition |
+| Paddle VLM, GPU, first crop implementation + greedy | 20,899 ms | 65,371 ms | 60,676 ms | 81,645 ms | Case 1 retains nutrition; case 2 damages heading/units; case 3 changes decimal values. Not admitted |
+
+The first crop included excess neighboring text; the selector was tightened to the heading/last nutrient block. A final case-1 run initialized in 16,794 ms and inferred in 42,944 ms (first visible response 15,553 ms; native TTFT 1.537 s, prefill 286.57 tokens/s, decode 9.689 tokens/s; PSS 2,941,131 KiB). It transcribed 196.8 kcal as **1968 kcal**, so it still failed the numerical gate. Further crop tuning was stopped; fallback remains experimental. Crop and full-frame timings are separate configurations.
+
+Post-call PSS snapshots: PP-OCR 131,650 KiB with process peak RSS 535,840 KiB; Gemma full-photo 3,155,710 KiB; Paddle full-photo 2,943,053 KiB; Paddle crop run 3,222,535 KiB. These are app/process observations, not model peak-memory requirements. Immediate post-unload snapshots remained at the sampled value; this does not prove memory returned to baseline or establish absence of a native/driver leak.
+
+Initial name-only tests correctly named apple, banana and pizza; dog, bus and blank returned null (22,098 / 17,260 / 16,917 / 16,461 / 16,593 / 16,363 ms; initialization 20,830 ms, CPU). The first multiple-food response incorrectly supplied a combined name. The prompt now explicitly addresses separate foods; the parser rejects contradictory flags/names and compound names. This conservative parser can also reject legitimate names containing conjunctions, sending them to manual entry.
+
+The final seven-image **model + validator** gate passed: apple/banana/pizza names; dog/bus/blank no suggestion; the apple+banana response had `singleDish:false` but supplied a name and was rejected. It is a successful safe refusal, not a claim that the model followed the schema. Final CPU timings were 14,139 / 14,021 / 13,806 / 13,505 / 13,623 / 12,540 / 13,939 ms; warm initialization 645 ms. Native cancellation joined, then a repeat apple inference completed. Gemma's catalog admission is limited to name-only assistance and still requires an image probe for the current SDK/device and explicit Settings selection.
+
+One earlier long-running instrumentation run was terminated by OnePlus background CPU policy (`OHPD BgDetect`, ActivityManager kill); no native crash was established. Runtime tests now hold a foreground Activity and the final run completed. No battery-policy setting was changed. Foreground success is not evidence of sustained background inference support.
+
+Fixture sources used only for local testing (not bundled): [apple](https://commons.wikimedia.org/wiki/File:Red_Apple.jpg), [banana](https://commons.wikimedia.org/wiki/File:Banana-Single.jpg), [pizza](https://commons.wikimedia.org/wiki/File:Supreme_pizza.jpg), [dog](https://github.com/pytorch/hub/blob/master/images/dog.jpg), [bus](https://github.com/ultralytics/yolov5/blob/master/data/images/bus.jpg). A blank fixture and a multiple-food collage are generated by the test.
+
+Both curated models **launched successfully** on 0.18.1. Failed package extraction is explicitly distinguished from runtime startup. Qwen/SmolVLM were not downloaded or tested in this milestone; no runtime evidence is claimed for them. No CPU fallback was claimed for Paddle and no unsupported Gemma GPU pair was silently forced.
+
+## Earlier package-only continuation verification — 0.16.0 (2026-10-22)
+
+Per the user's updated scope, meal-quality tests and comparisons between models
+were not repeated. All twelve supplied package photographs were run with the
+bundled production OCR. [PACKAGE_OCR.md](PACKAGE_OCR.md#supplied-12-package-review--0160-2026-10-22)
+records each photo, observed omissions, latencies, memory and raw evidence.
+42/54 visible numbers were correctly extracted, 37/54 confidently prefilled, with
+zero incorrect nonempty numeric prefills in this sample. Six absent masses stayed
+empty. The strict complete-extraction test remains failing on twelve omitted
+numbers plus unknown sandwich basis; this is an explicit remaining quality gap.
+
+Final Gradle verification passed: **149 unit tests**, assembleDebug,
+assembleDebugAndroidTest, lintDebug and minifyReleaseWithR8, using the Wrapper and
+one worker. IDE inspections found no errors in the final parser, parser tests or
+Models ViewModel. Lint has no errors; remaining warnings concern existing
+resources/update UI and dependency version suggestions. No production release
+was signed, tagged or published.
+
+Four device tests passed in the final build: queued pause/cancel/restart without
+resurrecting stopped transfer work (isolated private storage, no network);
+Models/Playground Settings navigation; hidden Profile Name surviving goal edits,
+tabs and Activity recreation; actual bundled OCR → editable confirmation →
+exactly one explicit save to the originally selected diary date. The tests
+restore their preferences and remove only their own diary fixtures. Settings,
+AI Models and AI Playground were also visually inspected in Russian on this
+physical device; this was a light-theme check, not a full accessibility or
+large-font/device matrix.
+
+Live HTTPS transfer remains unverified because of the earlier device DNS failure;
+API 34+ user-initiated job behavior and OnePlus 12 remain unverified. The previous
+real-model meal UI end-to-end test did not complete successfully; it was not
+rerun in this package-only continuation. Earlier model+validator name-only
+evidence does not establish that entire UI workflow. Package VLM admission and
+numerical meal estimates remain disabled. Signing, update infrastructure and
+diary/backup formats were preserved; the ongoing task retains version 0.16.0 (40).
+
+## Historical verification
+
+The records below describe earlier builds and remain historical evidence only.
 
 ## Verification recorded on 2026-10-05
 

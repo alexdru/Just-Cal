@@ -81,6 +81,7 @@ class PaddlePackageOcrEngine internal constructor(
                 }
                 try {
                     val detStart = SystemClock.elapsedRealtime()
+                    var coordinateRotation = 0
                     var boxes = detect(source, models.detector, environment)
                     if (boxes.isNotEmpty() && boxes.count { box ->
                         val w = box.points.maxOf { it.x } - box.points.minOf { it.x }
@@ -89,6 +90,7 @@ class PaddlePackageOcrEngine internal constructor(
                     } > boxes.size * 0.6) {
                         val rotated = Mat()
                         Core.rotate(source, rotated, Core.ROTATE_90_COUNTERCLOCKWISE)
+                        coordinateRotation = 270
                         source.release()
                         source = rotated
                         boxes = detect(source, models.detector, environment)
@@ -177,12 +179,15 @@ class PaddlePackageOcrEngine internal constructor(
                     currentCoroutineContext().ensureActive()
                     val recognition = SystemClock.elapsedRealtime() - recStart
                     val recognized = lines.values.filter { it.text.isNotBlank() }
-                    val upright = if (invertedLines > recognized.size * 0.6) recognized.map { line ->
+                    val inverted = invertedLines > recognized.size * 0.6
+                    if (inverted) coordinateRotation = (coordinateRotation + 180) % 360
+                    val upright = if (inverted) recognized.map { line ->
                         line.copy(points = line.points.map { OcrPoint(source.cols() - it.x, source.rows() - it.y) })
                     } else recognized
                     PackageOcrResult(LabelReadingOrder.sort(upright), source.cols(), source.rows(),
                         OcrMetrics(initialization, detection, recognition, SystemClock.elapsedRealtime() - started),
-                        regions = profiles, detectedRegions = boxes.size, fullFallback = fallback)
+                        regions = profiles, detectedRegions = boxes.size, fullFallback = fallback,
+                        coordinateRotationDegrees = coordinateRotation)
                 } finally { source.release() }
             } finally { if (!config.reuseSessions) models.close() }
         }

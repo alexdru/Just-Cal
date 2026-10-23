@@ -1,5 +1,5 @@
 <resources>
-    <string name="local_ai_lab">Local AI Lab</string>
+    <string name="local_ai_lab">AI Playground</string>
     <string name="lab_intro">Экспериментальный инструмент разработчика. Фото и обработка остаются на устройстве. Результаты не попадают в дневник.</string>
     <string name="lab_no_model">Нет модели</string>
     <string name="lab_model_selected">Модель выбрана · не загружена</string>
@@ -18,15 +18,12 @@
     <string name="lab_select_model">Выбрать модель</string>
     <string name="lab_delete_model">Удалить модель</string>
     <string name="lab_delete_confirm">Удалить приватную копию модели? Исходный файл останется.</string>
-    <string name="lab_model_hint">Целевая модель: Gemma 4 E2B с vision. Импорт создаёт приватную копию; нужно место для модели и кэша runtime. Перед сменой или удалением выгрузите модель.</string>
-    <string name="lab_backend">Backend</string>
-    <string name="lab_backend_hint">Выбранный backend используется для текста и vision. Несовместимость модели или устройства вызывает ошибку; автоматического перехода на CPU нет.</string>
     <string name="lab_load">Загрузить модель</string>
     <string name="lab_unload">Выгрузить модель</string>
     <string name="lab_image">Фото еды</string>
     <string name="lab_remove_image">Убрать фото</string>
+    <string name="lab_free_text">Обычный текст</string>
     <string name="lab_prompt">Запрос</string>
-    <string name="lab_free_prompt">Произвольный</string>
     <string name="lab_nutrition_preset">Пищевая ценность</string>
     <string name="lab_json_hint">Включён constrained decoding по JSON Schema. Запрос можно менять. Даже корректный JSON не подтверждает достоверность чисел.</string>
     <string name="lab_run">Запустить inference</string>

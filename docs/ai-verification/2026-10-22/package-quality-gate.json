@@ -1,0 +1,383 @@
+{
+  "appVersion": "0.17.1-debug",
+  "engine": "bundled PP-OCRv5",
+  "visibleNumbers": 54,
+  "correctNumbers": 42,
+  "correctPrefills": 37,
+  "wrongPrefills": 0,
+  "strictQualityPassed": false,
+  "cases": [
+    {
+      "fixture": "1792661540668",
+      "expected": [
+        "98.5",
+        "5.9",
+        "3.7",
+        "10.4",
+        "205"
+      ],
+      "actual": [
+        "98.5",
+        "5.9",
+        "3.7",
+        "10.4",
+        "205"
+      ],
+      "editor": [
+        "98.5",
+        "5.9",
+        "3.7",
+        "10.4",
+        "205"
+      ],
+      "basis": "PER_100_G",
+      "metrics": {
+        "initializationMs": 249,
+        "detectionMs": 1268,
+        "recognitionMs": 6199,
+        "totalMs": 7942
+      }
+    },
+    {
+      "fixture": "1792661541124",
+      "expected": [
+        "329.1",
+        "15.8",
+        "15.5",
+        "31.6",
+        "140"
+      ],
+      "actual": [
+        "329.1",
+        "15.8",
+        "15.5",
+        "31.6",
+        "140"
+      ],
+      "editor": [
+        "329.1",
+        "15.8",
+        "15.5",
+        "31.6",
+        "140"
+      ],
+      "basis": "PER_100_G",
+      "metrics": {
+        "initializationMs": 228,
+        "detectionMs": 1208,
+        "recognitionMs": 5476,
+        "totalMs": 7094
+      }
+    },
+    {
+      "fixture": "1792661541536",
+      "expected": [
+        "196.8",
+        "9.7",
+        "8.8",
+        "19.7",
+        "200"
+      ],
+      "actual": [
+        "196.8",
+        "9.7",
+        "8.8",
+        "19.7",
+        "200"
+      ],
+      "editor": [
+        "196.8",
+        "9.7",
+        "8.8",
+        "19.7",
+        "200"
+      ],
+      "basis": "PER_100_G",
+      "metrics": {
+        "initializationMs": 238,
+        "detectionMs": 1214,
+        "recognitionMs": 4809,
+        "totalMs": 6447
+      }
+    },
+    {
+      "fixture": "1792612058945",
+      "expected": [
+        "138",
+        "5",
+        "4.4",
+        "19.5",
+        null
+      ],
+      "actual": [
+        "138",
+        null,
+        null,
+        "19.5",
+        null
+      ],
+      "editor": [
+        "138",
+        "",
+        "",
+        "19.5",
+        ""
+      ],
+      "basis": "PER_100_G",
+      "metrics": {
+        "initializationMs": 240,
+        "detectionMs": 1229,
+        "recognitionMs": 3843,
+        "totalMs": 5852
+      }
+    },
+    {
+      "fixture": "1792612059984",
+      "expected": [
+        "162",
+        "5.1",
+        "8.1",
+        "17.1",
+        null
+      ],
+      "actual": [
+        "162",
+        "5.1",
+        null,
+        "17.1",
+        null
+      ],
+      "editor": [
+        "162",
+        "",
+        "",
+        "17.1",
+        ""
+      ],
+      "basis": "PER_100_G",
+      "metrics": {
+        "initializationMs": 234,
+        "detectionMs": 1215,
+        "recognitionMs": 4926,
+        "totalMs": 6553
+      }
+    },
+    {
+      "fixture": "1792612058338",
+      "expected": [
+        "150",
+        "4.5",
+        "3.6",
+        "24.8",
+        null
+      ],
+      "actual": [
+        "150",
+        "4.5",
+        null,
+        "24.8",
+        null
+      ],
+      "editor": [
+        "150",
+        "",
+        "",
+        "24.8",
+        ""
+      ],
+      "basis": "PER_100_G",
+      "metrics": {
+        "initializationMs": 236,
+        "detectionMs": 1217,
+        "recognitionMs": 2854,
+        "totalMs": 4839
+      }
+    },
+    {
+      "fixture": "1792612059644",
+      "expected": [
+        "155",
+        "5",
+        "11",
+        "9",
+        "250"
+      ],
+      "actual": [
+        "155",
+        "5",
+        "11",
+        "9",
+        null
+      ],
+      "editor": [
+        "155",
+        "5",
+        "11",
+        "9",
+        ""
+      ],
+      "basis": "PER_100_G",
+      "metrics": {
+        "initializationMs": 240,
+        "detectionMs": 1228,
+        "recognitionMs": 12981,
+        "totalMs": 14643
+      }
+    },
+    {
+      "fixture": "1792612058637",
+      "expected": [
+        "121",
+        "5",
+        "6",
+        "13",
+        null
+      ],
+      "actual": [
+        "121",
+        "5",
+        null,
+        "13",
+        null
+      ],
+      "editor": [
+        "",
+        "",
+        "",
+        "13",
+        ""
+      ],
+      "basis": "PER_100_G",
+      "metrics": {
+        "initializationMs": 246,
+        "detectionMs": 1216,
+        "recognitionMs": 4937,
+        "totalMs": 6583
+      }
+    },
+    {
+      "fixture": "1792612056936",
+      "expected": [
+        "320",
+        "8.5",
+        "21",
+        "24",
+        "170"
+      ],
+      "actual": [
+        null,
+        null,
+        null,
+        null,
+        "170"
+      ],
+      "editor": [
+        "",
+        "",
+        "",
+        "",
+        "170"
+      ],
+      "basis": "UNKNOWN",
+      "metrics": {
+        "initializationMs": 250,
+        "detectionMs": 1222,
+        "recognitionMs": 6849,
+        "totalMs": 8512
+      }
+    },
+    {
+      "fixture": "1792612057628",
+      "expected": [
+        "293",
+        "55",
+        "7.6",
+        "1.2",
+        null
+      ],
+      "actual": [
+        "293",
+        "55",
+        "7.6",
+        "1.2",
+        null
+      ],
+      "editor": [
+        "293",
+        "55",
+        "7.6",
+        "1.2",
+        ""
+      ],
+      "basis": "PER_100_G",
+      "metrics": {
+        "initializationMs": 240,
+        "detectionMs": 1217,
+        "recognitionMs": 7479,
+        "totalMs": 9141
+      }
+    },
+    {
+      "fixture": "1792612057327",
+      "expected": [
+        "159",
+        "5",
+        "7",
+        "19",
+        "260"
+      ],
+      "actual": [
+        "159",
+        "5",
+        "7",
+        "19",
+        null
+      ],
+      "editor": [
+        "159",
+        "5",
+        "7",
+        "19",
+        ""
+      ],
+      "basis": "PER_100_G",
+      "metrics": {
+        "initializationMs": 250,
+        "detectionMs": 1229,
+        "recognitionMs": 13316,
+        "totalMs": 14982
+      }
+    },
+    {
+      "fixture": "1792612058012",
+      "expected": [
+        "189",
+        "11",
+        "8.5",
+        "17",
+        null
+      ],
+      "actual": [
+        "189",
+        "11",
+        null,
+        "17",
+        null
+      ],
+      "editor": [
+        "189",
+        "",
+        "",
+        "17",
+        ""
+      ],
+      "basis": "PER_100_G",
+      "metrics": {
+        "initializationMs": 244,
+        "detectionMs": 1233,
+        "recognitionMs": 5414,
+        "totalMs": 7074
+      }
+    }
+  ]
+}

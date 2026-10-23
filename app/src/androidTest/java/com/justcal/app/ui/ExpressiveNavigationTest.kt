@@ -41,14 +41,15 @@ class ExpressiveNavigationTest {
         tab(R.string.history).assertIsSelected()
         compose.onNodeWithTag("main_pager").performTouchInput { swipeLeft() }
         tab(R.string.settings).assertIsSelected()
-        val name = compose.activity.getString(R.string.display_name)
-        compose.onNode(hasText(name) and hasSetTextAction()).performTextReplacement("Expressive draft")
+        val goal = compose.activity.getString(R.string.goal_field)
+        compose.onNode(hasText(goal) and hasSetTextAction()).performTextReplacement("2345")
         // IME Back is separate from top-level Back.
         compose.activityRule.scenario.recreate()
-        compose.onNode(hasText(name) and hasSetTextAction()).assertTextContains("Expressive draft")
-        tab(R.string.home).performClick()
-        tab(R.string.settings).performClick()
-        compose.onNode(hasText(name) and hasSetTextAction()).assertTextContains("Expressive draft")
+        compose.onNode(hasText(goal) and hasSetTextAction()).assertTextContains("2345")
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
+        tab(R.string.home).performClick().assertIsSelected()
+        tab(R.string.settings).performClick().assertIsSelected()
+        compose.onNode(hasText(goal) and hasSetTextAction()).assertTextContains("2345")
     }
 
     @Test fun settingsHidesFabBeforeThePagerSettlesAndGatesDynamicColors() {

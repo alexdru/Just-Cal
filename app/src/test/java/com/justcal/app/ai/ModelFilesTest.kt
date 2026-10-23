@@ -56,6 +56,23 @@ class ModelFilesTest {
         assertTrue(folder.listFiles()!!.isEmpty())
     }
 
+    @Test fun validationFailureRemovesOnlyImportAndPreservesDownloadCheckpoint() = runTest {
+        val folder = temporary.newFolder()
+        val files = ModelFiles(folder)
+        val paused = File(folder, ".download-pinned").apply { mkdir() }
+        File(paused, "checkpoint.json").writeText("paused")
+        val original = files.import("legacy.litertlm", null, ByteArrayInputStream(byteArrayOf(1))) {}
+        val failed = runCatching {
+            files.import("damaged.litertlm", 1L, ByteArrayInputStream(byteArrayOf(2)),
+                validate = { error("Integrity mismatch") }, onProgress = {})
+        }
+        assertTrue(failed.isFailure)
+        files.removePartialImports()
+        assertEquals("paused", File(paused, "checkpoint.json").readText())
+        assertEquals(listOf(original), files.list())
+        assertArrayEquals(byteArrayOf(1), files.path(original).readBytes())
+    }
+
     @Test fun stalePartialsAreRemovedButCompleteModelsSurvive() = runTest {
         val folder = temporary.newFolder()
         val files = ModelFiles(folder)

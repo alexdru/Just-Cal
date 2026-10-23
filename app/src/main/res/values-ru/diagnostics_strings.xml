@@ -81,4 +81,15 @@
     <string name="diag_parsed">Распознанные поля питания</string>
     <string name="diag_technical">Подробности модели и среды</string>
     <string name="diag_annotations">Уточнения для диагностики</string>
+    <string name="diag_resolution">Размер изображения</string>
+    <string name="diag_recognition_quality">Качество распознавания</string>
+    <string name="diag_confidence_mean">Средняя уверенность</string>
+    <string name="diag_confidence_min">Минимальная уверенность</string>
+    <string name="diag_confidence_max">Максимальная уверенность</string>
+    <string name="diag_runtime">Среда выполнения</string>
+    <string name="diag_app_version">Версия приложения</string>
+    <string name="diag_android_version">Версия Android</string>
+    <string name="diag_device">Устройство</string>
+    <string name="diag_orientation">Ориентация</string>
+    <string name="diag_all_scans">Все сканирования</string>
 </resources>

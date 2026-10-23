@@ -38,7 +38,7 @@ class PackageOcrDeviceTest {
     }
 
     @Test fun packagedOcrNativeLibrariesHave16KiBElfAlignment() {
-        val libraries = setOf("libonnxruntime.so", "libonnxruntime4j_jni.so", "libopencv_java4.so", "libc++_shared.so")
+        val libraries = setOf("libonnxruntime.so", "libonnxruntime4j_jni.so", "libopencv_java4.so", "libc++_shared.so", "liblitertlm_jni.so")
         java.util.zip.ZipFile(context.applicationInfo.sourceDir).use { apk ->
             for (library in libraries) {
                 val entry = requireNotNull(apk.getEntry("lib/arm64-v8a/$library"))
@@ -208,6 +208,85 @@ class PackageOcrDeviceTest {
                 }
             }
         } finally { candidate.release() }
+    }
+
+    /** Real supplied photos: kcal, protein, fat, carbs per 100 g, visible net grams. */
+    @Test fun suppliedPackageReviewFixtures() = runBlocking {
+        org.junit.Assume.assumeTrue(InstrumentationRegistry.getArguments().getString("packageReviewFixtures") == "true")
+        val expected = linkedMapOf(
+            "1792661540668" to listOf("98.5", "5.9", "3.7", "10.4", "205"),
+            "1792661541124" to listOf("329.1", "15.8", "15.5", "31.6", "140"),
+            "1792661541536" to listOf("196.8", "9.7", "8.8", "19.7", "200"),
+            "1792612058945" to listOf("138", "5", "4.4", "19.5", null),
+            "1792612059984" to listOf("162", "5.1", "8.1", "17.1", null),
+            "1792612058338" to listOf("150", "4.5", "3.6", "24.8", null),
+            "1792612059644" to listOf("155", "5", "11", "9", "250"),
+            "1792612058637" to listOf("121", "5", "6", "13", null),
+            "1792612056936" to listOf("320", "8.5", "21", "24", "170"),
+            "1792612057628" to listOf("293", "55", "7.6", "1.2", null),
+            "1792612057327" to listOf("159", "5", "7", "19", "260"),
+            "1792612058012" to listOf("189", "11", "8.5", "17", null),
+        )
+        val failures = mutableListOf<String>()
+        val cases = mutableListOf<kotlinx.serialization.json.JsonObject>()
+        var correctNumbers = 0
+        var correctPrefills = 0
+        var wrongPrefills = 0
+        fun fields(values: List<String?>) = kotlinx.serialization.json.JsonArray(values.map {
+            it?.let { value -> kotlinx.serialization.json.JsonPrimitive(value) } ?: kotlinx.serialization.json.JsonNull
+        })
+        val scenario = androidx.test.core.app.ActivityScenario.launch(com.justcal.app.MainActivity::class.java)
+        try {
+            for ((id, values) in expected) {
+                val fixture = File(context.getExternalFilesDir(null), "package-review-fixtures/$id.jpg")
+                check(fixture.isFile) { "Supplied package fixture unavailable: $id" }
+                val copy = images.newCaptureFile()
+                fixture.copyTo(copy)
+                val image = images.prepare(Uri.fromFile(copy), ImageSource.CAMERA, ScanRequest(ScanMode.PACKAGE, 456))
+                try {
+                    val result = engine.recognize(images.verify(image))
+                    report("review-$id", result)
+                    val parsed = NutritionLabelParser.parse(result)
+                    val draft = parsed.draft()
+                    val actual = listOf(parsed.energyKcal?.value, parsed.proteinGrams?.value,
+                        parsed.fatGrams?.value, parsed.carbsGrams?.value, parsed.netGrams?.value)
+                    val editor = listOf(draft.energy, draft.protein, draft.fat, draft.carbs, draft.amount)
+                    actual.forEachIndexed { field, value ->
+                        if (value != values[field]) failures += "$id field=$field expected=${values[field]} actual=$value"
+                    }
+                    if (parsed.basis != LabelBasis.PER_100_G) failures += "$id basis=${parsed.basis}"
+                    editor.forEachIndexed { field, value ->
+                        if (value.isNotEmpty() && value != values[field]) failures += "$id wrong prefill field=$field value=$value"
+                    }
+                    correctNumbers += actual.indices.count { values[it] != null && actual[it] == values[it] }
+                    correctPrefills += editor.indices.count { editor[it].isNotEmpty() && editor[it] == values[it] }
+                    wrongPrefills += editor.indices.count { editor[it].isNotEmpty() && editor[it] != values[it] }
+                    cases += kotlinx.serialization.json.buildJsonObject {
+                        put("fixture", kotlinx.serialization.json.JsonPrimitive(id))
+                        put("expected", fields(values))
+                        put("actual", fields(actual))
+                        put("editor", fields(editor))
+                        put("basis", kotlinx.serialization.json.JsonPrimitive(parsed.basis.name))
+                        put("metrics", Json.encodeToJsonElement(OcrMetrics.serializer(), result.metrics))
+                    }
+                    instrumentation.sendStatus(0, Bundle().apply {
+                        putString("stream", "\nREVIEW $id expected=$values actual=$actual editor=$editor name=${draft.name}\n")
+                    })
+                } finally { images.discard(image.uri) }
+            }
+            File(context.getExternalFilesDir(null), "ocr-results/package-quality-gate.json").writeText(
+                kotlinx.serialization.json.buildJsonObject {
+                    put("appVersion", kotlinx.serialization.json.JsonPrimitive(com.justcal.app.BuildConfig.VERSION_NAME))
+                    put("engine", kotlinx.serialization.json.JsonPrimitive("bundled PP-OCRv5"))
+                    put("visibleNumbers", kotlinx.serialization.json.JsonPrimitive(expected.values.sumOf { row -> row.count { it != null } }))
+                    put("correctNumbers", kotlinx.serialization.json.JsonPrimitive(correctNumbers))
+                    put("correctPrefills", kotlinx.serialization.json.JsonPrimitive(correctPrefills))
+                    put("wrongPrefills", kotlinx.serialization.json.JsonPrimitive(wrongPrefills))
+                    put("strictQualityPassed", kotlinx.serialization.json.JsonPrimitive(failures.isEmpty()))
+                    put("cases", kotlinx.serialization.json.JsonArray(cases))
+                }.toString())
+            assertTrue(failures.joinToString("\n"), failures.isEmpty())
+        } finally { scenario.close() }
     }
 
     /** Push original photographs to externalFilesDir/ocr-fixtures/case1.jpg .. case3.jpg. */

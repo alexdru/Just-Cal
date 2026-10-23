@@ -48,11 +48,27 @@ class ModelFiles(private val directory: File) {
         check(folder.deleteRecursively()) { "Could not remove model" }
     }
 
+    fun validation(model: LocalModel): ModelValidation? = runCatching {
+        Json.decodeFromString<ModelValidation>(File(path(model).parentFile, "validation.json").readText())
+    }.getOrNull()
+
+    fun saveValidation(model: LocalModel, value: ModelValidation) = writeValidation(path(model).parentFile!!, value)
+
+    internal fun writeValidation(folder: File, value: ModelValidation) {
+        val pending = File(folder, ".validation")
+        pending.outputStream().use { output ->
+            output.write(Json.encodeToString(value).toByteArray())
+            output.fd.sync()
+        }
+        check(pending.renameTo(File(folder, "validation.json"))) { "Could not save model validation" }
+    }
+
     fun removePartialImports() {
         directory.listFiles().orEmpty().filter { it.name.startsWith(".import-") }.forEach { it.deleteRecursively() }
     }
 
-    suspend fun import(name: String, expectedSize: Long?, stream: InputStream, onProgress: (Long) -> Unit): LocalModel {
+    suspend fun import(name: String, expectedSize: Long?, stream: InputStream,
+        validate: suspend (File) -> ModelValidation? = { null }, onProgress: (Long) -> Unit): LocalModel {
         require(name.endsWith(".litertlm", ignoreCase = true) && name.length <= 255) { "Select a .litertlm file" }
         val id = UUID.randomUUID().toString()
         val temporary = File(directory, ".import-$id")
@@ -69,6 +85,7 @@ class ModelFiles(private val directory: File) {
                     if (count < 0) break
                     total += count
                     require(total <= 16L * 1024 * 1024 * 1024) { "Model exceeds 16 GiB import limit" }
+                    require(temporary.usableSpace > MODEL_STORAGE_RESERVE) { "Insufficient private storage" }
                     target.write(buffer, 0, count)
                     onProgress(total)
                 }
@@ -77,7 +94,12 @@ class ModelFiles(private val directory: File) {
             require(total > 0 && (expectedSize == null || expectedSize < 0 || total == expectedSize)) {
                 "Empty or incomplete model file"
             }
-            File(temporary, "metadata.json").writeText(buildJsonObject { put("name", name) }.toString())
+            val validation = validate(File(temporary, "model.litertlm"))
+            File(temporary, "metadata.json").outputStream().use { output ->
+                output.write(buildJsonObject { put("name", name) }.toString().toByteArray())
+                output.fd.sync()
+            }
+            validation?.let { writeValidation(temporary, it) }
             currentCoroutineContext().ensureActive()
             check(temporary.renameTo(committed)) { "Could not commit model import" }
             retained = true
@@ -89,7 +111,8 @@ class ModelFiles(private val directory: File) {
 }
 
 @Singleton
-class LocalModelStore @Inject constructor(@ApplicationContext private val context: Context) {
+class LocalModelStore @Inject constructor(@ApplicationContext private val context: Context,
+    private val inspector: LiteRtModelInspector, private val catalog: ModelCatalog) {
     private val lock = Mutex()
     // noBackupFilesDir: durable private files, excluded from backup and APK packaging.
     private val files by lazy { ModelFiles(File(context.noBackupFilesDir, "local-ai-models")) }
@@ -113,17 +136,20 @@ class LocalModelStore @Inject constructor(@ApplicationContext private val contex
                             if (!cursor.isNull(1)) size = cursor.getLong(1)
                         }
                     }
+                    require(name?.endsWith(".litertlm", ignoreCase = true) == true && name.length <= 255) {
+                        "Select a .litertlm file"
+                    }
                     size?.takeIf { it > 0 }?.let { expected ->
                         require(expected <= 16L * 1024 * 1024 * 1024) { "Model exceeds 16 GiB import limit" }
                         val storage = context.getSystemService(StorageManager::class.java)
                         val volume = storage.getUuidForPath(context.noBackupFilesDir)
-                        val required = expected + 64L * 1024 * 1024
+                        val required = expected + MODEL_STORAGE_RESERVE
                         require(storage.getAllocatableBytes(volume) >= required) { "Insufficient private storage" }
                         storage.allocateBytes(volume, required)
                     }
                     context.contentResolver.openInputStream(uri).use { stream ->
                         files.import(requireNotNull(name) { "Model filename unavailable" }, size,
-                            requireNotNull(stream) { "Model file unavailable" }, progress).also { produced.set(it) }
+                            requireNotNull(stream) { "Model file unavailable" }, validate = { inspect(it) }, onProgress = progress).also { produced.set(it) }
                     }
                 }
             }
@@ -137,11 +163,54 @@ class LocalModelStore @Inject constructor(@ApplicationContext private val contex
     }
 
     suspend fun remove(model: LocalModel) = withContext(Dispatchers.IO) {
-        lock.withLock {
+        check(ModelRuntimeLease.slot.tryAcquire()) { "Model is in use; unload it first" }
+        try { lock.withLock {
             files.path(model) // Validate the private reference before deriving its cache directory.
             val cache = File(context.cacheDir, "local-ai-runtime/${model.id}")
             check(!cache.exists() || cache.deleteRecursively()) { "Could not remove model cache" }
             files.remove(model)
+        } } finally { ModelRuntimeLease.slot.release() }
+    }
+
+    suspend fun validate(model: LocalModel): ModelValidation = withContext(Dispatchers.IO) {
+        lock.withLock {
+            // Reinspect legacy files once; never delete an unsupported legacy artifact.
+            files.validation(model)?.takeIf { it.runtime == AI_RUNTIME_VERSION }
+                ?: inspect(files.path(model)).also { files.saveValidation(model, it) }
+        }
+    }
+
+    suspend fun recordImageProbe(model: LocalModel, backend: AiBackend) = withContext(Dispatchers.IO) {
+        lock.withLock {
+            val validation = requireNotNull(files.validation(model))
+            files.saveValidation(model, validation.copy(imageProbe = probeFingerprint(backend)))
+        }
+    }
+    fun probeFingerprint(backend: AiBackend) = "$AI_RUNTIME_VERSION/${android.os.Build.FINGERPRINT}/${backend.name}"
+
+    private suspend fun inspect(file: File, expectedHash: String? = null): ModelValidation {
+        val result = inspector.inspect(file, expectedHash)
+        return result.copy(catalogId = catalog.matching(result.sha256)?.id)
+    }
+
+    suspend fun installDownload(descriptor: ModelDescriptor, file: File): LocalModel = withContext(Dispatchers.IO) {
+        lock.withLock {
+            require(file.canonicalFile == File(context.noBackupFilesDir,
+                "local-ai-models/.download-${descriptor.id}/model.litertlm").canonicalFile)
+            require(file.length() == descriptor.bytes)
+            val validation = inspect(file, descriptor.sha256)
+            require(validation.sha256 == descriptor.sha256) { "Model integrity check failed" }
+            val folder = file.parentFile!!
+            File(folder, "metadata.json").outputStream().use {
+                it.write(buildJsonObject { put("name", descriptor.filename) }.toString().toByteArray())
+                it.fd.sync()
+            }
+            files.writeValidation(folder, validation)
+            val id = UUID.randomUUID().toString()
+            val committed = File(folder.parentFile, id)
+            currentCoroutineContext().ensureActive()
+            check(folder.renameTo(committed)) { "Could not commit downloaded model" }
+            LocalModel(id, descriptor.filename, descriptor.bytes)
         }
     }
     fun path(model: LocalModel): File = files.path(model)

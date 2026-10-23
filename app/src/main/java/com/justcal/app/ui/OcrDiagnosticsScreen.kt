@@ -9,17 +9,18 @@ import androidx.compose.animation.AnimatedVisibility
 import com.justcal.app.ui.theme.CalMotion
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import com.justcal.app.ui.CalButton as Button
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -28,7 +29,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.testTag
@@ -38,6 +38,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.stateDescription
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigationevent.findViewTreeNavigationEventDispatcherOwner
 import com.justcal.app.R
 import com.justcal.app.diagnostics.DiagnosticScan
 import com.justcal.app.ui.theme.CalLayout
@@ -72,7 +73,6 @@ internal fun OcrDiagnosticsContent(
 ) {
     val context = LocalContext.current
     val locale = LocalConfiguration.current.locales[0]
-    val failuresLabel = stringResource(R.string.diag_failures)
     val pager = rememberPagerState { 5 }
     val coroutineScope = rememberCoroutineScope()
     var query by rememberSaveable { mutableStateOf("") }
@@ -116,6 +116,7 @@ internal fun OcrDiagnosticsContent(
                     .any { it.contains(query, ignoreCase = true) })
         }.let { if (slowest || tab == 2) it.sortedByDescending { s -> s.totalMs } else it.sortedByDescending { s -> s.timestampMillis } }
     }
+    var tabHostHeight by remember { mutableIntStateOf(0) }
     val direction = LocalLayoutDirection.current
     val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
     BoxWithConstraints {
@@ -142,103 +143,117 @@ internal fun OcrDiagnosticsContent(
             }
             CompositionLocalProvider(LocalBringIntoViewSpec provides bringIntoView) {
                 // Keep lists behind the transparent action host; reserve its measured height at the end.
-                Column(Modifier.padding(
+                Box(Modifier.padding(
                     start = padding.calculateStartPadding(direction),
                     end = padding.calculateEndPadding(direction),
-                    top = padding.calculateTopPadding(), bottom = imeBottom,
+                    bottom = imeBottom,
                 ).consumeWindowInsets(padding).calContent(CalLayout.readingWidth)) {
-                    SecondaryScrollableTabRow(selectedTabIndex = pager.currentPage, edgePadding = CalSpacing.medium) {
-                        listOf(R.string.diag_overview, R.string.diag_history, R.string.diag_performance,
-                            R.string.diag_errors, R.string.diag_brands).forEachIndexed { index, label ->
-                            Tab(selected = pager.currentPage == index, onClick = { coroutineScope.launch { pager.animateScrollToPage(index, animationSpec = CalMotion.spatial()) } }, text = { Text(stringResource(label)) })
-                        }
-                    }
-                    HorizontalPager(state = pager, modifier = Modifier.weight(1f).testTag("diagnostics_pager"), key = { it }) { tab ->
+                    HorizontalPager(state = pager, modifier = Modifier.fillMaxSize().testTag("diagnostics_pager"), key = { it }) { tab ->
                         val filtered = remember(scans, query, slowest, failures, tab) { filtered(tab) }
                         LazyColumn(Modifier.fillMaxSize().testTag("diagnostics_page_$tab"), contentPadding = PaddingValues(start = CalSpacing.page, end = CalSpacing.page,
-                                top = CalSpacing.page, bottom = actionSpace),
-                            verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                                top = with(LocalDensity.current) { tabHostHeight.toDp() } + CalSpacing.page, bottom = actionSpace),
+                            verticalArrangement = Arrangement.spacedBy(if (tab in 1..3) 0.dp else CalSpacing.section)) {
                             if (tab == 0) {
                                 item { Counts(scans) }
-                                item { SectionTitle(stringResource(R.string.diag_local_capture)) }
-                                item { Text(stringResource(R.string.diag_capture), style = MaterialTheme.typography.bodyMedium) }
-                                item { Text(stringResource(R.string.diag_retention), style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                                item { Text(stringResource(R.string.diag_small_sample), style = MaterialTheme.typography.bodyMedium) }
                                 item {
-                                    TextButton(onClick = { clear = true }, enabled = !busy) {
-                                        Text(stringResource(R.string.diag_clear), color = MaterialTheme.colorScheme.error)
+                                    Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                                        SectionTitle(stringResource(R.string.diag_local_capture))
+                                        CalGroup {
+                                            Text(stringResource(R.string.diag_capture), style = MaterialTheme.typography.bodyMedium)
+                                            Text(stringResource(R.string.diag_retention), style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        }
+                                        Text(stringResource(R.string.diag_small_sample), style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        TextButton(onClick = { clear = true }, enabled = !busy) {
+                                            Text(stringResource(R.string.diag_clear), color = MaterialTheme.colorScheme.error)
+                                        }
                                     }
                                 }
                             }
                             if (tab == 2) {
-                                item { TimingSummary(scans) }
-                                item { Text(stringResource(R.string.diag_small_sample), style = MaterialTheme.typography.bodyMedium) }
+                                item {
+                                    Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                                        SectionTitle(stringResource(R.string.diag_metrics))
+                                        TimingSummary(scans)
+                                        Text(stringResource(R.string.diag_small_sample), style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                }
                                 item { SectionTitle(stringResource(R.string.diag_slowest)) }
                             }
                             if (tab == 3) {
                                 val categories = scans.flatMap { it.errors }.groupingBy { it }.eachCount().entries.sortedByDescending { it.value }
+                                item { SectionTitle(stringResource(R.string.diag_errors)) }
+                                if (categories.isEmpty()) item { Text(stringResource(R.string.diag_no_errors),
+                                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                                 items(categories, key = { "error:" + it.key }) {
-                                    Text(stringResource(R.string.diag_field_counts, it.key, it.value), style = MaterialTheme.typography.bodyMedium)
+                                    CalValueRow(it.key, NumberFormat.getIntegerInstance(locale).format(it.value))
                                 }
                                 item { SectionTitle(stringResource(R.string.diag_corrected)) }
                                 val corrections = scans.flatMap { it.correctedFields }.groupingBy { it }.eachCount().entries.sortedByDescending { it.value }
                                 items(corrections, key = { "field:" + it.key }) {
-                                    Text(stringResource(R.string.diag_field_counts, fieldLabel(it.key), it.value))
+                                    CalValueRow(fieldLabel(it.key), NumberFormat.getIntegerInstance(locale).format(it.value))
                                 }
-                                item { Text(stringResource(R.string.diag_unchanged), style = MaterialTheme.typography.bodyMedium) }
+                                item { Text(stringResource(R.string.diag_unchanged), style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant) }
                             }
                             if (tab == 4) {
-                                item { Text(stringResource(R.string.diag_small_sample), style = MaterialTheme.typography.bodyMedium) }
+                                item { Text(stringResource(R.string.diag_small_sample), style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant) }
                                 val groups = scans.groupBy { it.brand }.entries.sortedByDescending { it.value.size }
+                                if (groups.isEmpty()) item { Text(stringResource(R.string.diag_empty)) }
                                 items(groups, key = { it.key ?: "unknown" }) { group ->
-                                    Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.micro)) {
-                                        Text(group.key ?: stringResource(R.string.diag_unknown), style = MaterialTheme.typography.titleMedium)
-                                        val eligible = group.value.filter { it.detailedConsent && it.status in listOf("SUCCESS", "PARTIAL") }
-                                        Text(stringResource(R.string.diag_total) + ": " + group.value.size,
-                                            style = MaterialTheme.typography.bodyMedium)
-                                        Text(stringResource(R.string.diag_correction_samples, eligible.size,
-                                            eligible.count { it.correctedFields.isNotEmpty() }), style = MaterialTheme.typography.bodyMedium)
-                                        if (group.value.size < 5) Text(stringResource(R.string.diag_small_sample), style = MaterialTheme.typography.bodySmall)
-                                        HorizontalDivider()
+                                    Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                                        SectionTitle(group.key ?: stringResource(R.string.diag_unknown))
+                                        CalGroup {
+                                            val eligible = group.value.filter { it.detailedConsent && it.status in listOf("SUCCESS", "PARTIAL") }
+                                            Metric(R.string.diag_total, NumberFormat.getIntegerInstance(locale).format(group.value.size))
+                                            Text(stringResource(R.string.diag_correction_samples, eligible.size,
+                                                eligible.count { it.correctedFields.isNotEmpty() }), style = MaterialTheme.typography.bodyMedium)
+                                        }
                                     }
                                 }
                             }
                             if (tab in 1..3) {
                                 item {
+                                    Column(Modifier.padding(bottom = CalSpacing.related), verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
                                     OutlinedTextField(query, { query = it }, label = { Text(stringResource(R.string.diag_search)) },
                                         modifier = Modifier.fillMaxWidth(), singleLine = true)
-                                    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                                        .toggleable(failures, role = Role.Checkbox, onValueChange = { failures = it }),
-                                        verticalAlignment = Alignment.CenterVertically) {
-                                        Checkbox(failures, onCheckedChange = null)
-                                        Text(failuresLabel, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                                    SettingsChoiceGroup(options = listOf(false, true), selected = failures,
+                                        label = { stringResource(if (it) R.string.diag_failures else R.string.diag_all_scans) }) {
+                                        failures = it
                                     }
-                                    TextButton(onClick = { slowest = !slowest }) { Text(stringResource(if (slowest || tab == 2) R.string.diag_slowest else R.string.diag_newest)) }
+                                    if (tab != 2) SettingsChoiceGroup(options = listOf(false, true), selected = slowest,
+                                        label = { stringResource(if (it) R.string.diag_slowest else R.string.diag_newest) }) {
+                                        slowest = it
+                                    }
+                                    }
                                 }
                                 if (filtered.isEmpty()) item { Text(stringResource(R.string.diag_empty)) }
-                                items(filtered, key = { it.id }) { scan ->
+                                itemsIndexed(filtered, key = { _, scan -> scan.id }) { index, scan ->
                                     Row(Modifier.fillMaxWidth().animateItem(
                                         fadeInSpec = CalMotion.effects(), placementSpec = CalMotion.spatial(), fadeOutSpec = CalMotion.effects(),
-                                    ), verticalAlignment = Alignment.CenterVertically) {
+                                    ).calGroupedRow(index, filtered.size), verticalAlignment = Alignment.CenterVertically) {
                                         val scanLabel = stringResource(R.string.diag_scan_details) + ": " +
                                             DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale).format(Date(scan.timestampMillis))
                                         Checkbox(scan.id in selected, { selected = if (it) selected + scan.id else selected - scan.id },
                                             modifier = Modifier.semantics { contentDescription = scanLabel })
-                                        ListItem(
+                                        SegmentedListItem(
                                             onClick = { opened = scan.id },
                                             modifier = Modifier.weight(1f),
-                                            shapes = ListItemDefaults.shapes(shape = MaterialTheme.shapes.medium),
+                                            shapes = ListItemDefaults.segmentedShapes(index, filtered.size,
+                                                ListItemDefaults.shapes(shape = MaterialTheme.shapes.extraSmall)),
                                             colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
-                                            contentPadding = PaddingValues(vertical = CalSpacing.related),
+                                            contentPadding = PaddingValues(CalSpacing.related),
                                             supportingContent = {
                                             Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.micro)) {
                                             Text(statusLabel(scan.status) + " · " + scanTime(scan), style = MaterialTheme.typography.bodyMedium)
                                             if (scan.missingFields.isNotEmpty()) Text(stringResource(R.string.diag_missing) + ": " + fieldNames(scan.missingFields),
-                                                style = MaterialTheme.typography.bodySmall)
+                                                style = MaterialTheme.typography.bodyMedium)
                                             if (scan.correctedFields.isNotEmpty()) Text(stringResource(R.string.diag_corrected) + ": " + fieldNames(scan.correctedFields),
-                                                style = MaterialTheme.typography.bodySmall)
-                                            if (scan.errors.isNotEmpty()) Text(scan.errors.joinToString(", "), style = MaterialTheme.typography.bodySmall,
+                                                style = MaterialTheme.typography.bodyMedium)
+                                            if (scan.errors.isNotEmpty()) Text(scan.errors.joinToString(", "), style = MaterialTheme.typography.bodyMedium,
                                                 color = MaterialTheme.colorScheme.error)
                                             }
                                             },
@@ -249,6 +264,15 @@ internal fun OcrDiagnosticsContent(
                                     }
                                 }
                             }
+                        }
+                    }
+                    SecondaryScrollableTabRow(selectedTabIndex = pager.currentPage, edgePadding = CalSpacing.medium,
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            modifier = Modifier.fillMaxWidth().onSizeChanged { tabHostHeight = it.height }
+                                .padding(top = padding.calculateTopPadding())) {
+                        listOf(R.string.diag_overview, R.string.diag_history, R.string.diag_performance,
+                            R.string.diag_errors, R.string.diag_brands).forEachIndexed { index, label ->
+                            Tab(selected = pager.currentPage == index, onClick = { coroutineScope.launch { pager.animateScrollToPage(index, animationSpec = CalMotion.spatial()) } }, text = { Text(stringResource(label)) })
                         }
                     }
                 }
@@ -297,13 +321,13 @@ private fun DiagnosticReportActions(selected: Int, busy: Boolean, error: Boolean
                 BoxWithConstraints {
                     val stacked = maxWidth < 320.dp * LocalConfiguration.current.fontScale + CalSpacing.related
                     val save: @Composable (Modifier) -> Unit = { modifier ->
-                        Button(onClick = onSave, enabled = !busy, shape = MaterialTheme.shapes.large,
+                        CalButton(onClick = onSave, enabled = !busy,
                             modifier = modifier.heightIn(min = 56.dp)) {
                             Text(stringResource(R.string.diag_save), textAlign = TextAlign.Center)
                         }
                     }
                     val share: @Composable (Modifier) -> Unit = { modifier ->
-                        FilledTonalButton(onClick = onShare, enabled = !busy, shape = MaterialTheme.shapes.large,
+                        CalTonalButton(onClick = onShare, enabled = !busy,
                             modifier = modifier.heightIn(min = 56.dp)) {
                             Text(stringResource(R.string.diag_share), textAlign = TextAlign.Center)
                         }
@@ -323,16 +347,19 @@ private fun DiagnosticReportActions(selected: Int, busy: Boolean, error: Boolean
 @Composable
 private fun Counts(scans: List<DiagnosticScan>) {
     val locale = LocalConfiguration.current.locales[0]
+    val number = remember(locale) { NumberFormat.getIntegerInstance(locale) }
     Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
-        AnimatedNutrition(NumberFormat.getIntegerInstance(locale).format(scans.size),
-            style = MaterialTheme.typography.displayMedium.copy(fontFeatureSettings = "tnum", color = MaterialTheme.colorScheme.primary))
         SectionTitle(stringResource(R.string.diag_total))
-        Metric(R.string.diag_success, scans.count { it.status == "SUCCESS" }.toString())
-        Metric(R.string.diag_partial, scans.count { it.status == "PARTIAL" }.toString())
-        Metric(R.string.diag_failed, scans.count { it.status == "FAILURE" }.toString())
-        Metric(R.string.diag_cancelled, scans.count { it.status == "CANCELLED" }.toString())
-        Metric(R.string.diag_running, scans.count { it.status == "RUNNING" }.toString())
-        Metric(R.string.diag_interrupted, scans.count { it.status == "INTERRUPTED" }.toString())
+        CalGroup {
+            AnimatedNutrition(number.format(scans.size),
+                style = MaterialTheme.typography.displayMedium.copy(fontFeatureSettings = "tnum", color = MaterialTheme.colorScheme.primary))
+            Metric(R.string.diag_success, number.format(scans.count { it.status == "SUCCESS" }))
+            Metric(R.string.diag_partial, number.format(scans.count { it.status == "PARTIAL" }))
+            Metric(R.string.diag_failed, number.format(scans.count { it.status == "FAILURE" }))
+            Metric(R.string.diag_cancelled, number.format(scans.count { it.status == "CANCELLED" }))
+            Metric(R.string.diag_running, number.format(scans.count { it.status == "RUNNING" }))
+            Metric(R.string.diag_interrupted, number.format(scans.count { it.status == "INTERRUPTED" }))
+        }
     }
 }
 
@@ -340,9 +367,9 @@ private fun Counts(scans: List<DiagnosticScan>) {
 private fun TimingSummary(scans: List<DiagnosticScan>) {
     val statistics = DiagnosticStatistics.from(scans)
     val locale = LocalConfiguration.current.locales[0]
-    Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
+    CalGroup {
         Text(stringResource(R.string.diag_all_attempts), style = MaterialTheme.typography.bodyMedium)
-        Metric(R.string.diag_timing_samples, scans.count { it.status !in listOf("RUNNING", "INTERRUPTED") }.toString())
+        Metric(R.string.diag_timing_samples, NumberFormat.getIntegerInstance(locale).format(scans.count { it.status !in listOf("RUNNING", "INTERRUPTED") }))
         Metric(R.string.diag_average, statistics.averageMs?.let { stringResource(R.string.diag_ms, NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 1 }.format(it)) } ?: stringResource(R.string.diag_not_measured))
         Metric(R.string.diag_median, statistics.medianMs?.let { stringResource(R.string.diag_ms, NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 1 }.format(it)) } ?: stringResource(R.string.diag_not_measured))
         Metric(R.string.diag_p95, timeText(statistics.p95Ms))
@@ -351,11 +378,7 @@ private fun TimingSummary(scans: List<DiagnosticScan>) {
 
 @Composable
 private fun Metric(label: Int, value: String) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(CalSpacing.medium)) {
-        Text(stringResource(label), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-        Text(value, style = MaterialTheme.typography.titleMedium.copy(fontFeatureSettings = "tnum"),
-            textAlign = TextAlign.End)
-    }
+    CalValueRow(stringResource(label), value)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -371,62 +394,133 @@ private fun ScanDetail(scan: DiagnosticScan, busy: Boolean, onDismiss: () -> Uni
     val validWeight = netWeight.replace(',', '.').toBigDecimalOrNull()?.let {
         it > java.math.BigDecimal.ZERO && it <= java.math.BigDecimal("1000000") && it.scale() <= 2
     } == true
+    val sheetState = rememberBottomSheetState(SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = rememberBottomSheetState(SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)),
+        sheetState = sheetState,
         sheetMaxWidth = CalLayout.readingWidth,
         contentWindowInsets = { WindowInsets.safeDrawing },
     ) {
+        DiagnosticSheetBackInput(sheetState.isVisible)
         Column(Modifier.fillMaxWidth()) {
             Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())
                 .padding(horizontal = CalSpacing.page),
-                verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
-                SectionTitle(scan.productName ?: stringResource(R.string.diag_scan_details))
-                Text(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale)
-                    .format(Date(scan.timestampMillis)), style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(statusLabel(scan.status), style = MaterialTheme.typography.titleMedium)
-                Text(scanTime(scan), style = MaterialTheme.typography.headlineMedium.copy(fontFeatureSettings = "tnum"),
-                    color = MaterialTheme.colorScheme.primary)
-                Text(scan.brand ?: stringResource(R.string.diag_unknown), style = MaterialTheme.typography.bodyMedium)
-                SectionTitle(stringResource(R.string.diag_metrics))
-                Metric(R.string.diag_init, timeText(scan.initializationMs))
-                Metric(R.string.diag_detection, timeText(scan.detectionMs))
-                Metric(R.string.diag_recognition, timeText(scan.recognitionMs))
-                Metric(R.string.diag_parsing, timeText(scan.parsingMs))
-                Metric(R.string.diag_regions, scan.detectedRegions?.toString() ?: stringResource(R.string.diag_not_measured))
-                Text("${scan.width} × ${scan.height}", style = MaterialTheme.typography.bodyMedium)
-                Text(stringResource(R.string.diag_confidence) + ": " + listOf(scan.confidenceMean, scan.confidenceMin, scan.confidenceMax)
-                    .joinToString(" / ") { it?.let { value -> NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 3 }.format(value) } ?: "—" },
-                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                listOf(R.string.diag_missing to scan.missingFields, R.string.diag_ambiguous to scan.ambiguousFields,
-                    R.string.diag_corrected to scan.correctedFields).forEach { (label, fields) ->
-                    if (fields.isNotEmpty()) Text(stringResource(label) + ": " + fieldNames(fields))
+                verticalArrangement = Arrangement.spacedBy(CalSpacing.section)) {
+                Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
+                    Text(scan.productName ?: stringResource(R.string.diag_scan_details), style = MaterialTheme.typography.headlineSmall)
+                    Text(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale)
+                        .format(Date(scan.timestampMillis)), style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(statusLabel(scan.status), style = MaterialTheme.typography.titleMedium)
+                    Text(scanTime(scan), style = MaterialTheme.typography.headlineMedium.copy(fontFeatureSettings = "tnum"),
+                        color = MaterialTheme.colorScheme.primary)
+                    scan.brand?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
                 }
-                Text(stringResource(R.string.diag_unchanged), style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (scan.errors.isNotEmpty()) Text(scan.errors.joinToString("\n"), color = MaterialTheme.colorScheme.error)
-                else Text(stringResource(R.string.diag_no_errors))
-                if (scan.parsedFields.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                    SectionTitle(stringResource(R.string.diag_metrics))
+                    CalGroup {
+                        Metric(R.string.diag_init, timeText(scan.initializationMs))
+                        Metric(R.string.diag_detection, timeText(scan.detectionMs))
+                        Metric(R.string.diag_recognition, timeText(scan.recognitionMs))
+                        Metric(R.string.diag_parsing, timeText(scan.parsingMs))
+                        Metric(R.string.diag_regions, scan.detectedRegions?.let {
+                            NumberFormat.getIntegerInstance(locale).format(it)
+                        } ?: stringResource(R.string.diag_not_measured))
+                        Metric(R.string.diag_resolution, stringResource(R.string.image_dimensions, scan.width, scan.height))
+                    }
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                    SectionTitle(stringResource(R.string.diag_recognition_quality))
+                    CalGroup {
+                        listOf(R.string.diag_confidence_mean to scan.confidenceMean,
+                            R.string.diag_confidence_min to scan.confidenceMin,
+                            R.string.diag_confidence_max to scan.confidenceMax).forEach { (label, value) ->
+                            Metric(label, value?.let {
+                                NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 3 }.format(it)
+                            } ?: stringResource(R.string.diag_not_measured))
+                        }
+                        listOf(R.string.diag_missing to scan.missingFields, R.string.diag_ambiguous to scan.ambiguousFields,
+                            R.string.diag_corrected to scan.correctedFields).forEach { (label, fields) ->
+                            if (fields.isNotEmpty()) CalValueRow(stringResource(label), fieldNames(fields), stacked = true)
+                        }
+                    }
+                    Text(stringResource(R.string.diag_unchanged), style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (scan.errors.isNotEmpty()) SelectionContainer {
+                        Text(scan.errors.joinToString("\n"), style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error)
+                    } else Text(stringResource(R.string.diag_no_errors), style = MaterialTheme.typography.bodyMedium)
+                }
+                if (scan.parsedFields.isNotEmpty()) Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                     SectionTitle(stringResource(R.string.diag_parsed))
-                    scan.parsedFields.forEach { (field, value) -> Text(fieldLabel(field) + ": " + value) }
+                    SelectionContainer {
+                        Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                            scan.parsedFields.forEach { (field, value) -> CalValueRow(fieldLabel(field), value) }
+                        }
+                    }
                 }
-                scan.corrections.forEach { correction ->
-                    Text(fieldLabel(correction.field) + ": " + (correction.before ?: "—") + " → " + (correction.after ?: "—"))
-                    Text(stringResource(if (correction.category == "USER_PORTION_ADJUSTMENT") R.string.diag_portion_adjustment else R.string.diag_explicit_correction),
-                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (scan.corrections.isNotEmpty()) Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                    SectionTitle(stringResource(R.string.diag_corrected))
+                    scan.corrections.forEach { correction ->
+                        Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.micro)) {
+                            CalValueRow(fieldLabel(correction.field),
+                                (correction.before ?: "—") + " → " + (correction.after ?: "—"), stacked = true)
+                            Text(stringResource(if (correction.category == "USER_PORTION_ADJUSTMENT")
+                                R.string.diag_portion_adjustment else R.string.diag_explicit_correction),
+                                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+                if (scan.aiAttempts.isNotEmpty()) Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                    SectionTitle(stringResource(R.string.ai_diagnostics))
+                    Column(verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)) {
+                        scan.aiAttempts.forEachIndexed { index, attempt ->
+                            CalGroup(index = index, count = scan.aiAttempts.size) {
+                                Text("${attempt.profile} · ${attempt.stage}", style = MaterialTheme.typography.titleMedium)
+                                CalValueRow(stringResource(R.string.diag_runtime), "LiteRT-LM ${attempt.runtimeVersion}")
+                                Text(stringResource(R.string.lab_backend_value, attempt.actualBackend ?: attempt.requestedBackend),
+                                    style = MaterialTheme.typography.bodyMedium)
+                                Metric(R.string.diag_init, timeText(attempt.initializationMs))
+                                Metric(R.string.diag_recognition, timeText(attempt.inferenceMs))
+                                SelectionContainer {
+                                    Text(attempt.artifactHash, style = MaterialTheme.typography.bodySmall)
+                                }
+                                attempt.fallbackReason?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                            }
+                        }
+                    }
                 }
                 scan.rawText?.let {
-                    TextButton(onClick = { raw = !raw }, modifier = Modifier.semantics { stateDescription = rawExpansion }) { Text(stringResource(R.string.diag_raw)) }
-                    AnimatedVisibility(raw, enter = CalMotion.enter(), exit = CalMotion.exit()) { Text(it, style = MaterialTheme.typography.bodySmall) }
-                }
-                TextButton(onClick = { technical = !technical }, modifier = Modifier.semantics { stateDescription = technicalExpansion }) { Text(stringResource(R.string.diag_technical)) }
-                AnimatedVisibility(technical, enter = CalMotion.enter(), exit = CalMotion.exit()) {
                     Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
-                    Text(listOf(scan.appVersion, scan.androidVersion, scan.device, scan.model, scan.runtime, scan.orientation).joinToString("\n"),
-                        style = MaterialTheme.typography.bodySmall)
-                    scan.modelRevisions.forEach { (name, revision) -> Text("$name: $revision", style = MaterialTheme.typography.bodySmall) }
-                    scan.modelHashes.forEach { (name, hash) -> Text("$name: $hash", style = MaterialTheme.typography.bodySmall) }
+                        TextButton(onClick = { raw = !raw }, modifier = Modifier.fillMaxWidth()
+                            .semantics { stateDescription = rawExpansion }) { Text(stringResource(R.string.diag_raw)) }
+                        AnimatedVisibility(raw, enter = CalMotion.enter(), exit = CalMotion.exit()) {
+                            CalGroup { SelectionContainer { Text(it, style = MaterialTheme.typography.bodyMedium) } }
+                        }
+                    }
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
+                    TextButton(onClick = { technical = !technical }, modifier = Modifier.fillMaxWidth()
+                        .semantics { stateDescription = technicalExpansion }) { Text(stringResource(R.string.diag_technical)) }
+                    AnimatedVisibility(technical, enter = CalMotion.enter(), exit = CalMotion.exit()) {
+                        CalGroup {
+                            Metric(R.string.diag_app_version, scan.appVersion)
+                            Metric(R.string.diag_android_version, scan.androidVersion)
+                            Metric(R.string.diag_device, scan.device)
+                            Metric(R.string.lab_model, scan.model)
+                            Metric(R.string.diag_runtime, scan.runtime)
+                            Metric(R.string.diag_orientation, scan.orientation)
+                            SelectionContainer {
+                                Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
+                                    scan.modelRevisions.forEach { (name, revision) ->
+                                        Text("$name: $revision", style = MaterialTheme.typography.bodyMedium)
+                                    }
+                                    scan.modelHashes.forEach { (name, hash) ->
+                                        Text("$name: $hash", style = MaterialTheme.typography.bodySmall)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 if (scan.detailedConsent) {
@@ -451,6 +545,39 @@ private fun ScanDetail(scan: DiagnosticScan, busy: Boolean, onDismiss: () -> Uni
         }
     }
 }
+/**
+ * Material3 1.5 inherits the tab's explicitly scoped owner into its dialog composition.
+ * System Back arrives at the dialog window instead. Relay the complete gesture to the
+ * native sheet handler, retaining its predictive animation and cancellation behavior.
+ * No bridge is needed when the sheet already resolves its window's owner.
+ */
+@Composable
+private fun DiagnosticSheetBackInput(visible: Boolean) {
+    val scoped = androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner.current
+    val window = androidx.compose.ui.platform.LocalView.current.findViewTreeNavigationEventDispatcherOwner()
+    DisposableEffect(scoped, window, visible) {
+        if (visible && scoped != null && window != null && scoped !== window) {
+            val input = androidx.navigationevent.DirectNavigationEventInput()
+            scoped.navigationEventDispatcher.addInput(input)
+            val handler = object : androidx.navigationevent.NavigationEventHandler<androidx.navigationevent.NavigationEventInfo>(
+                initialInfo = androidx.navigationevent.NavigationEventInfo.None,
+                isBackEnabled = true,
+                isForwardEnabled = false,
+            ) {
+                override fun onBackStarted(event: androidx.navigationevent.NavigationEvent) = input.backStarted(event)
+                override fun onBackProgressed(event: androidx.navigationevent.NavigationEvent) = input.backProgressed(event)
+                override fun onBackCancelled() = input.backCancelled()
+                override fun onBackCompleted() = input.backCompleted()
+            }
+            window.navigationEventDispatcher.addHandler(handler)
+            onDispose {
+                handler.remove()
+                scoped.navigationEventDispatcher.removeInput(input)
+            }
+        } else onDispose {}
+    }
+}
+
 @Composable
 private fun scanTime(scan: DiagnosticScan): String = if (scan.status == "RUNNING" || scan.status == "INTERRUPTED") stringResource(R.string.diag_duration_unavailable) else timeText(scan.totalMs)
 

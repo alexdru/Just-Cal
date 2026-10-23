@@ -56,6 +56,23 @@ class NutritionLabelParserTest {
         assertEquals("20.4", label.carbsGrams?.value)
     }
 
+    @Test fun pairedEnergyUnitsBeforeNumbersKeepDeclaredKcal() {
+        val label = parse("Пищевая и энергетическая ценность на 100 г:", "Белки", "11 г",
+            "Ккал/кДж", "189/790")
+        assertEquals("189", label.energyKcal?.value)
+        assertEquals("189", label.draft().energy)
+        assertNull(parse("Пищевая ценность на 100 г", "Ккал/кДж", "189").energyKcal)
+    }
+
+    @Test fun wholeDishEnergyOnNextLineDoesNotConflictWithPer100g() {
+        val label = parse("Пищевая ценность на 100 г продукта: белки — 55 г, жиры — 7,6 г, углеводы — 1,2 г.",
+            "Энергетическая ценность на 100 г продукта: 293 ккал / 1227 кДж.",
+            "Энергетическая ценность на всё блюдо: 103 ккал / 429 кДж.")
+        assertEquals("293", label.energyKcal?.value)
+        assertEquals("293", label.draft().energy)
+        assertNull(label.netGrams)
+    }
+
     @Test fun englishLabelAndKilograms() {
         val label = parse("Net weight: 0.205 kg", "Nutrition per 100 g", "Protein: 5.9 g Fat: 3.7 g Carbohydrates: 10.4 g", "Energy: 98.5 kcal")
         assertEquals("205", label.netGrams?.value)
@@ -209,6 +226,27 @@ class NutritionLabelParserTest {
         assertTrue(label.energyKcal?.evidence.orEmpty().contains("770,6"))
         assertFalse(label.energyKcal!!.confident)
         assertEquals("", label.draft().energy)
+    }
+
+    @Test fun tableKeepsStandaloneKcalAndNeighboringDishTotalSeparate() {
+        fun line(text: String, x: Float, y: Float, w: Float = 140f) = OcrLine(text, .98f,
+            listOf(OcrPoint(x, y), OcrPoint(x + w, y), OcrPoint(x + w, y + 20), OcrPoint(x, y + 20)))
+        val label = NutritionLabelParser.parse(listOf(
+            line("Пищевая и энергетическая", 20f, 0f, 350f),
+            line("ценность на 100 г продукта:", 20f, 30f, 350f),
+            line("Всё блюдо:", 600f, 30f),
+            line("белки", 20f, 60f), line("5r", 250f, 60f), line("345 ккал", 600f, 60f),
+            line("жиры", 20f, 90f), line("4,4r", 250f, 90f),
+            line("углеводы", 20f, 120f), line("19,5r", 250f, 120f), line("1442 кДж", 600f, 120f),
+            line("ккал", 20f, 150f), line("138", 250f, 150f),
+            line("кДж", 20f, 180f), line("576", 250f, 180f),
+        ))
+        assertEquals(LabelBasis.PER_100_G, label.basis)
+        assertEquals("138", label.draft().energy)
+        assertEquals("5", label.draft().protein)
+        assertEquals("4.4", label.draft().fat)
+        assertEquals("19.5", label.draft().carbs)
+        assertNull(label.netGrams)
     }
 
     @Test fun portionCalculationUsesExistingDeterministicCalculator() {

@@ -23,6 +23,25 @@ class EditorViewModelTest {
         val draft = FoodDraft("Yogurt", "200", "10", "5", "20", "150")
         FoodField.entries.forEach { vm.change(it, draft.value(it)) }
     }
+    @Test fun recognizedNameRetainsOriginalDateAndUserDraftBeforeExplicitSave() = runTest(dispatcher) {
+        val repository = FakeDiary()
+        val handle = SavedStateHandle()
+        val recognition = RecognitionDraft(name = "Apple", source = "MEAL_NAME_SUGGESTION")
+        val vm = EditorViewModel(repository, handle, clock, null, 456, recognition = recognition)
+        assertEquals("Apple", vm.state.value.draft.name)
+        assertEquals("", vm.state.value.draft.amount)
+        assertEquals(0, repository.saves)
+        vm.save(); advanceUntilIdle()
+        assertEquals(0, repository.saves)
+        fill(vm)
+        val restored = EditorViewModel(repository, handle, clock, null, 456, recognition = recognition)
+        assertEquals("Yogurt", restored.state.value.draft.name)
+        restored.save(); restored.save(); advanceUntilIdle()
+        assertEquals(1, repository.saves)
+        assertEquals(456L, repository.rows.values.single().dayEpoch)
+        assertEquals(EntrySource.MANUAL, repository.rows.values.single().source)
+    }
+
     @Test fun repeatedSaveDuringWriteCreatesOneEntry() = runTest(dispatcher) {
         val repository = FakeDiary()
         val vm = EditorViewModel(repository, SavedStateHandle(), clock, null)

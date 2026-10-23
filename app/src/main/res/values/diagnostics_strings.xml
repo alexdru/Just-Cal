@@ -81,4 +81,15 @@
     <string name="diag_parsed">Recognized nutrition fields</string>
     <string name="diag_technical">Model and runtime details</string>
     <string name="diag_annotations">Diagnostic annotations</string>
+    <string name="diag_resolution">Image size</string>
+    <string name="diag_recognition_quality">Recognition quality</string>
+    <string name="diag_confidence_mean">Mean confidence</string>
+    <string name="diag_confidence_min">Minimum confidence</string>
+    <string name="diag_confidence_max">Maximum confidence</string>
+    <string name="diag_runtime">Runtime</string>
+    <string name="diag_app_version">App version</string>
+    <string name="diag_android_version">Android version</string>
+    <string name="diag_device">Device</string>
+    <string name="diag_orientation">Orientation</string>
+    <string name="diag_all_scans">All scans</string>
 </resources>

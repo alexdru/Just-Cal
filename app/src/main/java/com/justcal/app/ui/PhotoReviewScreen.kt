@@ -11,7 +11,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import com.justcal.app.ui.CalButton as Button
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
@@ -35,15 +34,15 @@ fun PhotoReviewScreen(
     image: PreparedImage, images: ImagePreprocessor,
     onReplace: () -> Unit, onBack: () -> Unit,
     packageState: PackageReviewState = PackageReviewState(), onRecognize: () -> Unit = {}, onManual: () -> Unit = {},
+    onModels: () -> Unit = {},
 ) {
     var bitmap by remember(image.uri) { mutableStateOf<Bitmap?>(null) }
     var failed by remember(image.uri) { mutableStateOf(false) }
-    var verified by rememberSaveable(image.uri) { mutableStateOf(false) }
     LaunchedEffect(image.uri) {
         try {
             bitmap = images.decode(image, preview = true)
         } catch (cancelled: CancellationException) { throw cancelled }
-        catch (_: Exception) { failed = true; verified = false }
+        catch (_: Exception) { failed = true }
     }
     DisposableEffect(image.uri) { onDispose { bitmap?.recycle() } }
     val date = LocalDate.ofEpochDay(image.request.dayEpoch).format(
@@ -73,39 +72,30 @@ fun PhotoReviewScreen(
             val actions: @Composable (Modifier) -> Unit = { modifier ->
                 Column(modifier.verticalScroll(rememberScrollState()).padding(CalSpacing.page).animateContentSize(CalMotion.size()),
                     verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
-                    Text(stringResource(if (verified) R.string.photo_ready else R.string.review_photo),
+                    Text(stringResource(R.string.review_photo),
                         Modifier.semantics { heading(); liveRegion = LiveRegionMode.Polite },
                         style = MaterialTheme.typography.titleMedium)
-                    if (!verified) {
+                    Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                         Text(stringResource(if (image.request.mode == ScanMode.PACKAGE) R.string.review_package_guidance else R.string.review_meal_guidance),
                             style = MaterialTheme.typography.bodyLarge)
-                        Text(stringResource(if (image.request.mode == ScanMode.PACKAGE) R.string.review_package_ocr else R.string.review_no_recognition),
+                        Text(stringResource(if (image.request.mode == ScanMode.PACKAGE) R.string.review_package_ocr else R.string.ai_meal_unavailable),
                             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     AnimatedVisibility(packageState.busy, enter = CalMotion.enter(), exit = CalMotion.exit()) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                             CalLoading(Modifier.size(48.dp))
-                            Text(stringResource(R.string.ocr_processing), Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                            Text(stringResource(if (image.request.mode == ScanMode.PACKAGE) R.string.ocr_processing else R.string.ai_processing), Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                                 style = MaterialTheme.typography.titleMedium)
                         }
                     }
-                    if (packageState.failed) Text(stringResource(R.string.ocr_failed),
+                    if (packageState.failed) Text(stringResource(if (image.request.mode == ScanMode.PACKAGE) R.string.ocr_failed else R.string.ai_runtime_error),
                         Modifier.semantics { liveRegion = LiveRegionMode.Polite }, color = MaterialTheme.colorScheme.error)
                     if (failed) Text(stringResource(R.string.image_error),
                         Modifier.semantics { liveRegion = LiveRegionMode.Polite }, color = MaterialTheme.colorScheme.error)
-                    if (verified) {
-                        Text(stringResource(R.string.photo_ready_message))
-                        Button(onClick = onBack, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                            Text(stringResource(R.string.done))
-                        }
-                    } else {
+                    run {
                         Button(onClick = {
                             try {
-                                if (image.request.mode == ScanMode.PACKAGE) onRecognize()
-                                else {
-                                    images.verify(image)
-                                    verified = true
-                                }
+                                onRecognize()
                             } catch (_: Exception) { failed = true }
                         }, enabled = bitmap != null && !failed && !packageState.busy,
                             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
@@ -115,9 +105,12 @@ fun PhotoReviewScreen(
                     OutlinedButton(onClick = onReplace, enabled = !packageState.busy, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                         Text(stringResource(if (image.source == ImageSource.CAMERA) R.string.retake else R.string.choose_another))
                     }
-                    if (image.request.mode == ScanMode.PACKAGE) TextButton(onClick = onManual,
+                    TextButton(onClick = onModels, enabled = !packageState.busy, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Text(stringResource(R.string.ai_models))
+                    }
+                    TextButton(onClick = onManual,
                         enabled = !packageState.busy, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                        Text(stringResource(R.string.add_manually))
+                        Text(stringResource(R.string.ai_use_photo_manual))
                     }
                 }
             }

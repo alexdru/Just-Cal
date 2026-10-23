@@ -1,0 +1,94 @@
+{
+  "runtimeVersion": "0.18.1",
+  "artifactHash": "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c",
+  "revision": "6e5c4f1e395deb959c494953478fa5cec4b8008f",
+  "taskVersion": "meal-name-v1",
+  "prompt": "Identify whether this image shows a single food or dish. Return only JSON with exactly these keys: isFood (boolean), singleDish (boolean), name (short string or null). For non-food, unclear images or multiple separate foods, use false and name null. An apple beside a banana is multiple foods: singleDish must be false and name null. A complete prepared dish such as pizza counts as one dish. Name the food only; do not provide weight or nutrition.",
+  "cancellationRetried": true,
+  "cases": [
+    {
+      "fixture": "apple",
+      "pipelineCorrect": true,
+      "validResponse": true,
+      "acceptedName": "apple",
+      "validationError": null,
+      "raw": "```json\n{\n  \"isFood\": true,\n  \"singleDish\": true,\n  \"name\": \"apple\"\n}\n```",
+      "backend": "CPU",
+      "initializationMs": 628,
+      "inferenceMs": 13999,
+      "firstResponseMs": 11768
+    },
+    {
+      "fixture": "banana",
+      "pipelineCorrect": true,
+      "validResponse": true,
+      "acceptedName": "banana",
+      "validationError": null,
+      "raw": "```json\n{\n  \"isFood\": true,\n  \"singleDish\": true,\n  \"name\": \"banana\"\n}\n```",
+      "backend": "CPU",
+      "initializationMs": 628,
+      "inferenceMs": 13985,
+      "firstResponseMs": 11703
+    },
+    {
+      "fixture": "pizza",
+      "pipelineCorrect": true,
+      "validResponse": true,
+      "acceptedName": "pizza",
+      "validationError": null,
+      "raw": "```json\n{\n  \"isFood\": true,\n  \"singleDish\": true,\n  \"name\": \"pizza\"\n}\n```",
+      "backend": "CPU",
+      "initializationMs": 628,
+      "inferenceMs": 13742,
+      "firstResponseMs": 11457
+    },
+    {
+      "fixture": "dog",
+      "pipelineCorrect": true,
+      "validResponse": true,
+      "acceptedName": null,
+      "validationError": null,
+      "raw": "```json\n{\n  \"isFood\": false,\n  \"singleDish\": false,\n  \"name\": null\n}\n```",
+      "backend": "CPU",
+      "initializationMs": 628,
+      "inferenceMs": 13455,
+      "firstResponseMs": 11307
+    },
+    {
+      "fixture": "bus",
+      "pipelineCorrect": true,
+      "validResponse": true,
+      "acceptedName": null,
+      "validationError": null,
+      "raw": "```json\n{\n  \"isFood\": false,\n  \"singleDish\": false,\n  \"name\": null\n}\n```",
+      "backend": "CPU",
+      "initializationMs": 628,
+      "inferenceMs": 13526,
+      "firstResponseMs": 11335
+    },
+    {
+      "fixture": "blank",
+      "pipelineCorrect": true,
+      "validResponse": true,
+      "acceptedName": null,
+      "validationError": null,
+      "raw": "{\"isFood\": false, \"singleDish\": false, \"name\": null}",
+      "backend": "CPU",
+      "initializationMs": 628,
+      "inferenceMs": 12433,
+      "firstResponseMs": 11233
+    },
+    {
+      "fixture": "multiple",
+      "pipelineCorrect": true,
+      "validResponse": false,
+      "acceptedName": null,
+      "validationError": "IllegalArgumentException",
+      "raw": "```json\n{\n  \"isFood\": true,\n  \"singleDish\": false,\n  \"name\": \"apple and banana\"\n}\n```",
+      "backend": "CPU",
+      "initializationMs": 628,
+      "inferenceMs": 13821,
+      "firstResponseMs": 11352
+    }
+  ]
+}

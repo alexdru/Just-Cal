@@ -20,7 +20,9 @@ Full runtime/model license and notice texts are distributed in
 app/src/main/assets/ocr/licenses and included in the APK.
 
 Material Symbols Rounded by Google: document_scanner, restaurant, edit_note,
-photo_camera, photo_library, delete, arrow_back, chevron_right, close, check_circle.
+photo_camera, photo_library, delete, arrow_back, chevron_right, close, check_circle,
+memory, science, download, upload_file. Redundant zero-length/zero-area contours
+were omitted in the four added AI symbols.
 Source: https://github.com/google/material-design-icons
 Licensed under Apache License 2.0. Android tint metadata was adapted for Compose;
 directional symbols are auto-mirrored.

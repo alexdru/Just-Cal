@@ -15,6 +15,34 @@ class DiagnosticModelsTest {
         assertEquals("private", original.sanitized(true).rawText)
         assertNull(original.copy(detailedConsent = false).sanitized(true).rawText)
     }
+    @Test fun aiDetailsHonorExportPrivacyAndDoNotCountAsRecognitionSuccess() {
+        val attempt = DiagnosticAiAttempt(stage = "READY", artifactHash = "hash", runtimeVersion = "0.18.1",
+            profile = "CUSTOM/v1", requestedBackend = "AUTO", actualBackend = "CPU",
+            prompt = "private question", rawOutput = "private answer", inferenceMs = 100)
+        val record = scan(1, 100, "EXPERIMENT").copy(aiAttempts = listOf(attempt), detailedConsent = true)
+        val sanitized = record.sanitized().aiAttempts.single()
+        assertNull(sanitized.prompt)
+        assertNull(sanitized.rawOutput)
+        assertEquals(100L, sanitized.inferenceMs)
+        assertEquals("private answer", record.sanitized(true).aiAttempts.single().rawOutput)
+        assertEquals(0, DiagnosticStatistics.from(listOf(record)).successful)
+        assertTrue(Json.decodeFromString<DiagnosticScan>("""{"id":"old","timestampMillis":0,"status":"SUCCESS","totalMs":12}""").aiAttempts.isEmpty())
+    }
+
+    @Test fun rejectedAiEvidenceRetainsOnlyItsCategoryInSanitizedExports() {
+        val attempt = DiagnosticAiAttempt(stage = "MEAL_NAME", artifactHash = "hash", runtimeVersion = "0.18.1",
+            profile = "GENERAL_VISION/meal-name-v1", requestedBackend = "AUTO",
+            rawOutput = "untrusted response", validationError = "MEAL_INVALID_RESPONSE")
+        val record = scan(1, 100, "FAILURE").copy(aiAttempts = listOf(attempt), detailedConsent = true)
+        val sanitized = record.sanitized().aiAttempts.single()
+        assertNull(sanitized.rawOutput)
+        assertEquals("MEAL_INVALID_RESPONSE", sanitized.validationError)
+        assertEquals("untrusted response", record.sanitized(true).aiAttempts.single().rawOutput)
+        val legacy = Json.decodeFromString<DiagnosticAiAttempt>(
+            """{"stage":"MEAL_NAME","artifactHash":"hash","runtimeVersion":"0.18.1","profile":"GENERAL_VISION/name-v1","requestedBackend":"AUTO"}""")
+        assertNull(legacy.validationError)
+    }
+
     @Test fun measuredDistributionAndGroups() {
         val rows = (1..20).map { scan(it, it * 10L).copy(brand = if (it < 4) "Brand" else null) }
         val stats = DiagnosticStatistics.from(rows)

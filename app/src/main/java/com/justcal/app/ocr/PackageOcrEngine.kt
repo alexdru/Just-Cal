@@ -32,6 +32,8 @@ import kotlinx.serialization.Serializable
     val regions: List<OcrRegionProfile> = emptyList(),
     val detectedRegions: Int = lines.size,
     val fullFallback: Boolean = false,
+    /** Clockwise transform from PreparedImage upright pixels to these line coordinates. */
+    val coordinateRotationDegrees: Int = 0,
 )
 
 /** Application-owned types only. Implementations own tensors, native sessions and image pixels. */

@@ -1,5 +1,5 @@
 ---
-version: 0.12.11
+version: 0.17.0
 name: Just Cal
 description: Modern Material 3 Expressive for an offline-first native Android food diary.
 colors:
@@ -133,17 +133,17 @@ components:
 
 # Just Cal design system
 
-Modern Material 3 Expressive is the approved consumer direction. Preserve the evergreen/lime
+Modern Material 3 Expressive is the approved consumer direction. Compose Material3 targets `1.5.0-beta01` or a newer beta/stable release; the current explicit dependency is `1.5.0-beta02` (October 21, 2026). The stable Compose BOM remains independent. Preserve the evergreen/lime
 leaf identity, warm neutral canvas, dominant calorie number, quiet macro strip and floating
 navigation. Motion gives changes spatial meaning and makes controls feel immediate.
 Composition, useful information and native interactions take priority over decoration.
-The Local AI Lab destination retains its existing presentation; its Settings entry uses the shared tonal navigation group.
+AI Models and AI Playground use the shared Settings tonal navigation group, bounded reading width, typography and motion. The Playground retains the LocalAiLab route identifier.
 
 ## Product and composition
 
 Manual logging, date-aware diary, offline package OCR, backup and diagnostic export remain
 local. Package OCR opens editable values; only explicit diary confirmation persists food.
-Meal recognition remains unavailable. Never suggest model confidence certifies accuracy.
+Meal recognition is limited to separately admitted, editable name-only assistance. The user supplies consumed weight and nutrition; numerical photo estimates remain unavailable. Never suggest model confidence certifies accuracy.
 Keep quantities, units, per-100-g values and independently optional macro goals distinct.
 
 Use one calorie emphasis container, flat macro summaries and flat interactive lists.
@@ -176,7 +176,7 @@ The font is unmodified; no extra static weight assets or font dependency are inc
 ## Layout, shape and depth
 
 CalSpacing remains 4 / 8 / 12 / 16 / 20 / 24 / 32 dp. Settings sections use 32 dp
-separation and 12 dp related spacing; diary rows remain compact. CalShapes remain
+separation and 12 dp related spacing; diary rows remain compact. Grouped navigation and diary/history rows use narrow surface gaps (Material ListItemDefaults.SegmentedGap), generous outer corners and small inner corners. Use native Expressive SegmentedListItem for navigation/selection, semantic tonal fills and native pressed shapes; no painted divider lines between rows. Keep informational form panels as coherent groups. Brightness and Themes, calorie and macro goals, and About information/actions use the same narrow segmented gaps and connected corners; never nest navigation rows inside a padded form panel. CalShapes remain
 8 / 12 / 20 / 28 / 36 dp. Reading forms and review are bounded to 600 dp; diary to
 840 dp. Center content within safe horizontal insets. Root titles align to the 24 dp axis.
 
@@ -185,7 +185,7 @@ Android 16+ may ignore orientation restrictions on large displays: retain usable
 scrollable composition in system-controlled windows. Width and font scale still determine
 one/two-column nutrition fields. No landscape acceptance testing is required.
 
-Edge-to-edge hosts are transparent. Content scrolls behind floating controls with end
+All new and updated screens, including AI Models and AI Playground, are edge-to-edge. Hosts are transparent. Scroll viewports extend behind system bars and the full-window app-bar host; safe-area, app-bar and final-item spacing belong inside scroll content (LazyColumn contentPadding or padding after verticalScroll). Consume insets once. IME bounds the input viewport before scrolling so focused prompts remain visible. Do not clip the entire scrolling surface to the safe area. Content scrolls behind floating controls with end
 padding based on their measured complete height plus a gap. Focused fields clear both
 controls and IME using overlay-aware BringIntoView. Below 280 dp usable IME height, the
 editor hides its app bar and pinned action until Done/Back restores space.
@@ -199,7 +199,7 @@ Home, Diary and Settings use a root HorizontalPager over independent Navigation 
 Swipes directly move pages; tab taps use the same spring-settled pager. The compact active
 capsule slides continuously with pager position, including in-flight gestures. Tab ripples
 are clipped to their capsules. The pill stays at the window bottom behind the IME; it never
-moves above the keyboard. FAB entry/exit uses scale/fade while its reserved row stays fixed. The floating
+moves above the keyboard. FAB entry/exit uses scale/fade while its reserved row stays fixed. On child destinations, the complete floating navigation host exits and returns with a vertical spatial transition and effects fade; its measured content reservation stays fixed. Hidden navigation exposes no accessibility targets. The floating
 pill remains horizontally centered and content-sized, with three labeled tabs, a transparent
 host and the separate 56 dp FAB above/right. Reserve the FAB row when hidden in Settings.
 Tab targets retain at least 52 dp height and nominal widths up to 120 dp; grow for text.
@@ -252,7 +252,7 @@ Capture failure falls back to a surface fade; disabled animators apply the theme
 System icon contrast follows the reveal. The branded splash retains light system icons
 until exit; the first consumer palette mounts only after preferences load.
 
-Profile and nutrition inputs remain editable even during saving. Debounce valid edits
+Nutrition inputs remain editable even during saving. Profile Name is hidden while its existing stored value is preserved; editing goals/appearance never clears it. Debounce valid edits
 550 ms, validate each edited field independently, preserve invalid/incomplete drafts and
 persist only affected keys. Clearing a macro removes only that goal. Keep edits when
 switching tabs or recreating the Activity; background saving continues away from Settings.
@@ -265,15 +265,17 @@ not restart the screen or show splash.
 
 | Screen | Presentation and interaction |
 | --- | --- |
-| Home / Day Detail | Opaque surface app-bar host across the window, with scrolling content hidden beneath it; Home date below the app bar at titleLarge; wider calorie numerals; expressive calorie hierarchy, animated amounts/progress, flat macros; connected tonal food rows with leading tiles, inner dividers and outer group corners; long press opens the same compact Expressive action menu as the food editor, with rounded copy/calendar/delete icons; stable item placement and date-aware FAB |
-| Diary | Connected tonal day rows with leading date icon, aligned energy, inner dividers and quiet count/macros; tonal Choose a day |
-| Settings | Headings outside coherent tonal Profile/Goals/Appearance/Language groups; native navigation rows with leading icon tiles and inner dividers; animated macro disclosure, immediate choices and autosave |
+| Home / Day Detail | Opaque surface app-bar host across the window, with scrolling content hidden beneath it; Home date below the app bar at titleLarge; wider calorie numerals; expressive calorie hierarchy, animated amounts/progress, flat macros; connected tonal food rows with leading tiles, narrow gaps and outer group corners; long press opens the same compact Expressive action menu as the food editor, with rounded copy/calendar/delete icons; stable item placement and date-aware FAB |
+| Diary | Connected tonal day rows with leading date icon, aligned energy, narrow gaps and quiet count/macros; tonal Choose a day |
+| Settings | Headings outside coherent tonal Goals/Appearance/Language groups and AI tool navigation; native navigation rows with leading icon tiles and narrow gaps; animated macro disclosure, immediate choices and autosave |
 | Data & Backup | Clear export/import hierarchy, expressive action/loading feedback and completion disclosure; preserve merge default and explicit replace acknowledgement |
-| OCR Diagnostics | Count emphasis, compact interactive scan ListItems and stable item placement; native details sheet, animated disclosures, pinned Save/Share report actions |
+| OCR Diagnostics | Total and status summary, separate local-storage explanation, aligned label/value measurements that stack with enlarged text; connected interactive scan rows, grouped filters and sort choices; edge-to-edge paged content beneath the app bar/tabs; details separate timing, recognition quality, parsed fields, corrections and optional technical evidence; pinned Save/Share report actions |
 | Add Food | Concise Package → Meal → Manual actions without explanatory subtitles; official Material Symbols Rounded in tonal leading tiles; native modal motion and source transition. The entire Package/Meal source header is one Back target with rounded ripple and merged button semantics |
 | Food Editor / OCR confirmation | Name → per-100-g → consumed amount → animated portion preview; expressive explicit save, preserved IME/error focus, expandable raw OCR evidence |
 | Camera | Unchanged lifecycle/capture crop; native media controls, shutter press/busy feedback and capture-confirmation haptic |
 | Photo Review | Stable Fit image and portrait action hierarchy; expressive confirmation, animated offline OCR loading, actionable error/retry/manual fallback |
+| AI Models | Recognition defaults first (package/meal navigation rows with task-selection sheets), then installed models, available catalog and compatible import; segmented tonal rows with memory/download/import icons; measured transfer progress and pause/cancel/retry, source/license sheets and confirmed removal; explicit task admission and no accelerator picker |
+| AI Playground | Distinct Model → image → task/prompt → Run/Cancel → response → metrics sections with 32 dp separation; connected Models/photo-source navigation, mutually exclusive task/output ToggleButton groups, one full-width Run action; readable response and measured metrics with disclosed previous run; no diary-save action |
 | Shared dialogs / sheets | Semantic colors/variable typography, native modal motion, explicit destructive confirmation and accessible actions |
 
 Saving/deleting food gives a rounded inverse-surface parent snackbar with a confirmation icon after returning. The native Material3 SnackbarHost supplies MotionScheme entrance/exit, accessible announcements, timeouts and queuing; OCR success opens

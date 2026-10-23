@@ -39,6 +39,25 @@ class GoalPreferences @Inject constructor(@ApplicationContext private val contex
             colorStyle = ColorStyle.entries.firstOrNull { it.name == preferences[colorStyleKey] } ?: ColorStyle.JUST_CAL,
         )
     }
+    val aiModels = context.goalStore.data.map { preferences ->
+        mapOf("package" to preferences[stringPreferencesKey("ai_package_model")],
+            "meal" to preferences[stringPreferencesKey("ai_meal_model")])
+    }
+    suspend fun selectAiModel(task: String, modelId: String?) {
+        require(task == "package" || task == "meal")
+        context.goalStore.edit { preferences ->
+            val key = stringPreferencesKey("ai_${task}_model")
+            if (modelId == null) preferences.remove(key) else preferences[key] = modelId
+        }
+    }
+    suspend fun clearAiModel(modelId: String) {
+        context.goalStore.edit { preferences ->
+            listOf("package", "meal").forEach { task ->
+                val key = stringPreferencesKey("ai_${task}_model")
+                if (preferences[key] == modelId) preferences.remove(key)
+            }
+        }
+    }
     val goal = settings.map { (_, goalKcal) -> goalKcal }
     suspend fun setGoal(kcal: Int) {
         require(kcal in (1..100000))

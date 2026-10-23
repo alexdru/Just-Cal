@@ -104,9 +104,10 @@ class CameraFlowTest {
             Log.i("JustCalCameraTest", "Cycle $cycle: nativeHeapKiB=${Debug.getNativeHeapAllocatedSize() / 1024}")
             if (cycle < 4) click(R.string.retake)
         }
-        click(R.string.use_photo)
-        compose.onNodeWithText(label(R.string.photo_ready)).assertExists()
-        click(R.string.done)
+        click(R.string.ai_use_photo_manual)
+        compose.waitUntil(5000) { compose.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isNotEmpty() }
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
+        androidx.test.espresso.Espresso.pressBack()
         compose.onNodeWithText(medium).assertExists()
         compose.waitUntil(5000) {
             cache.listFiles().orEmpty().all { it.name in previousFiles }

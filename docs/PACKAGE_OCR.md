@@ -13,8 +13,12 @@ apply. Net package grams can initialize Amount eaten, with a separate explanatio
 New manual amounts start empty; edits retain the saved amount. Empty new manual
 names request focus/keyboard once, with saved event state.
 
-Scan meal retains its photo-ready endpoint. This feature does not use or modify
-Gemma, LiteRT-LM, Local AI Lab, barcode services or visual food estimation.
+Production recognition is coordinated by FoodRecognitionRouter. Bundled PP-OCRv5
+remains the package baseline; optional LiteRT-LM transcription requires explicit
+artifact/task admission and cannot discard the available OCR on failure. Current
+catalog models have not passed package admission, so this fallback remains off.
+AI Models and the separate AI Playground are described in [LOCAL_AI_LAB.md](LOCAL_AI_LAB.md).
+Meal assistance is name-only; numerical estimates and photo-derived weight are disabled.
 Recognition has no network or Google Play Services dependency and no Python runtime.
 
 ## Models, exports and provenance
@@ -480,6 +484,87 @@ on the OnePlus 7T. A manual camera-to-OCR pass on an image without readable text
 returned the retry UI rather than terminating the process.
 No model weights, recognition preprocessing or nutrition arithmetic changed.
 
+## Follow-up quality audit — 0.17.1 (2026-10-22)
+
+The same twelve originals were rerun in a foreground device test. Extraction is unchanged: 42/54 correct parsed numbers, 37/54 confident editor prefills, zero incorrect nonempty numeric prefills on this sample, twelve omitted visible values and unknown sandwich basis. The strict quality assertion still fails. No OCR weights, parsing thresholds or arithmetic were changed for this recheck. Per-image stage timings and exact reference/actual/editor values are stored in [package-quality-gate.json](ai-verification/2026-10-22/package-quality-gate.json); the [audit](ai-verification/2026-10-22/quality-audit.md) separates package/meal quality, runtime smoke and outstanding gates. Package VLM admission remains disabled.
+
+## Supplied 12-package review — 0.16.0 (2026-10-22)
+
+Only package-label accuracy was retested in this continuation; meal accuracy and
+model comparisons were explicitly deferred. All twelve original photographs
+were visually matched to the user attachments and executed through bundled
+PP-OCRv5 on OnePlus 7T HD1900 / Android 11. Originals remain outside the repository
+and APK. Ground truth uses printed per-100-g values, not recalculated nutrition;
+unprinted mass is never inferred from whole-dish calories.
+
+The parser now accepts the split combined nutrition heading, table values whose
+gram glyph is read as Latin `r`, standalone kcal before its number, and paired
+`ккал/кДж` before `189/790`. A geometry guard separates a standalone neighboring
+“Всё блюдо” callout; a subsequent whole-dish energy sentence terminates per-100-g
+extraction. Product-name candidates stop before the ingredient/nutrition body.
+A general short-line pixel retry was tested and removed after it failed to
+improve numeric prefill and worsened some names. No model weights changed.
+
+Each result below lists **kcal, protein, fat, carbs, net grams**. A dash is missing
+extraction, not zero. “Editor” counts only confident, correct nonempty values
+among visibly printed fields.
+
+| Original photo | Parsed values | Editor | Total ms |
+| --- | --- | ---: | ---: |
+| `1792661540668`, Asian beef bowl | 98.5 / 5.9 / 3.7 / 10.4 / 205 | 5/5 | 9933 |
+| `1792661541124`, chicken/spinach/cheese envelopes | 329.1 / 15.8 / 15.5 / 31.6 / 140 | 5/5 | 8928 |
+| `1792661541536`, rice/chicken brizol | 196.8 / 9.7 / 8.8 / 19.7 / 200 | 5/5 | 8187 |
+| `1792612058945`, egg noodles/beef | 138 / — / — / 19.5 / — | 2/4 | 7443 |
+| `1792612059984`, nuggets/potato | 162 / 5.1 / — / 17.1 / — | 2/4 | 8204 |
+| `1792612058338`, yellow rice | 150 / 4.5 / — / 24.8 / — | 2/4 | 6080 |
+| `1792612059644`, sausages/mash | 155 / 5 / 11 / 9 / — | 4/5 | 19088 |
+| `1792612058637`, cropped white label | 121 / 5 / — / 13 / — | 1/4 | 8609 |
+| `1792612056936`, ham/cheese sandwich | — / — / — / — / 170 | 1/5 | 10723 |
+| `1792612057628`, dried pork | 293 / 55 / 7.6 / 1.2 / — | 4/4 | 11439 |
+| `1792612057327`, Kiev cutlet/mash | 159 / 5 / 7 / 19 / — | 4/5 | 19133 |
+| `1792612058012`, chicken/spaghetti | 189 / 11 / — / 17 / — | 2/4 | 8865 |
+
+**42/54 visible numbers were extracted correctly; 37/54 were confidently
+prefilled, with zero incorrect nonempty numeric prefills in this sample.**
+Five correct extractions remained below the 0.8 threshold. Twelve visible
+numbers were missing, including sandwich nutrition and two printed masses.
+All six genuinely unprinted masses stayed empty. The initial pre-fix run
+confidently prefilled 27/54 visible numbers; the same twelve references were
+retained. This is a small fixture result, not a general accuracy percentage.
+
+Important remaining failures: tiny sandwich nutrition was not detected; short
+protein/fat labels were corrupted or uncertain; sausages mass contains an OCR
+letter in place of a digit; the cutlet's mass/portion layout remains unparsed.
+Names are not uniformly correct: envelopes truncate after chicken, sausages and
+cutlet are incomplete, sandwich duplicates a descriptor, and cropped photos
+have no confident title. These must remain editable. The strict
+`suppliedPackageReviewFixtures` test still **fails** on the twelve missing numbers
+and the sandwich's unknown basis. It was not weakened to obtain a green result.
+
+The final sequential pass took 139.028 seconds including instrumentation and
+reporting. Individual measured totals ranged 6.080–19.133 seconds; initialization
+298–314 ms. Reported PSS snapshots were 133880 KiB; cumulative process high-water
+RSS reached 540644 KiB. Android PSS snapshots can be cached; these are
+instrumented process observations, not isolated per-image model peaks, leak
+proof or a frame-jank profile.
+
+Reproduce after copying the twelve originals with their basenames into
+`/sdcard/Android/data/com.justcal.app.debug/files/package-review-fixtures/`:
+
+```sh
+adb shell am instrument -w -r \
+  -e class 'com.justcal.app.ocr.PackageOcrDeviceTest#suppliedPackageReviewFixtures' \
+  -e packageReviewFixtures true \
+  com.justcal.app.debug.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+Raw lines/coordinates/confidences, parsed evidence, expected/editor values and
+measured metrics are retained in [the verification data](ocr-verification/2026-10-22-package-review.json).
+No photographs are bundled. Final 149 unit tests, debug/application-test builds,
+lint and release R8 minification passed. Lint has no errors; remaining warnings
+are dependency suggestions and existing resources/update UI. Device workflow
+verification is recorded in [LOCAL_AI_LAB.md](LOCAL_AI_LAB.md).
+
 ## Limits
 
 Glare, perspective, tiny/curved text, mixed orientations and complex multi-column
@@ -488,8 +573,8 @@ dense-label tiling or dewarping model is currently bundled. Generic decoding kee
 the original information only within its 12-MP/4096-px budget. Serving-only and
 ambiguous tables require manual per-100-g input. Missing units or unsupported
 layouts remain editable rather than guessed. Confidence/name heuristics need
-calibration beyond these three photographs. Selected-region recognition takes
-8–10 seconds on the verified fixtures; difficult-label fallback can take longer.
+calibration beyond the supplied fixture sets. The latest twelve-image run takes
+6–19 seconds per photograph; difficult-label fallback can take longer.
 Android 11 ARM64 and the minified synthetic JNI regression are device-verified.
 OnePlus 12/Android 15+, minified real-package recognition and the production-signed
 release still need their own device validation.

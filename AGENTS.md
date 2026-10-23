@@ -114,7 +114,7 @@ AI-produced nutrition information must be treated as untrusted input and validat
 
 Users must be able to review and correct recognized values before they are added to the diary.
 
-- Keep Local AI Lab experimental and independent from production Add Food until that integration is explicitly requested. Lab results must never create diary entries.
+- Keep AI Playground (the retained LocalAiLab route) experimental and independent from production sessions. Playground results must never create diary entries. Production uses FoodRecognitionRouter with explicit artifact/task quality admission; no automatic model download or selection.
 - Import external models through SAF into app-private, backup-excluded storage; never bundle multi-GB models or pass content URIs as native filesystem paths.
 - Keep native AI engine/conversation types inside the runtime adapter. Initialize, infer and close off the main thread; cancellation must finish native processing before freeing resources.
 - Reuse the generic bounded image boundary. Keep model preprocessing in the AI adapter and large Bitmaps out of ViewModels/saved state.
@@ -126,6 +126,8 @@ Users must be able to review and correct recognized values before they are added
 - Follow its established tokens and composition principles. Proposed refinements remain subject to design approval.
 - Use relevant design skills when appropriate, and validate major UI changes visually on a device or emulator.
 - Do not introduce arbitrary visual patterns that conflict with the approved design system.
+- Edge-to-edge is required for every new or updated screen, including Settings tools. Keep scroll viewports behind system bars; put safe-area/top-bar/end spacing inside scroll content, consume insets once, and keep focused inputs/actions clear of the IME. Do not pad or clip the entire scroll viewport away from system bars.
+- Separate grouped navigation and diary/history rows with narrow surface gaps and connected outer/inner corners, not painted divider lines. Use the shared Material 3 Expressive segmented list treatment and meaningful Material Symbols icons.
 
 Optimize for fast calorie logging and low interaction count.
 
@@ -154,7 +156,7 @@ Avoid premature visual polish when implementing infrastructure or domain work.
 - Treat external images as URIs; never resolve content URIs to filesystem paths. Keep owned temporary files private and release them when their flow ends.
 - Keep Bitmaps and camera resources out of ViewModels and saved navigation state. Decode off the main thread within the image budget.
 - Generic orientation/decoding belongs in the image boundary; OCR preprocessing and inference belong in the `ocr` runtime adapter.
-- Package Use photo runs offline OCR and deterministic parsing, then opens the existing editable food editor with the original diary date. Saving is explicit. Meal Use photo only confirms the image.
+- Package Use photo retains bundled offline OCR and deterministic parsing, then opens the existing editable editor with the original date. VLM fallback requires measured quality admission and must preserve OCR on failure. Meal Use photo can use an admitted name-only model; otherwise offer Models/manual entry. Numerical meal estimates and photo-derived consumed weight remain disabled. Saving is always explicit.
 - Keep OCR runtime types out of UI/domain. Preserve raw OCR evidence, per-100-g versus serving basis, independent net mass and missing values; uncertain fields stay empty. Bundled OCR model revisions, dictionaries, hashes and notices are documented in `docs/PACKAGE_OCR.md`.
 - New manual entries start with an empty consumed amount and request empty-name focus once; edits preserve the saved amount and do not request initial focus.
 

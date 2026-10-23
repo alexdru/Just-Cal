@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
     val confidence: Float,
     val metrics: OcrMetrics,
     val diagnosticSessionId: String? = null,
+    val recognition: com.justcal.app.domain.RecognitionDraft? = null,
 ) {
     companion object {
         fun from(result: PackageOcrResult) = PackageScanPrefill(

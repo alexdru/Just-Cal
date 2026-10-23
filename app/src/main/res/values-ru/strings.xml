@@ -59,16 +59,13 @@
     <string name="open_day">Открыть день</string>
     <string name="history_empty">Здесь начнётся ваша история</string>
     <string name="history_empty_hint">Дни с записями появятся здесь. Можно выбрать прошлую дату и добавить еду.</string>
-    <string name="profile">Ваш профиль</string>
     <string name="display_name">Имя (необязательно)</string>
-    <string name="name_error">Не более 80 символов</string>
     <string name="nutrition_settings">Дневная цель</string>
     <string name="appearance">Оформление</string>
     <string name="theme_system">Системное</string>
     <string name="theme_light">Светлое</string>
     <string name="theme_dark">Тёмное</string>
-    <string name="privacy_title">Только на этом устройстве</string>
-    <string name="privacy_description">Профиль, настройки и дневник хранятся локально. Just Cal работает без интернета.</string>
+    <string name="ai_integration">AI Integration</string>
     <string name="macro_goals">Индивидуальные цели для БЖУ</string>
     <string name="goal_not_set">Не задано</string>
     <string name="clear_macro_goal">Убрать цель: %1$s</string>
@@ -95,8 +92,6 @@
     <string name="use_photo">Использовать фото</string>
     <string name="retake">Переснять</string>
     <string name="choose_another">Выбрать другое</string>
-    <string name="photo_ready">Фото готово</string>
-    <string name="photo_ready_message">Фото проверено. Распознавание пока недоступно; в дневник ничего не добавлено.</string>
     <string name="done">Готово</string>
     <string name="image_dimensions">%1$d × %2$d пикс.</string>
     <string name="app_license_notice">Copyright © 2026 alexdru и участники проекта. Свободное ПО; распространение и изменение разрешены по GPL v3 или более поздней версии. Без гарантий. Лицензия доступна в репозитории исходного кода (LICENSE).</string>
@@ -126,7 +121,6 @@
     <string name="macro_detail">Б %1$s г · Ж %2$s г · У %3$s г</string>
     <string name="review_package_guidance">Проверьте, что вся таблица пищевой ценности в кадре, текст чёткий и без бликов.</string>
     <string name="review_meal_guidance">Проверьте, что всё блюдо в кадре и фото чёткое.</string>
-    <string name="review_no_recognition">Только проверка фото. Распознавание пока недоступно; запись в дневнике не появится.</string>
     <string name="capturing_photo">Съёмка…</string>
     <string name="expanded">Развёрнуто</string>
     <string name="collapsed">Свёрнуто</string>

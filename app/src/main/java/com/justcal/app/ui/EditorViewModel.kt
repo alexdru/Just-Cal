@@ -30,6 +30,7 @@ data class EditorState(
     val dayEpoch: Long? = null,
     val duplicated: Boolean = false,
     val dateChanged: Boolean = false,
+    val recognition: RecognitionDraft? = null,
 )
 
 @HiltViewModel(assistedFactory = EditorViewModel.Factory::class)
@@ -41,12 +42,14 @@ class EditorViewModel @AssistedInject constructor(
     @Assisted("dayEpoch") private val dayEpoch: Long? = null,
     @Assisted("scan") private val scan: PackageScanPrefill? = null,
     private val diagnostics: com.justcal.app.diagnostics.OcrDiagnosticsRepository? = null,
+    @Assisted("recognition") private val recognition: RecognitionDraft? = null,
 ) : ViewModel() {
     private var original: DiaryEntry? = null
-    private fun restoredDraft(base: FoodDraft = scan?.label?.draft() ?: FoodDraft()) = FoodField.entries.fold(base) { draft, field ->
+    private fun restoredDraft(base: FoodDraft = recognition?.draft() ?: scan?.recognition?.draft() ?: scan?.label?.draft() ?: FoodDraft()) = FoodField.entries.fold(base) { draft, field ->
         draft.with(field, savedState[field.name] ?: draft.value(field))
     }
-    private val mutableState = MutableStateFlow(EditorState(draft = restoredDraft(), loading = entryId != null, dayEpoch = dayEpoch))
+    private val mutableState = MutableStateFlow(EditorState(draft = restoredDraft(), loading = entryId != null, dayEpoch = dayEpoch,
+        recognition = recognition ?: scan?.recognition))
     val state: StateFlow<EditorState> = mutableState.asStateFlow()
 
     init {
@@ -161,5 +164,5 @@ class EditorViewModel @AssistedInject constructor(
         }
     }
 
-    @AssistedFactory interface Factory { fun create(@Assisted("entryId") entryId: Long?, @Assisted("dayEpoch") dayEpoch: Long?, @Assisted("scan") scan: PackageScanPrefill?): EditorViewModel }
+    @AssistedFactory interface Factory { fun create(@Assisted("entryId") entryId: Long?, @Assisted("dayEpoch") dayEpoch: Long?, @Assisted("scan") scan: PackageScanPrefill?, @Assisted("recognition") recognition: RecognitionDraft? = null): EditorViewModel }
 }

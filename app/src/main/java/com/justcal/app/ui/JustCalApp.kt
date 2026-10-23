@@ -14,7 +14,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.MaterialTheme
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.rememberLifecycleOwner
 import androidx.navigationevent.NavigationEventInfo
@@ -22,7 +21,6 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
-import com.justcal.app.ui.theme.LegacyCalTypography
 import com.justcal.app.ui.theme.LocalMotionEnabled
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -50,6 +48,7 @@ import kotlinx.serialization.Serializable
 @Serializable data class ImageAcquisition(val request: ScanRequest, val source: ImageSource) : NavKey
 @Serializable data class PhotoReview(val image: PreparedImage) : NavKey
 @Serializable data object LocalAiLab : NavKey
+@Serializable data object AiModels : NavKey
 @Serializable data object DataBackup : NavKey
 @Serializable data object OcrDiagnostics : NavKey
 
@@ -59,6 +58,7 @@ import kotlinx.serialization.Serializable
     val dayEpoch: Long? = null,
     val origin: MainTab = MainTab.HOME,
     val scan: PackageScanPrefill? = null,
+    val recognition: com.justcal.app.domain.RecognitionDraft? = null,
 ) : NavKey
 
 private data class ThemeState(val loading: Boolean, val appearance: Appearance, val colorStyle: ColorStyle)
@@ -149,6 +149,7 @@ fun JustCalApp(splashVisible: Boolean = false) {
                                 root, settingsViewModel, bar = reserveBar,
                                 onMessage = { message -> scope.launch { messages.showSnackbar(message) } },
                                 onLab = { if (stack.lastOrNull() == root) stack.add(LocalAiLab) },
+                                onModels = { if (stack.lastOrNull() == root) stack.add(AiModels) },
                                 onBackup = { if (stack.lastOrNull() == root) {
                                     settingsViewModel.flushEdits()
                                     stack.add(DataBackup)
@@ -190,20 +191,22 @@ fun JustCalApp(splashVisible: Boolean = false) {
                             OcrDiagnosticsScreen(hiltViewModel<OcrDiagnosticsViewModel>(),
                                 onBack = { if (stack.lastOrNull() == route) stack.removeLastOrNull() })
                         }
+                        entry<AiModels> { route ->
+                            AiModelsScreen(hiltViewModel<AiModelsViewModel>(),
+                                onBack = { if (stack.lastOrNull() == route) stack.removeLastOrNull() })
+                        }
                         entry<LocalAiLab> { route ->
                             val viewModel = hiltViewModel<LocalAiLabViewModel>()
                             DisposableEffect(route) {
                                 onDispose { if (route !in stack) viewModel.closeLab() }
                             }
-                            // Keep the excluded Lab's existing typography/motion without touching its implementation.
-                            MaterialTheme(typography = LegacyCalTypography, motionScheme = CalMotion.standard) {
-                            LocalAiLabScreen(viewModel, onBack = {
+                            LocalAiLabScreen(viewModel, onModels = { stack.add(AiModels) },
+                                onDiagnostics = { stack.add(OcrDiagnostics) }, onBack = {
                                 if (stack.lastOrNull() == route) {
                                     viewModel.closeLab()
                                     stack.removeLastOrNull()
                                 }
                             })
-                            }
                         }
                         entry<ImageAcquisition> { route ->
                             val viewModel = hiltViewModel<ImageInputViewModel>()
@@ -226,6 +229,12 @@ fun JustCalApp(splashVisible: Boolean = false) {
                             val viewModel = hiltViewModel<PhotoReviewViewModel>()
                             viewModel.attach(route.image)
                             val packageState by viewModel.state.collectAsStateWithLifecycle()
+                            LaunchedEffect(packageState.recognition) {
+                                packageState.recognition?.let { draft ->
+                                    if (stack.lastOrNull() == route) stack[stack.lastIndex] =
+                                        FoodEditor(dayEpoch = route.image.request.dayEpoch, origin = tab, recognition = draft)
+                                }
+                            }
                             LaunchedEffect(packageState.prefill) {
                                 packageState.prefill?.let {
                                     if (stack.lastOrNull() == route) stack[stack.lastIndex] =
@@ -235,11 +244,12 @@ fun JustCalApp(splashVisible: Boolean = false) {
                             DisposableEffect(route) {
                                 onDispose {
                                     // A configuration change keeps the route; a pop/replacement releases it.
-                                    if (route !in stack) viewModel.images.discard(route.image.uri)
+                                    if (route !in stack) viewModel.closeReview()
                                 }
                             }
                             PhotoReviewScreen(route.image, viewModel.images,
                                 packageState = packageState,
+                                onModels = { if (stack.lastOrNull() == route) stack.add(AiModels) },
                                 onRecognize = { viewModel.recognize(route.image) },
                                 onManual = {
                                     if (stack.lastOrNull() == route) stack[stack.lastIndex] =
@@ -253,14 +263,14 @@ fun JustCalApp(splashVisible: Boolean = false) {
                                 },
                                 onBack = {
                                     if (stack.lastOrNull() == route) {
-                                        viewModel.images.discard(route.image.uri)
+                                        viewModel.closeReview()
                                         stack.removeLastOrNull()
                                     }
                                 })
                         }
                         entry<FoodEditor> { route ->
                             val viewModel = hiltViewModel<EditorViewModel, EditorViewModel.Factory> {
-                                it.create(route.id, route.dayEpoch, route.scan)
+                                it.create(route.id, route.dayEpoch, route.scan, route.recognition)
                             }
                             val state by viewModel.state.collectAsStateWithLifecycle()
                             val close = {
@@ -369,13 +379,17 @@ fun JustCalApp(splashVisible: Boolean = false) {
                         current == MainTab.SETTINGS -> settingsSnackbarBottom
                         else -> barDp
                     }))
-            if (showNavigation) Box(
-                Modifier.align(Alignment.BottomCenter),
+            androidx.compose.animation.AnimatedVisibility(
+                visible = showNavigation,
+                modifier = Modifier.align(Alignment.BottomCenter)
+                    .then(if (showNavigation) Modifier else Modifier.clearAndSetSemantics {}),
+                enter = if (LocalMotionEnabled.current) CalMotion.navigationEnter() else androidx.compose.animation.EnterTransition.None,
+                exit = if (LocalMotionEnabled.current) CalMotion.navigationExit() else androidx.compose.animation.ExitTransition.None,
             ) {
                 Box(Modifier.onSizeChanged { barHeight = it.height }) {
                 FloatingNavigation(
-                    selected, selectTab,
-                    onAdd = if ((requestedTab ?: MainTab.entries[pager.targetPage]) == MainTab.SETTINGS) null else ({
+                    selected, { if (showNavigation) selectTab(it) },
+                    onAdd = if (!showNavigation || (requestedTab ?: MainTab.entries[pager.targetPage]) == MainTab.SETTINGS) null else ({
                         launcherMode = null
                         launcherDay = (current as? DiaryDate)?.dayEpoch ?: LocalDate.now().toEpochDay()
                     }),
@@ -406,7 +420,7 @@ fun JustCalApp(splashVisible: Boolean = false) {
 @Composable
 private fun MainScreen(
     tab: MainTab, settingsViewModel: SettingsViewModel,
-    bar: @Composable () -> Unit, onLab: () -> Unit,
+    bar: @Composable () -> Unit, onLab: () -> Unit, onModels: () -> Unit,
     onBackup: () -> Unit, onDiagnostics: () -> Unit, onEdit: (Long) -> Unit,
     onMessage: (String) -> Unit, onDay: (Long) -> Unit,
 ) {
@@ -433,7 +447,7 @@ private fun MainScreen(
             val state by settingsViewModel.state.collectAsStateWithLifecycle(context = kotlinx.coroutines.Dispatchers.Main.immediate)
             SettingsScreen(state, settingsViewModel::change,
                 settingsViewModel::retry, onLab = onLab, bottomBar = bar,
-                onBackup = onBackup, onDiagnostics = onDiagnostics)
+                onBackup = onBackup, onDiagnostics = onDiagnostics, onModels = onModels)
         }
     }
 }

@@ -28,7 +28,7 @@ class PhotoPickerFlowTest {
     private fun label(id: Int) = compose.activity.getString(id)
     private fun click(id: Int) = compose.onNode(hasText(label(id)) and hasClickAction()).performClick()
 
-    private fun fixture(color: Int, labelText: Boolean = false): Uri {
+    private fun fixture(color: Int, labelText: Boolean = false, imageFile: java.io.File? = null): Uri {
         val resolver = compose.activity.contentResolver
         val uri = requireNotNull(resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, "JustCal-picker-${UUID.randomUUID()}.png")
@@ -37,9 +37,10 @@ class PhotoPickerFlowTest {
             put(MediaStore.Images.Media.IS_PENDING, 1)
         }))
         try {
-            val bitmap = Bitmap.createBitmap(if (labelText) 1200 else 320, if (labelText) 800 else 240, Bitmap.Config.ARGB_8888)
+            val bitmap = imageFile?.let { android.graphics.BitmapFactory.decodeFile(it.absolutePath) }
+                ?: Bitmap.createBitmap(if (labelText) 1200 else 320, if (labelText) 800 else 240, Bitmap.Config.ARGB_8888)
             try {
-                bitmap.eraseColor(color)
+                if (imageFile == null) bitmap.eraseColor(color)
                 if (labelText) {
                     val canvas = android.graphics.Canvas(bitmap)
                     val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply { this.color = Color.BLACK; textSize = 44f }
@@ -109,7 +110,7 @@ class PhotoPickerFlowTest {
                 file.outputStream().use { check(screenshot.compress(Bitmap.CompressFormat.PNG, 100, it)) }
             } finally { screenshot.recycle() }
             fun field(id: Int) = compose.onNode(hasText(label(id)) and hasSetTextAction())
-            field(R.string.food_name).assertTextContains("GREEK YOGURT")
+            field(R.string.food_name).assertTextContains("Greek yogurt")
             field(R.string.energy).performScrollTo().assertTextContains("183.2")
             field(R.string.amount).performScrollTo().assertTextContains("240")
             org.junit.Assert.assertEquals(baseline, entries().map { it.id }.toSet())
@@ -127,6 +128,99 @@ class PhotoPickerFlowTest {
             kotlinx.coroutines.runBlocking { entries().filter { it.name == uniqueName }.forEach { database.diaryDao().delete(it.id) } }
             database.close()
             photos.forEach { compose.activity.contentResolver.delete(it, null, null) }
+        }
+    }
+
+    @Test fun selectedMealModelKeepsPhotoAndDateUntilExplicitEditorSave() {
+        org.junit.Assume.assumeTrue(InstrumentationRegistry.getArguments().getString("realAiModels") == "true")
+        val context = compose.activity.applicationContext
+        val catalog = com.justcal.app.ai.ModelCatalog(context)
+        val models = com.justcal.app.ai.LocalModelStore(context, com.justcal.app.ai.LiteRtModelInspector(), catalog)
+        val preferences = com.justcal.app.data.GoalPreferences(context)
+        val previousChoices = kotlinx.coroutines.runBlocking { preferences.aiModels.first() }
+        val model = kotlinx.coroutines.runBlocking { models.list().first {
+            models.validate(it).catalogId == "gemma4-e2b"
+        } }
+        // Picker ordering differs across Android providers; both test-owned choices show the same food.
+        val extra = fixture(Color.WHITE, imageFile = java.io.File(context.getExternalFilesDir(null), "meal-fixtures/apple.jpg"))
+        val resolver = compose.activity.contentResolver
+        val photo = requireNotNull(resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, "JustCal-meal-${UUID.randomUUID()}.jpg")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis() + 20_000)
+            put(MediaStore.Images.Media.IS_PENDING, 1)
+        }))
+        val date = java.time.LocalDate.now().withDayOfMonth(1)
+        val database = androidx.room.Room.databaseBuilder(context, DiaryDatabase::class.java, "just-cal.db").build()
+        fun entries() = kotlinx.coroutines.runBlocking { database.diaryDao().observeDay(date.toEpochDay()).first() }
+        val baseline = entries().map { it.id }.toSet()
+        val uniqueName = "Meal flow " + UUID.randomUUID()
+        try {
+            resolver.openOutputStream(photo)!!.use { output ->
+                java.io.File(compose.activity.getExternalFilesDir(null), "meal-fixtures/apple.jpg").inputStream().use { it.copyTo(output) }
+            }
+            resolver.update(photo, ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) }, null, null)
+            kotlinx.coroutines.runBlocking { preferences.selectAiModel("meal", model.id) }
+            click(R.string.history)
+            click(R.string.choose_day)
+            val fullDate = date.format(java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.FULL)
+                .withLocale(compose.activity.resources.configuration.locales[0]))
+            compose.onNode(hasText(fullDate, substring = true, ignoreCase = true) and hasClickAction()).performClick()
+            click(R.string.open_day)
+            compose.onNodeWithContentDescription(label(R.string.add_food)).performClick()
+            click(R.string.scan_meal)
+            click(R.string.choose_photo)
+            selectPhoto(0)
+            automation.takeScreenshot().let { bitmap ->
+                try { java.io.File(context.getExternalFilesDir(null), "meal-flow-review.png").outputStream().use {
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+                } } finally { bitmap.recycle() }
+            }
+            compose.onNodeWithText(label(R.string.ai_models)).performScrollTo().performClick()
+            compose.onNodeWithText(label(R.string.lab_import_model)).assertExists()
+            compose.onNodeWithContentDescription(label(R.string.close)).performClick()
+            compose.onNodeWithText(label(R.string.mode_meal)).assertExists()
+            // Returning from Models recreates the preview; wait for its asynchronous decode.
+            // Semantics performClick on a disabled button would otherwise do nothing.
+            val usePhoto = hasText(label(R.string.use_photo)) and hasClickAction()
+            compose.onNode(usePhoto).performScrollTo()
+            compose.waitUntil(15_000) {
+                compose.onAllNodes(usePhoto and isEnabled()).fetchSemanticsNodes().isNotEmpty()
+            }
+            compose.onNode(usePhoto).assertIsEnabled().performClick()
+            compose.waitUntil(90_000) {
+                check(compose.onAllNodesWithText(label(R.string.ai_runtime_error)).fetchSemanticsNodes().isEmpty()) { "Meal model failed; inspect JustCalAI diagnostics" }
+                compose.onAllNodes(hasText(label(R.string.food_name)) and hasSetTextAction()).fetchSemanticsNodes().isNotEmpty()
+            }
+            fun field(id: Int) = compose.onNode(hasText(label(id)) and hasSetTextAction())
+            compose.onNodeWithText(label(R.string.ai_suggestions)).assertExists()
+            field(R.string.food_name).performScrollTo()
+            field(R.string.food_name).assertTextContains("apple", ignoreCase = true)
+            field(R.string.amount).performScrollTo().assert(SemanticsMatcher.expectValue(
+                androidx.compose.ui.semantics.SemanticsProperties.EditableText, androidx.compose.ui.text.AnnotatedString("")))
+            org.junit.Assert.assertEquals(baseline, entries().map { it.id }.toSet())
+            field(R.string.food_name).performScrollTo().performTextReplacement(uniqueName)
+            field(R.string.energy).performScrollTo().performTextReplacement("183.2")
+            field(R.string.protein).performScrollTo().performTextReplacement("11")
+            field(R.string.fat).performScrollTo().performTextReplacement("6.4")
+            field(R.string.carbs).performScrollTo().performTextReplacement("20.4")
+            field(R.string.amount).performScrollTo().performTextReplacement("120")
+            compose.activityRule.scenario.recreate()
+            field(R.string.amount).performScrollTo().assertTextContains("120")
+            click(R.string.save_food)
+            compose.waitUntil(5000) { entries().any { it.name == uniqueName } }
+            val saved = entries().filter { it.name == uniqueName }
+            org.junit.Assert.assertEquals(1, saved.size)
+            org.junit.Assert.assertEquals(12000L, saved.single().eatenGramsHundredths)
+            org.junit.Assert.assertEquals(EntrySource.MANUAL, saved.single().toDomain().source)
+        } finally {
+            kotlinx.coroutines.runBlocking {
+                previousChoices.forEach { (task, id) -> preferences.selectAiModel(task, id) }
+                entries().filter { it.name == uniqueName }.forEach { database.diaryDao().delete(it.id) }
+            }
+            database.close()
+            resolver.delete(photo, null, null)
+            resolver.delete(extra, null, null)
         }
     }
 
@@ -173,7 +267,8 @@ class PhotoPickerFlowTest {
                 compose.onAllNodesWithText(label(R.string.ocr_failed)).fetchSemanticsNodes().isNotEmpty()
             }
             compose.onNodeWithText(label(R.string.retry)).assertIsEnabled()
-            click(R.string.add_manually)
+            compose.onNodeWithText(label(R.string.ai_use_photo_manual)).performScrollTo().performClick()
+            compose.waitUntil(5000) { compose.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isNotEmpty() }
             compose.onAllNodes(hasSetTextAction()).onFirst().assert(
                 SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.EditableText, androidx.compose.ui.text.AnnotatedString("")))
             androidx.test.espresso.Espresso.pressBack()

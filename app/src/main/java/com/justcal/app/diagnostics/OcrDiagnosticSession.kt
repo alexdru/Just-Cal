@@ -20,7 +20,7 @@ class OcrDiagnosticSession @Inject constructor(private val repository: OcrDiagno
             repository.record(repository.metadata(id, timestamp, "RUNNING", elapsed()).copy(
                 width = image.width, height = image.height, detailedConsent = detailed), generation, consentGeneration)
         }
-        fun success(result: PackageOcrResult, prefill: PackageScanPrefill, parsingMs: Long) {
+        fun success(result: PackageOcrResult, prefill: PackageScanPrefill, parsingMs: Long, origin: String = "PACKAGE_SCAN") {
             val label = prefill.label
             val draft = label.draft()
             val fields = mapOf("NAME" to draft.name, "NET_WEIGHT" to draft.amount,
@@ -31,8 +31,8 @@ class OcrDiagnosticSession @Inject constructor(private val repository: OcrDiagno
                 .filterValues { it != null && !it.confident }.keys.toList()
             val ambiguous = uncertain + if (label.basis.name in listOf("AMBIGUOUS", "PER_SERVING", "UNKNOWN")) listOf("NUTRITION_BASIS") else emptyList()
             val confidence = result.lines.map { it.confidence }.filter { it.isFinite() }
-            repository.record(repository.metadata(id, timestamp, if (missing.isEmpty() && ambiguous.isEmpty()) "SUCCESS" else "PARTIAL", elapsed()).copy(
-                initializationMs = result.metrics.initializationMs, detectionMs = result.metrics.detectionMs,
+            repository.record(repository.metadata(id, timestamp, if (origin == "PLAYGROUND") "EXPERIMENT" else if (missing.isEmpty() && ambiguous.isEmpty()) "SUCCESS" else "PARTIAL", elapsed()).copy(
+                origin = origin, initializationMs = result.metrics.initializationMs, detectionMs = result.metrics.detectionMs,
                 recognitionMs = result.metrics.recognitionMs, parsingMs = parsingMs,
                 width = result.width, height = result.height, detectedRegions = result.detectedRegions,
                 confidenceMean = confidence.takeIf { it.isNotEmpty() }?.average()?.toFloat(),
@@ -43,6 +43,17 @@ class OcrDiagnosticSession @Inject constructor(private val repository: OcrDiagno
                 brand = if (detailed) PackagingBrand.extract(prefill.rawText) else null,
                 rawText = prefill.rawText.takeIf { detailed }, parsedFields = if (detailed) fields else emptyMap(),
                 detailedConsent = detailed), generation, consentGeneration)
+        }
+        fun ai(value: DiagnosticAiAttempt, status: String, origin: String = "PLAYGROUND") {
+            repository.record(repository.metadata(id, timestamp, status, elapsed()).copy(
+                model = value.profile, runtime = "LiteRT-LM ${value.runtimeVersion}",
+                modelHashes = mapOf("sha256" to value.artifactHash),
+                modelRevisions = value.revision?.let { mapOf("revision" to it) } ?: emptyMap(),
+                width = image.width, height = image.height, origin = origin,
+                errors = value.validationError?.let(::listOf).orEmpty(),
+                aiAttempts = listOf(if (detailed) value else value.copy(prompt = null, rawOutput = null)),
+                rawText = value.rawOutput?.takeIf { detailed }, detailedConsent = detailed),
+                generation, consentGeneration)
         }
         fun failure(cancelled: Boolean, category: String) {
             repository.record(repository.metadata(id, timestamp, if (cancelled) "CANCELLED" else "FAILURE", elapsed()).copy(

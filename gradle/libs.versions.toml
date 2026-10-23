@@ -15,7 +15,7 @@ datastore = "1.2.1"
 coroutines = "1.11.0"
 serialization = "1.11.0"
 camerax = "1.6.2"
-litertlm = "0.17.1"
+litertlm = "0.18.1"
 # Pinned to the runtimes validated with the bundled OCR exports on Android 11.
 #noinspection NewerVersionAvailable
 onnxruntime = "1.23.2"
@@ -38,7 +38,7 @@ compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose"
 compose-ui = { module = "androidx.compose.ui:ui" }
 compose-foundation = { module = "androidx.compose.foundation:foundation" }
 # Expressive APIs are pinned independently; retain the stable Compose BOM.
-material3 = { module = "androidx.compose.material3:material3", version = "1.5.0-beta01" }
+material3 = { module = "androidx.compose.material3:material3", version = "1.5.0-beta02" }
 tooling = { module = "androidx.compose.ui:ui-tooling" }
 preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 ui-test = { module = "androidx.compose.ui:ui-test-junit4" }

@@ -19,6 +19,34 @@ class OcrDiagnosticsInteractionTest {
     @get:Rule val compose = createComposeRule()
     private fun label(id: Int) = InstrumentationRegistry.getInstrumentation().targetContext.getString(id)
 
+    @Test fun systemBackClosesDetailsInsideAScopedTabWithoutLeavingHistory() {
+        var parentBacks = 0
+        val scan = DiagnosticScan("back-test", 20000, status = "SUCCESS", totalMs = 123,
+            productName = "Back test")
+        compose.setContent {
+            val owner = androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner()
+            androidx.compose.runtime.CompositionLocalProvider(
+                androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner provides owner,
+            ) {
+                val back = androidx.navigationevent.compose.rememberNavigationEventState(
+                    currentInfo = androidx.navigationevent.NavigationEventInfo.None,
+                )
+                androidx.navigationevent.compose.NavigationBackHandler(back) { parentBacks++ }
+                MaterialTheme {
+                    OcrDiagnosticsContent(listOf(scan), false, false, false, null,
+                        {}, {}, { _, _ -> }, { _, _ -> }, { _, _, _ -> }, { _, _ -> }, {}, {})
+                }
+            }
+        }
+        compose.onNodeWithText(label(R.string.diag_history)).performClick()
+        compose.onNode(hasText("Back test") and hasClickAction()).performClick()
+        compose.onNodeWithText(label(R.string.diag_close)).assertIsDisplayed()
+        androidx.test.espresso.Espresso.pressBack()
+        compose.onNodeWithText(label(R.string.diag_close)).assertDoesNotExist()
+        compose.onNodeWithText(label(R.string.diag_history)).assertIsSelected()
+        compose.runOnIdle { assertEquals(0, parentBacks) }
+    }
+
     @Test fun swipesAndTabClicksStaySynchronizedWithOneSharedReportActionRow() {
         compose.setContent {
             MaterialTheme {

@@ -61,8 +61,8 @@ private fun formatRecognizedName(value: String): String {
 object NutritionLabelParser {
     private const val NUMBER = "([0-9]+(?:[.,]\\s*[0-9]{1,2})?)"
     private val per100 = Regex("(?:per\\s*|на\\s*)?100\\s*(?:g(?:rams?)?|г(?:рамм(?:а|ов)?)?)(?![a-zа-я])", RegexOption.IGNORE_CASE)
-    private val serving = Regex("(?:per\\s+(?:serving|portion)|на\\s+(?:порци[юяи]|упаковку)|в\\s+одной\\s+порции)", RegexOption.IGNORE_CASE)
-    private val nutritionHeading = Regex("пищев[а-я]+\\s+ценност[а-я]*|nutrition(?:al)?(?:\\s+(?:information|values?|facts))?", RegexOption.IGNORE_CASE)
+    private val serving = Regex("(?:per\\s+(?:serving|portion)|на\\s+(?:порци[юяи]|упаковку)|в\\s+одной\\s+порции|на\\s+вс[её]\\s+блюдо)", RegexOption.IGNORE_CASE)
+    private val nutritionHeading = Regex("пищев[а-я]+\\s*(?:и\\s*энергетическ[а-я]+\\s*)?ценност[а-я]*|nutrition(?:al)?(?:\\s+(?:information|values?|facts))?", RegexOption.IGNORE_CASE)
     private val stop = Regex("состав[: ]|ingredients?[: ]|изготовител[ья]|manufacturer|рекомендации|приготовлени[ея]|cooking|хранить|условия\\s+хранения|storage|срок\\s+годности|best\\s+before|use\\s+by", RegexOption.IGNORE_CASE)
     private val macro = mapOf(
         "protein" to "белк[иа]|proteins?",
@@ -72,8 +72,13 @@ object NutritionLabelParser {
 
     fun parse(result: PackageOcrResult): ParsedNutritionLabel = parse(result.lines, result.width, result.height)
 
+    /** Reuses units/basis/conflict rules. Zero means unscored; these values never pass confident/draft(). */
+    fun parseUnscoredTranscription(text: String): ParsedNutritionLabel =
+        parse(text.take(16_000).lineSequence().filter(String::isNotBlank)
+            .map { OcrLine(it, 0f, emptyList()) }.toList())
+
     fun parse(lines: List<OcrLine>, width: Int = 0, height: Int = 0): ParsedNutritionLabel {
-        val ordered = LabelReadingOrder.sort(lines)
+        val ordered = LabelReadingOrder.sort(withoutDishTotalColumn(lines))
         val normalized = ordered.map { normalize(it.text) }
         val offsets = mutableListOf<Int>()
         val text = buildString {
@@ -96,7 +101,7 @@ object NutritionLabelParser {
 
         // OCR can omit spaces or render the entire Cyrillic label with Latin lookalikes.
         val netRegex = Regex("(?:масса\\s*нетт[оo]|вес\\s*нетт[оo]|macca\\s*hetto|net\\s+(?:weight|wt)[.]?)\\s*[:—–-]?\\s*" +
-            "([0-9]+(?:[.,]\\s*[0-9]{1,3})?)\\s*(kg|кг|g|г)(?![a-zа-я])", RegexOption.IGNORE_CASE)
+            "(?:\\(\\s*1\\s*порц[.]?\\s*\\)\\s*[:—–-]?\\s*)?([0-9]+(?:[.,]\\s*[0-9]{1,3})?)\\s*(kg|кг|g|г)(?![a-zа-я])", RegexOption.IGNORE_CASE)
         val weights = netRegex.findAll(text).mapNotNull { match ->
             val grams = decimal(match.groupValues[1])?.multiply(if (match.groupValues[2] in listOf("kg", "кг")) BigDecimal(1000) else BigDecimal.ONE)
             grams?.takeIf { it > BigDecimal.ZERO && it <= BigDecimal(100_000) }?.let { evidence(match.range, it) }
@@ -158,7 +163,7 @@ object NutritionLabelParser {
             val candidates = mutableListOf<LabelValue>()
             for ((start, block) in blocks) {
                 val regex = Regex("(?:" + macro.getValue(key) + ")[\\s:—–-]*" + NUMBER +
-                    "\\s*(?:г|g)(?![a-zа-я])", RegexOption.IGNORE_CASE)
+                    "\\s*[гgr](?![a-zа-я])", RegexOption.IGNORE_CASE)
                 regex.findAll(block).forEach { match ->
                     decimal(match.groupValues[1])?.takeIf { it >= BigDecimal.ZERO && it <= BigDecimal(100) }?.let {
                         candidates += nutritionEvidence((start + match.range.first)..(start + match.range.last), it, start)
@@ -169,6 +174,21 @@ object NutritionLabelParser {
         }
         val energies = mutableListOf<LabelValue>()
         if (basis == LabelBasis.PER_100_G) for ((start, block) in blocks) {
+            // Tables print a standalone kcal unit to the left of its value.
+            // The separate whole-dish column was removed by geometry, never by its numbers.
+            Regex("(?m)^\\s*(?:ккал|kcal)\\s*[:—–-]?\\s*\\n\\s*" + NUMBER + "\\s*(?=\\n|$)", RegexOption.IGNORE_CASE)
+                .findAll(block).forEach { match ->
+                    decimal(match.groupValues[1])?.takeIf { it >= BigDecimal.ZERO && it <= BigDecimal(1000) }?.let {
+                        energies += nutritionEvidence((start + match.range.first)..(start + match.range.last), it, start)
+                    }
+                }
+            Regex("(?m)^\\s*(?:ккал|kcal)\\s*/\\s*(?:кдж|kj)\\s*[:—–-]?\\s*\\n\\s*" +
+                NUMBER + "\\s*/\\s*[0-9]+(?:[.,][0-9]{1,2})?\\s*(?=\\n|$)", RegexOption.IGNORE_CASE)
+                .findAll(block).forEach { match ->
+                    decimal(match.groupValues[1])?.takeIf { it >= BigDecimal.ZERO && it <= BigDecimal(1000) }?.let {
+                        energies += nutritionEvidence((start + match.range.first)..(start + match.range.last), it, start)
+                    }
+                }
             val energyLabel = Regex("энергетическ[а-я]+\\s+ценност[а-я]*(?:\\s*\\([^)]*\\))?|калорийност[а-я]*|energy|calories", RegexOption.IGNORE_CASE)
             energyLabel.findAll(block).forEach { label ->
                 val valueStart = label.range.last + 1
@@ -195,6 +215,20 @@ object NutritionLabelParser {
             nutrient("protein"), nutrient("fat"), nutrient("carbs"), basis)
     }
 
+    /** Keep the explicitly per-100-g table separate from a neighboring whole-dish callout. */
+    private fun withoutDishTotalColumn(lines: List<OcrLine>): List<OcrLine> {
+        val total = lines.firstOrNull { it.points.isNotEmpty() && it.confidence >= 0.8f &&
+            Regex("^\\s*вс[её]\\s*блюдо\\s*[:：]?\\s*$", RegexOption.IGNORE_CASE).containsMatchIn(it.text) } ?: return lines
+        val header = lines.filter { it.points.isNotEmpty() && per100.containsMatchIn(normalize(it.text)) &&
+            it.left < total.left && it.top <= total.bottom && it.bottom >= total.top - total.height * 4 }
+            .maxByOrNull { it.bottom } ?: return lines
+        val end = lines.filter { it.top > header.bottom &&
+            Regex("температур|дата\\s+изготов|хранени|срок\\s+годности", RegexOption.IGNORE_CASE).containsMatchIn(it.text) }
+            .minOfOrNull { it.top } ?: (header.bottom + header.height * 12)
+        return lines.filterNot { it.top >= minOf(header.top, total.top) && it.top < end &&
+            (it.left + it.right) / 2 >= total.left }
+    }
+
     private fun unique(values: List<LabelValue>): LabelValue? =
         values.takeIf { it.map(LabelValue::value).distinct().size == 1 }?.maxByOrNull { it.confidence }
 
@@ -213,10 +247,12 @@ object NutritionLabelParser {
     private fun productName(lines: List<OcrLine>, width: Int, height: Int): LabelValue? {
         if (lines.isEmpty()) return null
         // Prefer the consumer title: larger adjacent, left-aligned lines above the dense label text.
+        val bodyTop = lines.filter { Regex("состав[: ]|ingredients?[: ]|пищев|nutrition", RegexOption.IGNORE_CASE)
+            .containsMatchIn(normalize(it.text)) }.minOfOrNull { it.top } ?: Float.POSITIVE_INFINITY
         val candidates = lines.filter {
             val normalized = normalize(it.text)
-            it.confidence >= 0.8f && it.text.length in 3..140 && it.text.count(Char::isLetter) >= 3 &&
-                !Regex("[0-9]|вкусвилл|классика|состав|ingredients|нетто|weight|ценность|nutrition|изготовител|срок|курица$|говядина$|energy|protein|fat|carb|[.]ru|штрих|изделие|кулинарное", RegexOption.IGNORE_CASE).containsMatchIn(normalized) &&
+            it.top < bodyTop && it.confidence >= 0.8f && it.text.length in 3..140 && it.text.count(Char::isLetter) >= 3 &&
+                !Regex("[0-9]|готовая\\s+еда|вкусвилл|классика|состав|ingredients|нетто|weight|ценност|пищев|энергет|углевод|белки|жиры|ккал|кдж|крахмал|добавк|сорбат|мускат|консервант|рафинир|масло|сахар|соль|свекл|молот|высшего|пшенич|перец|nutrition|изготовител|срок|курица$|говядина$|energy|protein|fat|carb|[.]ru|штрих|издели[ея]|кулинарн", RegexOption.IGNORE_CASE).containsMatchIn(normalized) &&
                 (height == 0 || it.top < height * 0.65f) && (width == 0 || it.left < width * 0.6f)
         }
         val first = candidates.maxByOrNull { it.height } ?: return null

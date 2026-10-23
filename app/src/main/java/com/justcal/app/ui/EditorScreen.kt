@@ -170,6 +170,16 @@ fun EditorScreen(
                             onNext = { FoodField.entries.getOrNull(field.ordinal + 1)?.let { fieldFocus.getValue(it).requestFocus() } })
                     }
                     scan?.let { PackageRecognitionSummary(it) }
+                    state.recognition?.let { result ->
+                        Text(stringResource(R.string.ai_suggestions), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (result.conflicts.isNotEmpty()) Text(stringResource(R.string.ai_conflicts),
+                            color = MaterialTheme.colorScheme.error)
+                        var evidence by rememberSaveable { mutableStateOf(false) }
+                        TextButton(onClick = { evidence = !evidence }) { Text(stringResource(R.string.lab_raw_response)) }
+                        if (evidence) androidx.compose.foundation.text.selection.SelectionContainer {
+                            Text(result.evidence, style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
                     input(FoodField.NAME, Modifier.fillMaxWidth())
                     Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                         SectionTitle(stringResource(R.string.per_100g))

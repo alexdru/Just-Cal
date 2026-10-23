@@ -32,6 +32,9 @@ object CalMotion {
         return (slideInHorizontally(spatial<IntOffset>()) { sign * it / 5 } + fadeIn(effects())) togetherWith
             (slideOutHorizontally(spatial<IntOffset>()) { -sign * it / 12 } + fadeOut(effects()))
     }
+    // Move the fixed floating host as a layer; never resize the screen during navigation.
+    fun navigationEnter() = fadeIn(effects()) + slideInVertically(spatial<IntOffset>()) { it }
+    fun navigationExit() = fadeOut(effects()) + slideOutVertically(spatial<IntOffset>()) { it }
     fun enter() = fadeIn(effects()) + expandVertically(size())
     fun exit() = fadeOut(effects()) + shrinkVertically(size())
 }

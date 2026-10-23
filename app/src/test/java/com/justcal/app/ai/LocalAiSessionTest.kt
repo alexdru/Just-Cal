@@ -30,7 +30,7 @@ class LocalAiSessionTest {
             advanceTimeBy(150); runCurrent()
             assertEquals("Hello world", session.state.value.response)
             assertEquals(AiLabPhase.READY, session.state.value.phase)
-            assertEquals(AiBackend.CPU, session.state.value.backend)
+            assertEquals(AiBackend.AUTO, session.state.value.backend)
         }
         assertEquals(2, engine.runs)
         assertEquals(1, engine.loads)
@@ -135,6 +135,21 @@ class LocalAiSessionTest {
         session.backend(AiBackend.GPU)
         session.load(); advanceTimeBy(100); runCurrent()
         assertTrue(session.state.value.loaded)
+    }
+
+    @Test fun externalOcrComparisonRetainsEvidenceAndModelSwitchClearsStructuredOutput() = runTest {
+        val session = LocalAiSession(FakeEngine(), backgroundScope)
+        val other = model.copy(id = "other", name = "Other.litertlm")
+        session.refresh(listOf(model, other))
+        session.runExternal { AiExternalResult("visible label", "{\"energy\":100}", AiMetrics(AiBackend.CPU, 1, 2, null), "PP-OCRv5") }
+        runCurrent()
+        assertEquals("visible label", session.state.value.response)
+        assertEquals("{\"energy\":100}", session.state.value.structuredOutput)
+        session.select(other)
+        assertEquals("visible label", session.state.value.previousResponse)
+        assertEquals("PP-OCRv5", session.state.value.previousModelName)
+        assertNull(session.state.value.structuredOutput)
+        assertNull(session.state.value.metrics)
     }
 
     private class FakeEngine : LocalAiEngine {

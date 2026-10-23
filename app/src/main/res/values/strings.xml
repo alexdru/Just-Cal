@@ -59,16 +59,13 @@
     <string name="open_day">Open day</string>
     <string name="history_empty">Your history starts here</string>
     <string name="history_empty_hint">Logged days appear here. You can also choose a past date and add food.</string>
-    <string name="profile">Your profile</string>
     <string name="display_name">Name (optional)</string>
-    <string name="name_error">Use no more than 80 characters</string>
     <string name="nutrition_settings">Daily goal</string>
     <string name="appearance">Appearance</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
-    <string name="privacy_title">Only on this device</string>
-    <string name="privacy_description">Your profile, settings and diary stay locally. Just Cal works offline.</string>
+    <string name="ai_integration">AI Integration</string>
     <string name="macro_goals">Individual macro goals</string>
     <string name="goal_not_set">Not set</string>
     <string name="clear_macro_goal">Clear goal: %1$s</string>
@@ -95,8 +92,6 @@
     <string name="use_photo">Use photo</string>
     <string name="retake">Retake</string>
     <string name="choose_another">Choose another</string>
-    <string name="photo_ready">Photo ready</string>
-    <string name="photo_ready_message">Photo checked. Recognition is not available yet; nothing has been added to your diary.</string>
     <string name="done">Done</string>
     <string name="image_dimensions">%1$d × %2$d px</string>
     <string name="app_license" translatable="false">GPL-3.0-or-later</string>
@@ -130,7 +125,6 @@
     <string name="macro_detail">P %1$s g · F %2$s g · C %3$s g</string>
     <string name="review_package_guidance">Check that the full nutrition label is sharp, readable and free of glare.</string>
     <string name="review_meal_guidance">Check that the whole meal is visible and the photo is sharp.</string>
-    <string name="review_no_recognition">Photo review only. Recognition is not available yet; this will not log food.</string>
     <string name="capturing_photo">Taking photo…</string>
     <string name="expanded">Expanded</string>
     <string name="collapsed">Collapsed</string>

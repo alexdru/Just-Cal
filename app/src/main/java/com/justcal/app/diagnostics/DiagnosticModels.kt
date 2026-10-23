@@ -3,6 +3,24 @@ package com.justcal.app.diagnostics
 import kotlinx.serialization.Serializable
 import kotlin.math.ceil
 
+@Serializable data class DiagnosticAiAttempt(
+    val stage: String,
+    val artifactHash: String,
+    val revision: String? = null,
+    val runtimeVersion: String,
+    val profile: String,
+    val requestedBackend: String,
+    val actualBackend: String? = null,
+    val backendAttempts: List<String> = emptyList(),
+    val fallbackReason: String? = null,
+    val prompt: String? = null,
+    val rawOutput: String? = null,
+    val validationError: String? = null,
+    val initializationMs: Long? = null,
+    val inferenceMs: Long? = null,
+    val firstResponseMs: Long? = null,
+    val pssKiB: Int? = null,
+)
 @Serializable data class DiagnosticCorrection(val field: String, val category: String, val before: String? = null, val after: String? = null)
 @Serializable data class DiagnosticScan(
     val id: String,
@@ -41,10 +59,13 @@ import kotlin.math.ceil
     val parsedFields: Map<String, String> = emptyMap(),
     val corrections: List<DiagnosticCorrection> = emptyList(),
     val detailedConsent: Boolean = false,
+    val origin: String = "PACKAGE_SCAN",
+    val aiAttempts: List<DiagnosticAiAttempt> = emptyList(),
 ) {
     fun sanitized(includeRawText: Boolean = false): DiagnosticScan =
         if (includeRawText && detailedConsent) this else copy(
             productName = null, rawText = null, parsedFields = emptyMap(),
+            aiAttempts = aiAttempts.map { it.copy(prompt = null, rawOutput = null) },
             corrections = corrections.map { it.copy(before = null, after = null) },
         )
 }
