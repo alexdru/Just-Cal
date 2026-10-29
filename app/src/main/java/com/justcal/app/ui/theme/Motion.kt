@@ -12,7 +12,6 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 
 /** Product motion roles. Native animations also honor the platform duration scale. */
 object CalMotion {
-    const val navigationDurationMillis = 160 // Legacy Lab compatibility only.
     const val themeRevealMillis = 600
     const val fabExitMillis = 90
     const val choiceShapeMillis = 120

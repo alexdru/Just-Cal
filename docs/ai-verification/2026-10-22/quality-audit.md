@@ -1,5 +1,9 @@
 # AI quality and implementation audit — 2026-10-22–23
 
+Historical evidence. The package-gate decision below is superseded only for Gemma's
+narrow missing-macro consumer by the [October 28 gate](../2026-10-28/README.md).
+Paddle remains unadmitted; [current status](../../AI_REDESIGN_PLAN.md) tracks open gates.
+
 App: **0.17.1 (44)**. Device: OnePlus 7T HD1900, Android 11 / API 30, arm64. Runtime: **LiteRT-LM 0.18.1**. Existing installed, hash-verified models and local fixtures were reused; this audit did not download new weights. Images remain outside the repository/APK.
 
 This is a bounded regression sample, not a general accuracy or device-support claim. Runtime startup, a syntactically valid answer, safe validator refusal and correct task output are reported separately.
@@ -21,7 +25,7 @@ Budgets remain catalog-specific: Gemma context/output 4096/512, Paddle 4096/1024
 
 ## Meal: fresh seven-image run
 
-Evidence: [meal-name-gate.json](meal-name-gate.json), including exact prompt, runtime/task version, raw answers and measured timings. Sources and earlier measurements are retained in [LOCAL_AI_LAB.md](../../LOCAL_AI_LAB.md#measurements-on-2026-10-22). Fixtures: three foods, two non-foods, a generated blank image and a generated apple+banana collage. This does not cover arbitrary cooked or mixed meals.
+Evidence: [meal-name-gate.json](meal-name-gate.json), including exact prompt, runtime/task version, raw answers and measured timings. Fixture sources are retained under Reproduction below; runtime limits are in [LOCAL_AI_LAB.md](../../LOCAL_AI_LAB.md#runtime-evidence-and-limits). Fixtures: three foods, two non-foods, a generated blank image and a generated apple+banana collage. This does not cover arbitrary cooked or mixed meals.
 
 | Fixture | Model response | Accepted suggestion | Inference ms |
 | --- | --- | --- | ---: |
@@ -39,7 +43,7 @@ The conservative validator rejects names containing conjunctions as possible sep
 
 ## Packages: fresh 12-photo bundled OCR run
 
-Evidence: [package-quality-gate.json](package-quality-gate.json), with reference values, parsed values, actual editor prefills, basis and stage timings for each original photo. Ground truth and observed failure classes remain documented in [PACKAGE_OCR.md](../../PACKAGE_OCR.md#supplied-12-package-review--0160-2026-10-22).
+Evidence: [package-quality-gate.json](package-quality-gate.json), with reference values, parsed values, actual editor prefills, basis and stage timings for each original photo. Ground truth and observed failure classes remain documented in [package review JSON](../../ocr-verification/2026-10-22-package-review.json).
 
 - **42/54** visibly printed numeric fields were correctly extracted.
 - **37/54** were confidently prefilled in the editor; **0** incorrect nonempty numeric prefills in this sample.
@@ -86,6 +90,17 @@ Remaining gates from AI_REDESIGN_PLAN.md:
 - Full on-device HTTPS download/resume with 200/206/416/ETag changes, interruptions/process restart, ENOSPC and concurrent download/delete; real UIDT OS-stop behavior. Policy/state unit tests do not establish these outcomes. Earlier on-device DNS failure remains unresolved evidence, not a successful transfer.
 
 ## Reproduction
+
+Historical meal fixture sources (not bundled):
+[apple](https://commons.wikimedia.org/wiki/File:Red_Apple.jpg),
+[banana](https://commons.wikimedia.org/wiki/File:Banana-Single.jpg),
+[pizza](https://commons.wikimedia.org/wiki/File:Supreme_pizza.jpg),
+[dog](https://github.com/pytorch/hub/blob/master/images/dog.jpg) and
+[bus](https://github.com/ultralytics/yolov5/blob/master/data/images/bus.jpg).
+Store them as apple.jpg, banana.jpg, pizza.jpg, dog.jpg and bus.jpg in meal-fixtures.
+The test generates its blank image and apple+banana collage. These are the recorded
+fixture sources, not a claim of refreshed remote availability or broader accuracy.
+
 
 Use the Gradle Wrapper and the configured Android Studio JBR. Build/install the debug app and AndroidTest APK first. Keep each device run sequential and foreground; the tests restore their preference choices and delete only their own diary/photo fixtures.
 

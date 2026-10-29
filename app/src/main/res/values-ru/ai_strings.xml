@@ -33,11 +33,9 @@
     <string name="ai_profile_label">Текст этикеток</string>
     <string name="ai_profile_vision">Изображения и еда</string>
     <string name="ai_use_photo_manual">Вручную</string>
-    <string name="ai_runtime_error">Не удалось запустить модель. Выберите другую совместимую модель или введите данные вручную.</string>
     <string name="ai_suggestions">Подсказки AI · проверьте каждое поле. Съеденный вес укажите самостоятельно.</string>
     <string name="ai_conflicts">Данные OCR и модели расходятся. Спорные поля оставлены пустыми; сравните исходные данные.</string>
     <string name="ai_meal_prompt">Определи, показан ли на фото один продукт или блюдо. Верни только JSON ровно с ключами: isFood (boolean), singleDish (boolean), name (краткое название или null). Для непищевых объектов, неясных изображений или нескольких отдельных блюд используй false и name null. Не указывай вес и пищевую ценность.</string>
-    <string name="ai_meal_unavailable">Выберите проверенную модель в AI Моделях или перейдите к ручному вводу.</string>
     <string name="ai_label_prompt">OCR:</string>
     <string name="ai_auto_hint">Приложение проверяет возможности модели и выбирает поддерживаемое ускорение. Фактический backend указан в метриках.</string>
     <string name="ai_interrupted">Предыдущий нативный запуск был прерван. Обработка не возобновлялась. Проверьте модель в Playground перед следующим использованием.</string>
@@ -51,8 +49,6 @@
     <string name="ai_package_assistance_model">%1$s · только это фото</string>
     <string name="ai_package_assistance_checking">Проверяем выбранную модель…</string>
     <string name="ai_package_assistance_missing">Подключить помощь с БЖУ</string>
-    <string name="ai_package_assistance_scope">Если OCR оставит БЖУ пустыми, модель сможет дополнить их на 100 г. Встроенный OCR работает всегда.</string>
-    <string name="ai_package_assistance_off">Для этого фото используем только встроенный OCR. Общий выбор модели не меняется.</string>
     <string name="ai_package_model_processing">Дополняем БЖУ…</string>
     <string name="ai_package_with_model">OCR + %1$s</string>
 </resources>

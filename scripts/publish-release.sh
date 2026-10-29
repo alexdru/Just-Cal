@@ -20,6 +20,11 @@ sums="release-files/Just-Cal-$tag-SHA256SUMS.txt"
 [[ -s "$apk" && -s "$aab" && -s "$sums" ]] || fail "Verified release assets are missing."
 (cd release-files && shasum -a 256 -c "Just-Cal-$tag-SHA256SUMS.txt")
 
+notes="$(mktemp)"
+trap 'rm -f "$notes"' EXIT
+bash "$script_dir/create-release-notes.sh" "$tag" > "$notes"
+[[ -s "$notes" ]] || fail "Release notes are empty."
+
 remote_commit=""
 check_tag() {
     local direct="" peeled="" sha ref refs
@@ -52,7 +57,7 @@ fi
 check_tag required
 if [[ -z "$draft" ]]; then
     gh release create "$tag" --verify-tag --target "$commit" --draft \
-        --title "Just Cal $tag" --generate-notes "$apk" "$aab" "$sums"
+        --title "Just Cal $tag" --notes-file "$notes" "$apk" "$aab" "$sums"
 else
     require_draft
     names="$(gh release view "$tag" --json assets --jq '.assets[].name')"
@@ -77,7 +82,7 @@ asset_names="$(gh release view "$tag" --json assets --jq '.assets[].name' | sort
 expected_names="$(printf '%s\n' "Just-Cal-$tag.apk" "Just-Cal-$tag.aab" "Just-Cal-$tag-SHA256SUMS.txt" | sort)"
 [[ "$asset_names" == "$expected_names" ]] || fail "Draft assets differ from the three verified outputs."
 downloads="$(mktemp -d)"
-trap 'rm -rf "$downloads"' EXIT
+trap 'rm -rf "$downloads"; rm -f "$notes"' EXIT
 gh release download "$tag" --dir "$downloads" \
     --pattern "Just-Cal-$tag.apk" --pattern "Just-Cal-$tag.aab" --pattern "Just-Cal-$tag-SHA256SUMS.txt"
 for asset in "$apk" "$aab" "$sums"; do
@@ -85,5 +90,5 @@ for asset in "$apk" "$aab" "$sums"; do
         fail "Existing/uploaded bytes differ; do not overwrite them. Inspect the draft."
 done
 require_draft
-gh release edit "$tag" --draft=false --prerelease=false --latest
+gh release edit "$tag" --notes-file "$notes" --draft=false --prerelease=false --latest
 printf 'Published %s at %s\n' "$tag" "$commit"

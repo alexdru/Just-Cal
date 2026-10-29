@@ -46,15 +46,12 @@
     <string name="load_error">Не удалось загрузить дневник.</string>
     <string name="retry">Повторить</string>
     <string name="missing_entry">Эта запись больше не существует.</string>
-    <string name="local_note">Дневник хранится только на устройстве.</string>
     <string name="amount_helper">Рассчитаем пищевую ценность для этого веса.</string>
     <string name="saving">Сохранение…</string>
-    <string name="portion_detail">%1$s ккал · Б %2$s · Ж %3$s · У %4$s</string>
     <string name="home">Главная</string>
     <string name="history">Дневник</string>
     <string name="settings">Настройки</string>
     <string name="consumed_day">Съедено</string>
-    <string name="history_intro">История по дням. Откройте день, чтобы изменить записи о еде.</string>
     <string name="choose_day">Выбрать день</string>
     <string name="open_day">Открыть день</string>
     <string name="history_empty">Здесь начнётся ваша история</string>
@@ -108,9 +105,7 @@
     <string name="language_english">English</string>
     <string name="language_russian">Русский</string>
     <string name="nutrition_with_unit">%1$s %2$s</string>
-    <string name="review_package_ocr">Прочитаем этикетку на устройстве, затем вы сможете проверить и исправить пищевую ценность. Ничего не сохраняется автоматически.</string>
     <string name="ocr_processing">Читаем этикетку…</string>
-    <string name="ocr_failed">Не удалось прочитать этикетку. Повторите попытку, выберите более чёткое фото или введите значения вручную.</string>
     <string name="ocr_confirmation">Проверить значения</string>
     <string name="ocr_review_values">Сверьте все значения с этикеткой. Заполните пустые поля и измените съеденный вес, если съели не всю упаковку.</string>
     <string name="ocr_basis_unknown">Значения на 100 г не удалось определить однозначно. Введите их с этикетки.</string>

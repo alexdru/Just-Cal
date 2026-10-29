@@ -83,7 +83,7 @@ adb shell am instrument -w -r \
   com.justcal.app.debug.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
-The replay requires the reviewed reference at the location below and all native reports for the exact inbox. The fresh UI test needs the already installed pinned Gemma and current image probe, an unlocked phone and system Photo Picker; it temporarily creates two owned media copies of `1792612058338.jpg` and restores its own changes. Native photo batches do not mutate selections or diary data.
+The replay requires the reviewed reference at the location below and all native reports for the exact inbox. The fresh UI test needs the already installed pinned Gemma (a prior image probe is not required), an unlocked phone and system Photo Picker; it temporarily creates two owned media copies of `1792612058338.jpg` and restores its own changes. Native photo batches do not mutate selections or diary data.
 
 The following commands reproduce the original full-frame/crop-v1 run layout; current crop-v2 runs should use the new run ID to avoid overwriting historical evidence.
 

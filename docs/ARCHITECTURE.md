@@ -1,103 +1,150 @@
 # Just Cal architecture
 
-## Application build identity
+## Boundaries
 
-The root `version.properties` is the explicit application version source for Gradle and release validation; normal builds require no Git metadata. Settings reads the generated application BuildConfig version. Release signing is supplied through environment variables and kept outside application code. Procedures are in [RELEASING.md](RELEASING.md).
+One Android app module, minSdk 30, compile/target 37, arm64-v8a. Kotlin/Compose
+screen state uses Hilt ViewModels, Coroutines and lifecycle-aware StateFlow.
+Room stays behind DiaryRepository; deterministic validation/calculation lives in
+domain. Native inference types stay inside adapters. No backend or cloud inference.
 
-Just Cal is a single-module, offline Android application. Compose renders lifecycle-aware StateFlow screen state owned by Hilt ViewModels. Room implementation details stay behind DiaryRepository; deterministic nutrition calculation and input validation belong to domain code.
+| Area | Owners and contract |
+| --- | --- |
+| UI/navigation | ui, Navigation 3 keys/stacks, entry-scoped ViewModels and SavedStateHandle drafts |
+| Diary | data/DiaryDatabase, RoomDiaryRepository and domain/DiaryRepository |
+| Exact nutrition | domain/FoodInput and Nutrition; integer hundredths and BigDecimal |
+| Local images | camera/ImagePreprocessor, CameraCapture and serializable ScanRequest/PreparedImage references |
+| OCR | ocr/PackageOcrEngine, PaddlePackageOcrEngine, NutritionLabelParser and PackageScanPrefill |
+| Optional AI | ai/LocalModelStore, ModelDownloadRepository, LocalAiSession and FoodRecognitionRouter |
+| Diagnostics | separate private Room database, OcrDiagnosticSession and explicit report exporter |
+| Updates | AppUpdateRepository, GitHubUpdateRepository and activity-scoped UpdateViewModel |
 
-## Application updates
+## Diary and backup
 
-The activity-scoped UpdateViewModel owns automatic/manual checking and the download lifecycle, independently of diary and OCR ViewModels. AppUpdateRepository isolates DataStore, GitHub HTTPS requests, bounded private-file downloads and Android archive verification. GitHubRelease accepts only the exact production APK asset and SHA-256 digest from the official stable release endpoint. The root defers automatic prompts during editors, camera and modal food acquisition; Settings can explicitly reopen an update. See [APP_UPDATES.md](APP_UPDATES.md).
+Room schema v2 stores original per-100-g values and consumed grams in integer
+hundredths, recorded local epoch day, timestamp, source and a portable UUID.
+The 1→2 migration assigns UUIDs without replacing existing entries/IDs.
+Dates do not shift with time zones; Today refreshes on resume and across midnight.
+Portions/totals are exact derived values, rounded for display; no persisted total cache.
 
-## Design system
+Editor restores user edits before OCR/recognition prefills. FoodValidator gates Save;
+busy/completion guards prevent duplicates. Date edits save with other changes on
+the same ID. Row date changes use a single day-only UPDATE. Duplication transactionally
+copies persisted data with a new ID/UUID/timestamp, preserving source and unsaved
+editor work. Calendar milliseconds use UTC; chosen dates remain local calendar days.
 
-[DESIGN.md](../DESIGN.md) is the approved consumer visual source of truth. `ui/theme/Theme.kt` owns branded/dynamic palettes and shared spacing/layout/shapes; `Typography.kt` supplies a single OFL Roboto Flex variable font for Latin/Cyrillic; `Motion.kt` owns reusable MotionScheme spatial/effects roles. `ThemeAnimation.kt` commits ColorScheme once beneath a temporary old-frame radial reveal. The root records its composed output into a remembered GraphicsLayer. A committed palette change captures that layer with toImageBitmap at native resolution; replay draws it at (0,0) without resizing or filtering. This avoids software View.draw and preserves text/line detail. Keep one temporary frame within 24 MiB and release its composition reference after the 600 ms reveal; failed capture or larger windows use a surface fade. Cancellation propagates instead of committing an obsolete capture. This uses the existing Compose graphics API on Android 11+ ([official capture pattern](https://developer.android.com/develop/ui/compose/graphics/draw/modifiers#composable-to-bitmap)). Brightness and palette share a distinct selection identity and reveal controller. ThemeRevealControls records only the small Appearance panel into native GraphicsLayers for retained palettes, always using the latest draft selection. The root clips these layers outside the exact global reveal circle and inside a rectangular replay area bounded by the scroll viewport. An opaque old-palette parent surface covers the panel replay boundary, with a 2 dp gutter; only the native panel draws its rounded contour. Complementary antialiased rounded cutouts are avoided because they introduce a temporary outline. The panel never receives a separate early palette change. Color-coverage paths retain interrupted reveals, coalesce identical palettes and omit empty regions. SettingsChoiceMotion shares per-option interaction/roundness state between real controls and retained palette copies. Only the interactive owner drives the 120 ms CalMotion.choiceShape transition; checked-or-pressed is one target, so press-to-selection handoff does not restart it. Before theme capture, the root awaits active control morphs and their final rendered frame; this keeps GPU readback out of the in-flight shape animation. Controls remove this await callback on disposal. A plain Shape adapter interpolates the native connected/capsule outlines and bypasses ToggleButton's separate shape spring. Snapshot copies are hidden from semantics, cannot focus or write preferences, and sit below real hit targets; no screen, Navigation entry or ViewModel is duplicated. Layers are released when their palette leaves the transition or the panel is disposed. Controls only record the reveal origin on committed selection; there is no pointer-down capture or prepared bitmap. Rapid selections replace the running transition from its currently rendered composite; disabled animations allocate no frame. CalSnackbarHost customizes native Material3 snackbar visuals while retaining its MotionScheme transitions, queue and accessibility behavior. Drawing observes progress without per-frame color recomposition. The root observes a distinct loading/appearance/palette projection, so saving/profile emissions do not reconstruct navigation entries. `ExpressiveComponents.kt` isolates native expressive buttons, experimental LoadingIndicator and formatted-value transitions. Interactive Material3 ListItems use connected tonal groups, inner dividers, leading icon tiles and keyed placement animation; Settings shares these group tokens. Material3 1.5.0-beta01 remains pinned over the stable Compose BOM. AI Models and AI Playground use the same current typography, semantic groups and motion as other Settings tools.
+[Backup format 1](DATA_BACKUP.md) preserves portable identity. Full validation and
+preview precede transactional merge; conflicts leave existing data untouched.
+Explicit replacement fsyncs an atomic private recovery snapshot before deletion.
+Models, diagnostics, photographs and settings are excluded. No destructive migration.
 
-## Navigation and the global action
+## Navigation, design and settings
 
-Home, Diary and Settings each have a saved Navigation 3 back stack, entry-scoped ViewModels and saveable UI state. A root HorizontalPager renders these retained stacks, warming all three small root trees after splash exits to avoid composing the destination during the first tap/swipe. Pager saveable state and persistent NavEntry decorators retain inactive scroll/disclosure state and ViewModels. Taps and swipes share a critically damped tab spring and a continuous floating indicator. Only root destinations allow paging, with IME/launcher closed. Inactive pages are capped at STARTED, hidden from accessibility and have disabled child NavigationEvent dispatchers. Nested destinations retain their gestures and Back; child push/pop and predictive Back share spatial geometry, with scene-depth direction preserved during cancellation. The secondary-root handler is absent on child routes. Back at a secondary root returns to Home.
+Home, Diary and Settings retain independent Navigation 3 stacks, ViewModels and scroll
+state in one root HorizontalPager. Root taps/swipes share pager state. Inactive pages
+are capped at STARTED, hidden from accessibility and cannot intercept Back. Children
+retain their gestures/predictive Back. History/calendar converge on Day Detail.
+The launcher captures today or the viewed day and retains it through acquisition/editor.
 
-Diary history rows and the direct “Choose a day” calendar both open the same Day Detail destination. That destination uses the selected local calendar date and the same diary presentation and repository as Home. Day Detail is retained when switching tabs.
+[DESIGN.md](../DESIGN.md) owns visual tokens and behavior. Theme.kt supplies branded/
+dynamic semantic palettes, spacing, widths and shapes; Typography.kt owns Roboto Flex;
+CalMotion supplies shared spatial/effects roles. Expressive components and GroupedList
+supply connected rows with surface gaps. Material3 is pinned independently of the BOM
+in [libs.versions.toml](../gradle/libs.versions.toml). The Wrapper is pinned to Gradle
+9.8.0 with JetBrains daemon JVM 25 criteria; application Java/Kotlin target remains 17.
 
-The separate floating FAB is an action, not a fourth destination. It is visible on Home, Diary root and Day Detail, and hidden in Settings and the food editor. It opens a modal Add Food launcher with Scan package, Scan meal and Add manually. The launcher freezes today's date from Home/Diary root or the viewed date from Day Detail. Manual entry still opens the existing FoodEditor. Scans show a compact camera/photo source choice in the same sheet, then enter the shared image pipeline.
+Floating navigation is centered/content-sized with a separate FAB above/right.
+The transparent host measures content clearance, retaining the FAB row in Settings.
+The pill stays behind IME. Pinned editor/review/report actions use transparent hosts;
+scroll viewports extend behind controls/bars and reserve clearance inside content.
 
-The navigation pill is content-sized and horizontally centered on every top-level screen and Day Detail. The global FAB sits separately above/right; its row remains reserved in Settings so hiding it does not change the pill's geometry. The outer host is transparent, with no full-width bottom surface. The pill's quiet shadow is drawn with Compose dropShadow rather than platform Z elevation, so native theme-frame capture retains it throughout the radial reveal. The shared overlay measures the control host, including navigation-bar and horizontal safe insets, excluding its outer IME padding. Screens reserve that height plus a content gap so the last item remains reachable. The overlay rises above IME without double-counting its height; tab selection clears focus and hides the keyboard. Inactive tabs are transparent with outlined icons; the selected tab uses a filled icon, a subtle compact capsule and animated semantic icon/label colors. Telegram is only a reference for geometry and interaction; no Telegram source or assets are included.
+Brightness and palette are independent DataStore choices. Settings serializes
+key-specific writes, applies selections immediately and debounces valid goal edits
+550 ms. Invalid drafts survive tabs/recreation. Optional macro clearing removes only
+its key. Hidden profile-name storage is retained. No global Settings Save.
+Language uses AppCompat application locales, AndroidX storage on API 30–32 and platform
+storage on API 33+, with AGP-filtered EN/RU locale config and locale-aware formatting.
 
-Pinned food-editor actions (Add to diary / Save changes) use a transparent host above the navigation bar or keyboard. Scroll content extends behind the button, with end padding based on the measured host height. Focus scrolling accounts for that overlay so the active field remains above the button when the keyboard opens. The editor is bounded to the 600 dp reading width, adapts nutrition inputs between one/two columns according to width and font scale, and explicitly advances IME focus in FoodField order. Failed submission focuses the first invalid field with localized error semantics. If IME leaves less than 280 dp height, the editor temporarily hides its app bar and action; Done/Back restores them. Drafts, validation, calculation and repository transactions are unchanged.
+MainActivity loads preferences behind the native SplashScreen. Locale/uiMode changes
+update the existing composition. ThemeAnimation captures one native-resolution old
+GraphicsLayer frame (≤24 MiB) after control morphs settle, commits the palette once and
+replays a 600 ms radial reveal. Appearance draw copies share current selection/motion
+but no semantics or writes. Rapid changes replace the visible composite; disabled
+animations skip capture and oversized/failed captures use a fade. No per-frame palette
+recomposition. Portrait is requested; large-screen Android can override it.
 
-## Local image acquisition
+## Image and recognition lifecycle
 
-Both PACKAGE and MEAL use a serializable ScanRequest containing mode and target epoch day. ImageAcquisition and PhotoReview are typed Navigation 3 keys in the existing top-level stack. Acquisition is replaced by review; retake/reselect replaces review with acquisition using the same request and original source. Back/cancel returns to the originating diary screen without writing an entry. Launcher choice, request and review reference survive Activity recreation; Navigation 3 saves the keys for process restoration.
+ScanRequest retains mode/date. PreparedImage carries private URI, source, dimensions
+and MIME, without Bitmap/JNI state. CameraX owns resumed-entry use cases, stable rear
+physical-camera selection, a shared 4:3 preview/capture viewport, rotation and AF/AE.
+Photo Picker needs no storage permission; CAMERA is requested only for taking a photo.
 
-CameraCapture owns CameraX Preview, ImageCapture and the stable Compose CameraXViewfinder. Preview and capture share a 4:3 ResolutionSelector and a UseCaseGroup/ViewPort crop; the fitted rectangular frame shows the same field of view saved in the photograph. Flash and Photo Picker are bottom controls beside the shutter. Flash reflects hardware capability and is applied to ImageCapture, with entry-local saveable state. It binds only while the navigation entry is resumed, unbinds its own use cases on pause/disposal, and disables the orientation listener with them. Still capture uses the rear camera and private temporary files. The orientation listener updates ImageCapture target rotation, including reverse orientations. CameraX objects never enter saved state or ViewModels. Tap-to-focus maps local viewfinder coordinates through MutableCoordinateTransformer into SurfaceOrientedMeteringPointFactory; CameraControl applies AF/AE with five-second auto-cancel back to continuous AF. Focus callbacks are guarded by the bound camera and request generation, and cancelled on disposal. A short-lived indicator distinguishes pending, acquired and unconfirmed results, with an accessibility center-focus action. The measured control group is centered in the whole area below the frame, with aligned button centers and no visible captions. Accessibility names remain localized. MainCameraSelector pins the physical sensor for both use cases with CameraSelector.setPhysicalCameraId; selection matches logical-default sensor area/focal length, with largest-sensor fallback when default area is unavailable. Missing physical metadata/configuration fails explicitly instead of silently enabling automatic lens switching. A single-camera device uses its default rear sensor.
+ImagePreprocessor privately snapshots external URIs, validates input ≤64 MiB and
+decodes EXIF-aware upright sRGB software pixels off-main, bounded to 12 MP/4096 px.
+Review uses a smaller preview budget. Acquisition transfers ownership to review;
+exit/replacement cancels and joins work before releasing images. Interrupted/missing
+cache files have retake/reselect recovery; orphan files expire after 24 hours.
+Original gallery files are never changed.
 
-ImageSourceScreen registers Activity Result RequestPermission and PickVisualMedia(ImageOnly). CAMERA is requested only on Take photo. Denial leaves photo selection available; rationale/retry and an explicit app-settings action handle repeated denial. Permission is checked again on resume and before camera operations. No storage/media permissions, FileProvider, external camera intent, custom gallery or network client are used. AndroidX falls back to the platform document picker when Photo Picker is unavailable. Production picker cancellation closes the acquisition route directly, while cancellation from the camera leaves the camera active. The picker owns its selection interaction; there is no normal choose/cancel placeholder page. Error and permission recovery pages remain available. Local AI Lab retains its existing cancellation behavior.
+FoodRecognitionRouter always runs bundled PP-OCRv5 for packages. Deterministic
+parsing retains raw evidence, basis, independent mass and null uncertainty. OCR net
+mass can initialize editable amount; manual entries start empty with one-shot name
+focus. See [PACKAGE_OCR.md](PACKAGE_OCR.md) for the native/preprocessing contract.
 
-ImagePreprocessor is the Android image boundary. Provider content URIs are streamed into a private cache snapshot, never resolved into a real path. Camera output is already private and is adopted directly. PreparedImage carries the owned URI string, source, scan request, upright width/height and actual MIME type. No Bitmap, CameraX object or AI-runtime type is stored in a navigation key or ViewModel.
+Package model readiness, Models selection and production use the same
+ModelDescriptor.supportsRecognition checks: exact hash/runtime/task admission plus
+container/context/image-backend compatibility. A prior image probe is optional runtime
+evidence; a fresh admitted installation can be selected before its first scan.
+Per-photo assistance state survives review recreation/Models navigation but never
+changes the global selection. Opt-out bypasses optional model lookup/load/inference.
 
-Preparation runs on Dispatchers.IO. ImageDecoder validates actual image pixels, applies EXIF rotation/reflection, and decodes into sRGB software pixels. It limits input to 64 MiB and decode size to 12 million pixels / 4096 px longest edge, preserving aspect ratio without upscaling. These are generic resource limits, not a future model's input resolution. Smaller files retain their original encoded bytes (including EXIF); oversized images are saved upright as JPEG quality 95 or lossless PNG when alpha must be preserved, and the original temporary copy is removed. JPEG, PNG, WebP, HEIF/HEIC and AVIF are accepted when supported by the device decoder.
+Gemma only fills blank P/F/C on the same explicit 100-g basis from nutrition-crop-v2.
+It preserves energy/name/mass/nonempty OCR fields, enforces individual/combined macro
+bounds and retains raw evidence. The separate transcription consumer preserves
+conflicts for review and separate VLM mass, but Paddle has no production admission.
+Optional-model failure/deadline returns OCR after cleanup; caller cancellation propagates.
+Meal support validates isFood/singleDish/name only; refusal retains bounded diagnostic
+evidence and opens no empty successful editor. Numerical meal estimates and consumed
+mass from photos are disabled. Meal names retain MANUAL source, preserving backup schema.
+Only explicit editor Save writes food.
 
-Photo Review decodes the prepared URI with a separate display budget of 2 million pixels / 1920 px. The Bitmap lives only in composition and is recycled on disposal. Review retains stable portrait image/action halves within the reading bound; no landscape-specific layout remains. Package Use photo validates the image and starts offline OCR, with loading, retry and manual fallback. The resulting bounded text/parsed draft replaces review with the existing FoodEditor, preserving the request's date. Every field remains editable and Add to diary is explicit. Room source is PACKAGE_SCAN; busy/completed guards prevent repeated submissions. Meal Use photo uses the separately admitted name-only router or offers Models/manual recovery. It never estimates consumed weight or exact nutrition. Review never invokes the Playground session.
+## Models, runtime and evidence
 
-## Offline package OCR
+The bundled catalog pins source revision, bytes/hash, license and task admissions.
+SAF import and explicit HTTPS transfers stream into private noBackupFilesDir staging
+and atomically install validated immutable UUID directories. Legacy metadata remains
+readable/lazily validated. No automatic download, selection or inference.
+Range/ETag checkpoints, pause/cancel and process restart are separate from runtime state;
+API 34+ uses UIDT JobService, API 30–33 a non-sticky dataSync service.
+Full network/OS transfer validation remains open; see [AI closeout](AI_REDESIGN_PLAN.md).
 
-The `ocr` package exposes PackageOcrEngine with application-owned lines, confidence, quadrilateral points and measured timings. PaddlePackageOcrEngine is the ONNX Runtime CPU/OpenCV adapter. Bundled official PP-OCRv5 mobile detection and eslav mobile recognition exports require neither network nor Play Services. Native initialization, full-budget upright decoding, DB contours, perspective crops, CTC decoding and cleanup run on Dispatchers.Default under a singleton permit. Cancellation waits for an in-flight synchronous native call before closing resources. Detection downsamples to 1600 px; recognition crops retain the full decoded image's small-text information. Sideways labels are reoriented, and inverted-line recognition restores reading order. Native objects and Bitmaps never enter ViewModels/navigation state.
+LiteRT-LM 0.18.1 ModelInfo is inspected/closed off-main before Engine creation.
+BackendSelector intersects actual TEXT/VISION capabilities. One process-wide lease
+covers production, Playground and removal. Unknown artifacts get a fresh Engine per
+independent run. At most one allowed recoverable init fallback is attempted; malformed
+artifacts, memory failure and cancellation never retry on another backend.
+Cache identity includes artifact/runtime/backend/device/profile. Cancellation waits for
+native terminal completion before disposal; an interrupted-operation marker prevents
+silent assumptions after process death. A deadline cannot safely free stuck JNI.
 
-Recognition first probes bounded line prefixes, then fully recognizes title, weight and nutrition regions. Prefixes never become nutrition evidence. Incomplete, uncertain or unsupported-basis extraction falls back to all remaining full lines without repeating completed regions. Ambiguous kcal units may trigger one tighter pixel crop; an observed recovery is accepted only if every numerical token is unchanged, and original text remains in the review snapshot. Four CPU threads are device-benchmarked; sessions still close after each scan rather than retaining native memory. Optional per-region profiling and session reuse belong to the adapter's opt-in benchmark configuration.
+Playground retains LocalAiLab and an independent session without DiaryRepository or
+editor navigation. [LOCAL_AI_LAB.md](LOCAL_AI_LAB.md) describes current tasks and evidence.
+Success/valid JSON/smoke and task quality are distinct; admission is reviewed and versioned.
 
-NutritionLabelParser is deterministic Kotlin. Explicit nutrition headings/units establish per-100-g context; serving/ambiguous tables cannot fill per-100-g fields. Net grams remain independent of nutrients and may initialize the editable consumed amount. Comma/dot decimals and kJ conversion use BigDecimal. Missing, conflicting and low-confidence values stay empty; raw OCR evidence remains reviewable. A confidence score is model confidence, not factual validation. FoodValidator and NutritionCalculator retain the existing exact diary arithmetic.
+[Diagnostics](OCR_DIAGNOSTICS.md) retain bounded local OCR/AI evidence in a separate
+backup-excluded database. Optional JSON fields preserve older rows; failures never
+block diary Save. Changed editor values are corrections, unchanged values are not
+ground truth. Consumer reports include retained OCR details; sanitized AI exports omit
+prompts/raw responses. Photos require explicit export selection.
 
-New manual drafts have an empty amount, require a positive amount, and request empty-name focus/keyboard once after RESUMED. A SavedStateHandle event plus saveable composition state prevents repeated requests; existing entries preserve their stored amount without requesting focus. Model provenance, preprocessing, licensing, packaging and measured coverage are in [PACKAGE_OCR.md](PACKAGE_OCR.md).
+## Build and direct updates
 
-Ownership transfers from the acquisition ViewModel to review on success. Cancelled/failed work removes partial files, including results cancelled during dispatcher handoff. Review exit/replacement releases its private image explicitly, with entry disposal and ViewModel cleanup as safeguards. Camera callbacks after leaving the screen discard their output. Files left by process termination expire after 24 hours and are pruned when the image component starts; the OS may evict cache earlier. A restored missing image shows a recoverable error with retake/reselect. An interrupted picker import/capture is restarted by the user; original gallery images are never modified or deleted.
+version.properties is the editable version source, independent of Git.
+[RELEASING.md](RELEASING.md) owns trusted-source/signing/tag/checksum/immutable-publication
+procedures and current-release notes. Debug and ocrCheck use distinct app IDs and debug
+signing; release requires the persistent key.
 
-## AI Models, Playground and production routing
-
-AI Models is a Settings child destination. A bundled pinned catalog describes separately downloaded weights; app startup and recognition never contact it over the network. SAF imports and explicit HTTPS downloads commit immutable private UUID directories under noBackupFilesDir after length/hash/container checks. Legacy name-only metadata is preserved and validated lazily. Downloads keep independent resumable checkpoints; API 34+ uses a UIDT JobService and API 30–33 a non-sticky foreground service. Task selections use additive keys in the existing GoalPreferences DataStore and are not included in diary backups. Removing a model clears only its selections and serializes against the runtime lease.
-
-AI Playground retains the LocalAiLab route identifier and an independent session with no DiaryRepository. It uses the shared bounded camera/picker image flow, current typography/CalMotion/expressive components, package OCR/transcription, meal/custom prompts, strict experimental nutrition parsing, raw answers, previous-answer comparison and local diagnostic evidence. Files are managed in Models. Exiting cancels/joins native work before releasing images.
-
-LiteRtLocalAiEngine pins SDK 0.18.1. LiteRtModelInspector hashes a file and closes ModelInfo before loading an Engine, exposing only app-owned LLM/vision/context/runtime/TEXT/VISION capabilities. Auto selects a permitted backend pair; unknown/custom artifacts use a new Engine for each independent run. One process-wide lease covers production, Playground and model deletion. A single allowed recoverable initialization fallback is explicit; cancellation, malformed files and memory failures never retry on another backend. Per-artifact/SDK/device backend evidence, config-specific private caches and an interrupted-native-operation marker prevent silent assumptions. JNI initialization/inference/close are off-main; deadlines never permit premature native resource disposal.
-
-FoodRecognitionRouter keeps PP-OCRv5 as the package baseline. Models, Photo Review and production routing share ModelDescriptor.supportsRecognition: exact artifact/task admission plus current runtime and image-backend/container compatibility. A prior device image probe is not a prerequisite; its optional record is evidence produced by successful image inference on the user's first scan. Photo Review observes package-model readiness through these same checks and retains a per-scan assistance switch in SavedStateHandle. Opting out returns OCR before optional model lookup/load/inference; it does not mutate DataStore task selection. An explicit model-stage callback updates review feedback only after a reliable crop is found. The primary Use photo action stays in a transparent pinned host; its scroll viewport reserves footer space inside content. Catalog task admission matches the exact artifact hash, runtime and versioned task contract, with reviewed evidence; container compatibility or an image probe alone does not grant admission. The explicitly selected Gemma package task fills only blank protein/fat/carbohydrate fields from a reliable nutrition-crop-v2, requiring both OCR and model basis to be 100 g. PackageMacroAssistance uses strict JSON/BigDecimal validation, individual and combined macro bounds; it preserves OCR calories, name, mass and every nonempty field. Model calories/name/mass are outside this admission even if syntactically valid. Its raw response remains untrusted review evidence. The separate label-transcription-v2 path retains conflict review but Paddle is not admitted after a wrong nutrient on the 27-photo batch. A VLM deadline/failure preserves OCR after native cleanup; caller cancellation still propagates. Coordinates retain explicit OCR rotation. No VLM confidence is manufactured; no automatic selection/download or diary write occurs.
-
-Meal routing accepts only a separately admitted name-only model and a strict isFood/singleDish/name result. Refused/invalid answers retain bounded raw output and a validation category in detailed local diagnostics, but produce no editor prefill. No numerical meal nutrition or photo-derived mass is enabled. Nullable RecognitionDraft navigation/editor payloads preserve date and user edits; FoodValidator and exact NutritionCalculator arithmetic still gate explicit Save. Name assistance retains the existing MANUAL diary source until a separately justified source/schema change, preserving the backup format and Room schema. Playground has no production editor transition.
-
-Measured initialization/inference/first-response and native benchmark values remain distinct. DiagnosticScan adds optional AI attempt evidence inside its existing JSON payload, so old diagnostic rows need no Room migration. The additive nullable validation-error field remains compatible with old diagnostic JSON. Prompt/raw-response export follows sanitization; photos remain an explicit export choice. EXPERIMENT, partial, all-null, repeated, failed and cancelled output is not certified nutrition recognition. See [LOCAL_AI_LAB.md](LOCAL_AI_LAB.md) for exact hashes, device results and limitations.
-
-## Diary and calculations
-
-Room persists individual food entries: original nutrition per 100 g and consumed weight in integer hundredths, source, recorded local epoch day and creation timestamp. Recorded days do not change when the device time zone changes. Home refreshes the active local date on resume and across midnight.
-
-Portions and daily totals are derived with exact BigDecimal arithmetic, rounded only for presentation. There is no persisted Day entity or mutable daily-total cache. Adding, editing, duplicating or moving an entry updates Room flows and the affected summaries.
-
-Food editors and long-pressed food rows on Home / Day Detail share a native Material3 Expressive `DropdownMenuPopup` / `DropdownMenuGroup`, with segmented item shapes and official Material Symbols Rounded action icons. Native ListItem long-click semantics expose the same actions to accessibility services. DiaryEntryActionsViewModel retains the selected ID/action/day through SavedStateHandle, guards in-flight operations and supplies the shared success feedback. From a diary row, Change date commits after calendar confirmation through a single SQL UPDATE of dayEpoch only; Duplicate and Delete use the existing repository operations. These actions keep the originating Navigation 3 stack and never open an editor or OCR flow. Failures retain the target for retry or cancellation. In the editor, Duplicate, Change date and Delete remain available in the top action menu. Change date edits a SavedStateHandle-backed epoch-day draft; explicit Save commits the date together with unsaved food changes on the same Room ID, retaining the portable UUID, timestamp and source. Cancelled calendars never mutate the draft or database. Duplicate copies the persisted entry, leaving unsaved editor changes intact. Its Room transaction reads and inserts an independent row with a new local ID, portable UUID and creation timestamp, retaining the food's source provenance. It never invokes OCR or diagnostic correction tracking. Busy/completion guards and a per-dialog confirmation guard prevent accidental repeated submissions. Calendar milliseconds are converted through UTC exclusively; today's default is captured from the local calendar when the dialog opens. Native Material3 calendars allow past and future dates (years 1–9999). Success uses the shared localized snackbar/haptic feedback; duplication retains the editor and moving returns to its retained originating stack.
-
-## Diary backup and local OCR diagnostics
-
-DiaryBackupRepository snapshots and imports Room records through the versioned serializer and DiaryImportValidator. A unique portable UUID is independent of the local Room primary key; the additive 1→2 migration preserves existing records. Preview precedes transactional merge; conflicts never overwrite data. Explicit replacement writes a durable recovery snapshot before the transaction deletes records. SAF owns document destinations; no storage permissions or network services are added. See [DATA_BACKUP.md](DATA_BACKUP.md).
-
-OCR diagnostics are isolated from diary persistence in a separate private Room database. Per-attempt instrumentation uses existing native stage timings and monotonic parsing/total measurements. Diagnostic write failures do not fail diary saves or OCR. Detailed local content is captured by default for new scans; historical basic records are retained without reconstructing missing details. Original photos and private paths are not captured. Report previews include retained OCR text, product/brand, nutrition and corrections by default, without a separate opt-in. Historical missing details remain missing; photos require explicit selection, and private paths/identifiers stay excluded. Correction tracking links explicit editor changes to the original scan; portions remain user adjustments and unchanged values are not ground truth. AI Playground attempts share the diagnostic payload/export path while retaining their experimental origin and raw-output privacy rules. Structured ZIP reports are explicitly saved through SAF or shared through a scoped FileProvider URI. See [OCR_DIAGNOSTICS.md](OCR_DIAGNOSTICS.md).
-
-## Settings and local profile
-
-GoalPreferences owns the existing DataStore preferences file. It atomically saves optional local display name, calorie target, independently optional protein/fat/carbohydrate targets, brightness (System/Light/Dark) and color style (Just Cal/Material You). Existing appearance and nutrition keys are retained; the additive color_style key defaults to Just Cal when absent or unrecognized. Profile Name is hidden in Settings; its AppSettings/SettingsDraft/display_name storage and unrelated-key writes are retained. Additive ai_package_model/ai_meal_model keys hold explicit task choices. There are no accounts, authentication or cloud profiles.
-
-The calorie target is a required positive whole number, initially an editable 2000 kcal placeholder. Macro targets are independently nullable positive values in integer hundredths of grams. A blank field removes that target; zero is rejected, never used as an absence sentinel. Existing preferences without macro keys mean no macro targets.
-
-Home, Diary and Day Detail observe the same saved settings reactively. Configured macros display consumed / target; unconfigured macros display consumed grams alone. Settings collects edit state on Main.immediate so hardware-key text/cursor echoes arrive within the same frame. Selections apply optimistically and enqueue immediate key-specific writes. A single SettingsViewModel channel serializes preference writes so stale whole-state snapshots cannot overwrite unrelated keys or newer choices. Valid text edits debounce 550 ms and persist only independently validated edited fields; invalid/incomplete drafts and dirty field identities remain in SavedStateHandle across tab switches/recreation. Optional goal clearing removes only its key. The root Settings ViewModel continues saving when another tab is visible; valid pending edits flush on tab/child navigation and Activity stop. Acknowledgements preserve typed whitespace/decimal separators; only genuinely changed external values update untouched drafts. Success is silent; errors and retry remain actionable without a global Save.
-
-MainActivity installs core SplashScreen before super.onCreate and gates first draw on its lifecycle-owned SettingsViewModel load, independently of Compose draw/effects. The same ViewModel is consumed by the root composition. Native exit respects disabled animators and adds no startup delay. MainActivity requests portrait; large-screen Android 16+ may override this request. It handles uiMode configuration changes so System brightness updates the existing Compose tree and reveal instead of recreating it for a theme switch. It also handles locale/layoutDirection/screenLayout changes (modern locale updates include mask 0x2104) so Android-owned application locales update Compose resources in place without another splash or a duplicate preference store.
-
-Just Cal is the default green leaf palette, with complete semantic Material color roles in light and dark. Material You opts into Android dynamic colors on API 31+; its choice is disabled below that, with Just Cal fallback for existing stored selections. Custom components use MaterialTheme semantic colors; brightness and palette are independent.
-
-## Application language and formatting
-
-English is the unqualified resource fallback; Russian has matching translated resources. AGP generates the locale config from resources.properties and resource qualifiers, filtered to en/ru so dependency translations do not advertise unsupported languages.
-
-The in-app System default/English/Русский selector uses AppCompatDelegate application locales and applies immediately through Android locale storage. MainActivity extends AppCompatActivity to support the same official API on Android 11/12; AndroidX autoStoreLocales owns storage there. Android 13+ delegates to the framework locale service, synchronizing with system app-language settings. There is no language key in DataStore, custom context wrapping or resource mutation. Empty application locales mean System default; the picker rereads the actual app override on configuration changes and resume.
-
-Locale recreation retains the existing saved Navigation 3 keys/stacks and Settings drafts. Route and enum identifiers stay language-independent. Dates use the resource configuration locale; nutrition numbers use NumberFormat with exact BigDecimal input and HALF_UP presentation rounding, including consumed weight and goals. Editable decimal input continues to accept comma or dot.
-
-The locale implementation follows [Android per-app language guidance](https://developer.android.com/guide/topics/resources/app-languages).
+[GitHub updates](APP_UPDATES.md) are isolated from diary/OCR state. Bounded HTTPS metadata/
+APK delivery accepts only the official release asset/digest. Package/version/current
+signer/SDK checks precede a scoped FileProvider URI and explicit Android installer.
+Automatic prompts wait for an eligible root state; no silent install.

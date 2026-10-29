@@ -99,6 +99,7 @@ jobs:
           [[ "$(git rev-parse HEAD)" == "$RELEASE_COMMIT" ]]
           bash "$RUNNER_TEMP/just-cal-release-tools/validate-release-ref.sh" "$RELEASE_COMMIT"
           bash "$RUNNER_TEMP/just-cal-release-tools/validate-release.sh" "$RELEASE_TAG"
+          bash "$RUNNER_TEMP/just-cal-release-tools/create-release-notes.sh" "$RELEASE_TAG"
           printf 'RELEASE_TAG=%s\n' "$RELEASE_TAG" >> "$GITHUB_ENV"
           # A published release is immutable. A missing release or interrupted draft can recover.
           draft=$(gh api "repos/$GH_REPO/releases" --paginate --jq ".[] | select(.tag_name == \"$RELEASE_TAG\") | .draft")
@@ -137,6 +138,7 @@ jobs:
           bash "$RUNNER_TEMP/just-cal-release-tools/test-release-environment.sh"
           bash "$RUNNER_TEMP/just-cal-release-tools/test-release-ref.sh"
           bash "$RUNNER_TEMP/just-cal-release-tools/test-release-validation.sh"
+          bash "$RUNNER_TEMP/just-cal-release-tools/test-release-notes.sh"
           bash "$RUNNER_TEMP/just-cal-release-tools/test-release-publication.sh"
           ./gradlew :app:validateReleaseVersion :app:testDebugUnitTest :app:lintRelease --no-daemon
       - name: Build and verify signed APK and AAB

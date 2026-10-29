@@ -13,7 +13,7 @@ The updater is independently implemented; mpvRx serves only as a workflow refere
 - The ready-to-install state presents two compact steps in a secondary-container tonal block with an attention icon: Android's per-source permission and the Play Protect unknown-developer prompt. Install opens Android's source-permission setting if needed, then the system installer after permission is granted. Denial/cancellation retains the APK. The guidance uses the visible Install anyway option for the unknown-developer warning shown in the user-provided screenshot; it never disables Play Protect or applies this instruction to an explicit malware warning. Google documents the different warning categories in [Play Protect developer guidance](https://developers.google.com/android/play-protect/warning-dev-guidance).
 - Debug and ocrCheck packages may check releases but cannot download/install production updates. Their package names and signing identities differ.
 
-Diary, images, OCR and Local AI remain local and usable offline. The network permission is used only for GitHub release metadata and APK delivery. GitHub receives the client's IP address and the Just Cal version in User-Agent; no diary/profile/image data or identifiers are sent.
+Diary, images, OCR and Local AI remain local and usable offline. The updater uses the network only for GitHub release metadata and APK delivery; explicit model transfers are a separate feature. GitHub receives the client's IP address and the Just Cal version in User-Agent; no diary/profile/image data or identifiers are sent.
 
 ## Release and file boundary
 
@@ -34,27 +34,17 @@ JVM tests cover metadata/asset rejection, strict numeric versions, trusted redir
 
 Build verification uses the Gradle Wrapper: targeted update tests first, then the full unit suite, debug/release lint and debug assembly.
 
-Local verification for 0.15.0 (code 31): all update JVM tests and the full unit suite passed; debug/release lint and debug assembly passed. On OnePlus 7T (Android 11), the Settings layout, manual offline failure and automatic-switch persistence across reinstall/restart were verified. Automatic checking was restored to enabled after the check. The device had no GitHub connectivity, so successful device-side release retrieval, the available-release dialog, APK download and installer flow remain unverified on hardware.
-
 ### Debug sheet mock
 
 Debug Settings → Updates → **Preview update bottom sheet · mock** first shows its default button loading indicator for 1.5 seconds, then opens the production `UpdateSheet` over Settings. No mock Activity, route or separate screen exists. Debug-only fixture controls inside the sheet offer Checking, Available, Up to date, Download, Ready and Error; Download APK simulates progress and completion. The initial mock check lasts 1.5 seconds. Selecting Up to date dismisses the fixture and emits the same shared snackbar as the production result. No GitHub, diary, preferences, files, browser or package installer are used. Fixture code/text lives in `app/src/debug`; release and ocrCheck provide an empty source-set hook. Both English and Russian fixtures are included.
 
-Local verification for 0.15.1 (code 32): update ViewModel tests, full JVM suite, debug/release lint and debug assembly passed. On OnePlus 7T, the real offline-check button label and About heading kept identical bounds before/after the request. In the five-second debug check, the label bounds stayed `[381,1366][784,1419]` before, during and after loading. Available, Download (46%), cancellation, Ready and Error dialog fixtures were visually checked. This validates UI states; signed APK download/installation still needs the production release-pair check below.
-
-Local verification for 0.15.2 (code 33): the full JVM suite, debug/release lint, debug assembly and ocrCheck Kotlin compilation passed. On OnePlus 7T, the real check opened a bottom sheet with the offline error/retry, Back restored the same Settings scroll position, and the mock Checking/Available/Up to date/Download/Ready/Error states and cancellation were checked in that same sheet. The focused Activity remained MainActivity throughout; no separate update screen exists. Production signed APK installation remains outside this UI validation.
-
-Local verification for 0.15.3 (code 34): targeted update tests and the full JVM suite passed, together with debug/release lint, debug assembly and ocrCheck Kotlin compilation. On OnePlus 7T, the real offline check opened the sheet and Back preserved the Settings group's bounds and scroll position. The mock confirmed the exact Russian current-version heading without punctuation, the absence of dismissal/skip footer buttons, the Expressive download indicator with measured 46% progress, and the ready-state permission/Play Protect guidance with the Install action. Scrim dismissal also worked. This verifies the UI; production download, system permission/installer and Play Protect interaction were not exercised.
-
-Local verification for 0.15.4 (code 35): focused update ViewModel tests and the full JVM suite passed, as did debug/release lint, ocrCheck Kotlin compilation and debug assembly. Tests cover current/older release results producing a snackbar, and automatic or dismissed checks remaining quiet. On OnePlus 7T, the ready mock showed the compact tonal installation block with attention icon; selecting Up to date dismissed the sheet and displayed the exact Russian message in the shared snackbar. No production APK installation was attempted.
-
-Local verification for 0.15.5 (code 36): update ViewModel tests, debug assembly and debug/release lint passed. On OnePlus 7T, the download mock displayed CircularWavyProgressIndicator at 46%; the current-version snackbar appeared immediately above the navigation pill, with its text bounds moved from y=1858–1907 to y=2038–2087. The hidden FAB row remains reserved for screen content only.
-
-Local verification for 0.15.6 (code 37): update ViewModel tests, debug assembly and debug/release lint passed. On OnePlus 7T, the checking mock showed ContainedLoadingIndicator and the download mock showed a full-width LinearWavyProgressIndicator with measured 46% above the track. The existing compact installation guidance and Settings snackbar placement are retained.
-
-Local verification for 0.15.7 (code 38): focused update tests and the full JVM suite passed; debug assembly, debug/release lint and ocrCheck Kotlin compilation passed. Regression tests verify that a manual current-version request never opens a sheet, repeated taps share one request, a manual tap can join a scheduled automatic check, and available/error sheets appear only after a response. On OnePlus 7T, the Macros section was collapsed with its shortened Russian label and the current-version mock displayed an icon-free snackbar above navigation. OnePlus 12 was not connected; successful live GitHub retrieval remains outside this device check.
-
-Local verification for 0.15.8 (code 39): update ViewModel tests, debug assembly and debug/release lint passed. An initial debug lint analyzer internal PSI failure passed on retry. On OnePlus 7T, both idle check buttons showed text without icons, and the available-release mock had a full-width text title without ic_update. Shared button content conditionally composes the default LoadingIndicator only while checking, with symmetric space to preserve the label position; reduced motion uses a static shape with indeterminate semantics.
+Recorded API 30 checks cover offline failure, persisted automatic-check choice,
+stable loading-button bounds, mock sheet states/progress, dismissal and snackbar
+placement. Debug fixtures validate UI only. Successful live GitHub retrieval,
+production APK download and Android installer/permission behavior remain unverified
+on hardware; OnePlus 12 coverage is also open. Historical per-version checks remain
+in Git. Keep the current release's user-facing changes in
+[RELEASE_HIGHLIGHTS.md](RELEASE_HIGHLIGHTS.md), not in this contract document.
 
 Device acceptance for a future signed release pair:
 

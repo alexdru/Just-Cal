@@ -16,7 +16,7 @@ The workflow validates the chosen clean commit before creating its tag. It accep
 
 Android CI runs for pull requests to `master` and pushes to `master`, the current default branch. It uses Ubuntu 24.04, Temurin JDK 17, the Gradle Wrapper and Gradle dependency caching. It runs release-tooling regression checks, unit tests, debug lint and debug assembly. Only successful default-branch pushes upload an Actions artifact named `Just-Cal-debug-vVERSION-COMMIT`, retained for 14 days. Debug artifacts are never GitHub Releases.
 
-Both workflows provision command-line tools, `platform-tools`, `platforms;android-37.0` and `build-tools;36.0.0` with `android-actions/setup-android`. The Google repository currently publishes API 37 under the minor-version package ID `platforms;android-37.0`; `platforms;android-37` is absent. The old setup failed before Gradle because it requested the absent package. `compileSdk = 37` and `targetSdk = 37` remain unchanged. Build tools 36.0.0 are also used for artifact verification; AGP may install its required build tools after license acceptance.
+Both workflows provision command-line tools, `platform-tools`, `platforms;android-37.0` and `build-tools;36.0.0` with `android-actions/setup-android`. SDK package IDs and Gradle API levels are distinct; use the configured minor-version package path. Build tools 36.0.0 are also used for artifact verification; AGP may install its required build tools after license acceptance.
 
 To inspect the published SDK catalog yourself:
 
@@ -64,8 +64,8 @@ Expect `MINIFIED_OCR_OK` only after actual bundled-model execution and the
 synthetic parser assertions pass. Run this on each target device when changing
 native runtimes or R8 rules. The variant is a local regression artifact signed
 with the debug key; never publish it as a production release or treat its
-certificate as release-signature verification. The 0.9.0 (code 13) OnePlus 7T
-result and remaining OnePlus 12 qualification are documented in
+certificate as release-signature verification. The OnePlus 7T
+synthetic result and remaining OnePlus 12 qualification are documented in
 [PACKAGE_OCR.md](PACKAGE_OCR.md). The rendered-label check does not replace
 real-package accuracy or normal diary-flow tests.
 
@@ -124,10 +124,10 @@ Gradle consumes `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_K
 
 ## Local verification and signed builds
 
-Use JDK 17 or Android Studio's compatible bundled JDK and the Gradle Wrapper. Run commands from the repository root. On macOS, if `java` reports “Unable to locate a Java Runtime”, select the installed Android Studio Preview JDK in the same terminal first (adjust the app path for a different Studio installation):
+Use JDK 17 or Android Studio's compatible bundled JDK and the Gradle Wrapper. Run commands from the repository root. On macOS, if `java` reports “Unable to locate a Java Runtime”, select the installed Android Studio JDK in the same terminal first (adjust the app path for a different Studio installation):
 
 ```sh
-export JAVA_HOME='/Applications/Android Studio Preview.app/Contents/jbr/Contents/Home'
+export JAVA_HOME='/Applications/Android Studio.app/Contents/jbr/Contents/Home'
 export PATH="$JAVA_HOME/bin:$PATH"
 java -version
 ```
@@ -138,7 +138,9 @@ Then run:
 bash scripts/test-release-environment.sh
 bash scripts/test-release-ref.sh
 bash scripts/test-release-validation.sh
+bash scripts/test-release-notes.sh
 bash scripts/test-release-publication.sh
+bash scripts/check-doc-links.sh
 ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
 ```
 
@@ -164,20 +166,63 @@ Do not enable shell tracing (`set -x`) or paste passwords into command arguments
 
 Outputs are `app/build/outputs/apk/release/app-release.apk` and `app/build/outputs/bundle/release/app-release.aab`. To compile/lint release without credentials, use `:app:compileReleaseKotlin :app:lintRelease`; release packaging itself requires signing.
 
+## Current-release highlights
+
+[RELEASE_HIGHLIGHTS.md](RELEASE_HIGHLIGHTS.md) is a small replacement draft, not a
+historical changelog. Its first line must exactly match the intended tag:
+
+```text
+# vMAJOR.MINOR.PATCH
+
+- Concise factual change visible to users.
+  Evidence: FULL_LOWERCASE_40_CHARACTER_COMMIT_SHA
+```
+
+Keep **3–6** single-line bullets, at most 180 characters each, each followed by one
+Evidence line. Cite a commit that implements the claim and is included after the
+comparison base. Several bullets may cite the same commit when it contains distinct
+changes. Review the actual diff/tests; ancestry validation cannot judge the truth of
+prose. Do not invent changes to fill the count or claim unfinished quality/transfer
+work as shipped. If fewer than three changes are ready, accumulate a meaningful
+release before publication.
+
+scripts/create-release-notes.sh reads version.properties and the draft using
+git show from RELEASE_COMMIT (HEAD by default), ignoring working-tree/later edits.
+It rejects a wrong version, empty/malformed draft, wrong count, missing/unknown/
+non-ancestor evidence and evidence already included in the comparison base.
+The base is the highest SemVer tag reachable from the source, excluding the intended
+tag; a first release uses the root commit. Review this range when drafting notes.
+The public body includes only the bullets and a **Full Changelog** GitHub comparison
+link; Evidence lines remain in source for review.
+
+After committing the draft, preview without a GitHub write:
+
+```sh
+GH_REPO=alexdru/Just-Cal bash scripts/create-release-notes.sh vMAJOR.MINOR.PATCH
+```
+
+The release job validates notes before signing and the publisher regenerates them
+before any tag/draft mutation. Creation uses --notes-file; recovery supplies the
+same notes on the final draft edit, after asset-byte and state rechecks. Public
+releases are rejected before mutation. All tools are retained from the reviewed
+workflow revision, while the draft is read from the pinned release source.
+Selecting older source without a valid matching committed draft safely fails.
+The notes/publication regressions use disposable Git fixtures and mocked gh only.
+
 ## Run a release
 
 1. Review the licensing/attribution checklist in [LICENSING.md](LICENSING.md) before binary distribution.
-2. Edit both version properties for the intended release, commit and push the source and workflow changes. Wait for Android CI to pass.
-3. Open **Actions → Android Release → Run workflow** and select **master**. Enter `version` exactly as in the chosen source (currently `0.4.0`). Leave `ref` blank to use the workflow commit, enter `master` for its fetched tip, or a full lowercase 40-character commit SHA reachable from master. Other branch/tag names, PR refs, short SHAs and Git expressions are rejected. Preflight pins the resolved SHA before access to signing secrets. Approve the Environment deployment only after reviewing that exact source commit.
+2. Set both version properties for the intended release and replace the current highlights draft as described below; commit and push the reviewed source/workflow changes. Wait for Android CI to pass.
+3. Open **Actions → Android Release → Run workflow** and select **master**. Enter `version` exactly as in the chosen source (without a `v` prefix). Leave `ref` blank to use the workflow commit, enter `master` for its fetched tip, or a full lowercase 40-character commit SHA reachable from master. Other branch/tag names, PR refs, short SHAs and Git expressions are rejected. Preflight pins the resolved SHA before access to signing secrets. Approve the Environment deployment only after reviewing that exact source commit.
 4. The workflow checks version format/match, code monotonicity, clean source, tag conflicts and required secrets; runs tests/lint; builds signed APK and AAB; checks package/version metadata and signatures against the supplied key; rejects debuggable artifacts and Android debug certificates; calculates checksums. AAB verification uses `jarsigner -verify -strict` with the configured keystore and alias, rejecting unsigned entries and certificate/signature failures. Release verification/publication scripts are retained from the reviewed workflow revision before checkout of the pinned source.
-5. Only after those checks does it create `vX.Y.Z` using the GitHub API, create a draft release with GitHub-generated notes and all assets, and make it public:
+5. Only after those checks does it create `vX.Y.Z` using the GitHub API, create a draft release with the validated highlights, Full Changelog comparison and all assets, and make it public:
    - `Just-Cal-vX.Y.Z.apk`
    - `Just-Cal-vX.Y.Z.aab`
    - `Just-Cal-vX.Y.Z-SHA256SUMS.txt`
 
 No manual `git tag` step is required. Pushes and PRs never publish production releases. The requested source must use compatible Gradle signing/version configuration. Source and workflow revisions are rechecked against fetched master before signing, and source ancestry plus the release-code ledger are refreshed before publication.
 
-If a run fails before publication, fix the cause and rerun the same revision/version. A missing release with an existing same-commit tag is recoverable. Interrupted drafts are completed by uploading only missing assets, never overwriting existing ones. The workflow downloads all three hosted assets and compares their bytes to the verified local outputs before publication. A mismatched existing asset causes a safe failure; inspect the unpublished draft and remove the inconsistent draft assets manually before recovery. Do not change the tag or any public release.
+If a run fails before publication, fix the cause and rerun the same revision/version. A missing release with an existing same-commit tag is recoverable. Interrupted drafts are completed by uploading only missing assets, never overwriting existing ones. The same committed notes are supplied at final draft publication, so older interrupted drafts recover their notes as well. The workflow downloads all three hosted assets and compares their bytes to the verified local outputs before publication. A mismatched existing asset causes a safe failure; inspect the unpublished draft and remove the inconsistent draft assets manually before recovery. Do not change the tag or any public release.
 
 Remote tag/draft state is rechecked before uploads and final publication. A different-commit tag, a released draft, unexpected assets or already public release fails. Correcting public releases requires a new versionName/versionCode.
 

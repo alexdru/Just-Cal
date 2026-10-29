@@ -39,7 +39,10 @@ jobs:
           bash scripts/test-release-environment.sh
           bash scripts/test-release-ref.sh
           bash scripts/test-release-validation.sh
+          bash scripts/test-release-notes.sh
           bash scripts/test-release-publication.sh
+      - name: Check documentation links
+        run: bash scripts/check-doc-links.sh
       - name: Test, lint and assemble debug
         run: |
           ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --no-daemon

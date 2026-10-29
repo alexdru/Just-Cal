@@ -46,15 +46,12 @@
     <string name="load_error">Couldn’t load your diary.</string>
     <string name="retry">Try again</string>
     <string name="missing_entry">This food entry no longer exists.</string>
-    <string name="local_note">Your diary stays on this device.</string>
     <string name="amount_helper">We’ll calculate the nutrition for this amount.</string>
     <string name="saving">Saving…</string>
-    <string name="portion_detail">%1$s kcal · P %2$s · F %3$s · C %4$s</string>
     <string name="home">Home</string>
     <string name="history">Diary</string>
     <string name="settings">Settings</string>
     <string name="consumed_day">Consumed</string>
-    <string name="history_intro">Your days, at a glance. Open a day to update its food entries.</string>
     <string name="choose_day">Choose a day</string>
     <string name="open_day">Open day</string>
     <string name="history_empty">Your history starts here</string>
@@ -112,9 +109,7 @@
     <string name="language_english">English</string>
     <string name="language_russian">Русский</string>
     <string name="nutrition_with_unit">%1$s %2$s</string>
-    <string name="review_package_ocr">Read the label on this device, then review and correct its nutrition. Nothing is saved automatically.</string>
     <string name="ocr_processing">Reading the label…</string>
-    <string name="ocr_failed">Couldn’t read the label. Try again, choose a sharper photo or enter the values manually.</string>
     <string name="ocr_confirmation">Check label values</string>
     <string name="ocr_review_values">Check every value against the label. Fill in any empty fields, and change the amount if you ate less than the package.</string>
     <string name="ocr_basis_unknown">Nutrition per 100 g wasn’t identified clearly. Enter the per-100-g values from the label.</string>

@@ -13,19 +13,41 @@ cd "$fixture/source"
 git config user.name "Release publication test"
 git config user.email "release-test@example.invalid"
 git remote add origin "$fixture/remote.git"
-mkdir -p scripts release-files
+mkdir -p scripts release-files docs
 cp "$validator" scripts/validate-release.sh
 printf 'versionName=0.4.0\nversionCode=5\n' > version.properties
 git add scripts version.properties
 git commit -qm fixture
+feature="$(git rev-parse HEAD)"
+{
+    printf '# v0.4.0\n\n'
+    for change in One Two Three; do
+        printf -- '- %s user-facing change.\n  Evidence: %s\n' "$change" "$feature"
+    done
+} > docs/RELEASE_HIGHLIGHTS.md
+git add docs && git commit -qm highlights
 git push -q origin HEAD:refs/heads/master
 export MOCK_REMOTE="$fixture/remote.git"
 export MOCK_LOG="$fixture/calls.log"
 export MOCK_DRAFT="" MOCK_RACE="" MOCK_DOWNLOAD_MISMATCH=false
 export MOCK_COUNTER="$fixture/counter" MOCK_MISSING="$fixture/missing"
+export MOCK_NOTES="$fixture/notes"
 unset RELEASE_COMMIT
 export GH_TOKEN=fixture-token GH_REPO=fixture/repository
 gh() {
+    if [[ "$1" == release && ( "$2" == create || "$2" == edit ) ]]; then
+        local previous="" notes_file=""
+        for argument in "$@"; do
+            [[ "$previous" != --notes-file ]] || notes_file="$argument"
+            previous="$argument"
+        done
+        [[ -s "$notes_file" ]] || return 1
+        if [[ -f "$MOCK_NOTES" ]]; then
+            cmp -s "$notes_file" "$MOCK_NOTES" || return 1
+        else
+            cp "$notes_file" "$MOCK_NOTES"
+        fi
+    fi
     if [[ "$1" == api && "$2" == --method ]]; then
         printf 'tag\n' >> "$MOCK_LOG"
         git --git-dir="$MOCK_REMOTE" update-ref refs/tags/v0.4.0 "$(git rev-parse HEAD)"
@@ -65,6 +87,16 @@ reject
 printf fixture > release-files/Just-Cal-v0.4.0.apk
 printf fixture > release-files/Just-Cal-v0.4.0.aab
 (cd release-files && shasum -a 256 Just-Cal-v0.4.0.apk Just-Cal-v0.4.0.aab > Just-Cal-v0.4.0-SHA256SUMS.txt)
+# Invalid committed highlights must fail before creating a tag or draft.
+cp docs/RELEASE_HIGHLIGHTS.md "$fixture/good-highlights"
+printf '# v0.5.0\n' > docs/RELEASE_HIGHLIGHTS.md
+git add docs && git commit -qm invalid-highlights
+git push -q origin HEAD:refs/heads/master
+reject
+[[ ! -e "$MOCK_LOG" && -z "$(git ls-remote origin refs/tags/v0.4.0)" ]] || exit 1
+cp "$fixture/good-highlights" docs/RELEASE_HIGHLIGHTS.md
+git add docs && git commit -qm restored-highlights
+git push -q origin HEAD:refs/heads/master
 bash "$publisher" v0.4.0
 [[ "$(git ls-remote origin refs/tags/v0.4.0)" == "$(git rev-parse HEAD)"$'\trefs/tags/v0.4.0' ]] || exit 1
 [[ "$(wc -l < "$MOCK_LOG" | tr -d ' ')" == 3 ]] || exit 1
@@ -98,6 +130,8 @@ git commit --allow-empty -qm different
 git push -q origin HEAD:refs/heads/master
 reject
 [[ "$(wc -l < "$MOCK_LOG" | tr -d ' ')" == 8 ]] || exit 1
+# A legacy/interrupted draft gets the same reviewed notes on recovery.
+[[ -s "$MOCK_NOTES" ]] || exit 1
 # Corrupted final assets also prevent publication.
 printf changed >> release-files/Just-Cal-v0.4.0.apk
 reject

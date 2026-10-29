@@ -2,68 +2,75 @@
 
 SPDX-License-Identifier: GPL-3.0-or-later
 
-## License
-
-Copyright (C) 2026 alexdru and Just Cal contributors.
-
-Just Cal is free software licensed under the GNU General Public License, version 3 or (at your option) any later version (**GPL-3.0-or-later**). You may redistribute and modify it under those terms. It is provided without warranty. See [LICENSE](LICENSE) for the unchanged official text and [NOTICE](NOTICE) for project attribution.
-
-Third-party components retain their own licenses. See [the licensing review](docs/LICENSING.md) for attribution requirements and items to verify before distributing binaries. Imported AI models are separate and are not relicensed by this project.
-
 [![Android CI](https://github.com/alexdru/Just-Cal/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/alexdru/Just-Cal/actions/workflows/ci.yml)
 
-## App version
+A privacy-first calorie diary for Android 11+, ARM64. Food logging, photographs,
+OCR and inference work locally without an account or external food database.
+English and Russian, light/dark brightness and optional Material You are supported.
 
-The current app version and Android version code are defined in [version.properties](version.properties), the single editable source of truth. Settings → About shows the installed build's version, credits alexdru as the author and opens the [source repository](https://github.com/alexdru/Just-Cal) in the external browser. User-facing versions follow SemVer; release tags add a `v` prefix. Versions below 1.0 are development releases.
+## Logging food
 
-A local-first calorie diary for Android 11+ (`com.justcal.app`). Language can follow the system or be set to English or Russian in the app; Android 13+ also exposes Just Cal in system app-language settings. Brightness (System/Light/Dark) and color style are saved separately. Just Cal's green leaf palette is the default; Material You opts into dynamic wallpaper colors on Android 12+, with a branded fallback on older devices.
+Home shows today's calories, optional goals, macros and entries. Diary history and
+its calendar open the same date-aware day view. Add manually, scan a package or use
+an explicitly selected meal-name model; review and correct values before Save.
+Entries can be edited, duplicated, moved to another date or deleted.
 
-## Diary and navigation
+Package scanning uses bundled PP-OCRv5 and deterministic parsing. Optional local
+Gemma assistance can fill missing protein/fat/carbohydrate values on a reliable
+per-100-g label crop. It preserves OCR calories, mass and existing values.
+Uncertain values remain empty. Meal assistance suggests an editable name only;
+nutrition and consumed weight must be supplied by the user. Numerical meal
+estimation is deferred. See [package OCR](docs/PACKAGE_OCR.md).
 
-Home shows today's consumed calories, daily goal, remaining calories, macros and food entries. Diary groups history by recorded calendar day; its calendar opens any past day, including one without entries. Entries can be added, edited or deleted within that day. Settings contains an optional local profile name, calorie goal, independently optional macro goals and independent brightness/color-style choices. Language changes apply immediately through Android application locales. Blank macro goals are absent, not zero targets; configured goals appear alongside consumed grams.
+Settings contains optional macro goals, calorie target, appearance/language,
+[diary backup](docs/DATA_BACKUP.md) and [local diagnostics](docs/OCR_DIAGNOSTICS.md).
+The calorie default is an editable placeholder, not a personalized recommendation.
+Backup import previews changes; merge preserves conflicts and explicit replacement
+first writes a recovery snapshot. Room schema v2 retains the data-preserving 1→2 migration.
 
-A content-sized Compose navigation pill stays horizontally centered on Home, Diary and Settings, with compact animated selection. Its transparent host reserves bottom content space. The separate Add Food FAB sits above/right of the pill; hiding it leaves the pill's geometry unchanged. On a day page, the FAB adds to that date; on Home and Diary root, it adds to today. The FAB is hidden in Settings. Navigation 3 maintains a separate saved back stack for each top-level destination and handles predictive back. Open days, scroll positions and settings drafts survive tab switching and configuration changes. No external navigation component or Telegram code is used. The FAB opens a compact launcher for Scan package, Scan meal or the existing manual editor.
+## On-device AI and network use
 
-## Implementation
+[AI Models and Playground](docs/LOCAL_AI_LAB.md) manage private, backup-excluded
+weights imported through Android's document picker or downloaded by explicit action.
+Installation never selects a task. Production requires exact artifact/runtime/task
+admission; experimental Playground results never create diary entries.
+Gemma has narrow package-macro and meal-name admissions. PaddleOCR-VL remains
+experimental after numerical errors. Successful inference is not evidence of accuracy.
+Current implementation status and open validation gates: [AI closeout](docs/AI_REDESIGN_PLAN.md).
 
-- Single `app` module; Compose Material 3, Navigation 3 and Hilt.
-- Screen ViewModels own StateFlow state and actions; Compose collects with lifecycle awareness. Editor drafts use SavedStateHandle.
-- Room stores the original nutrition per 100 g, consumed weight, source, immutable local calendar day and creation timestamp. Queries use the stored epoch day, so changing time zones does not reassign previous entries. The active Today date refreshes on resume and across midnight.
-- Nutrition inputs accept comma or dot decimal separators and up to two fractional digits. Integer hundredths are persisted; BigDecimal arithmetic computes exact portions and totals before display rounding. Calculations and validation live in `domain`.
-- DataStore atomically persists the local profile name, calorie goal, nullable macro goals, brightness and color style, retaining the original preferences file and goal key. The initial 2000 kcal is an editable placeholder, not a personalized recommendation.
-- English/Russian Android resources, AGP-generated locale config and AppCompat application locales provide synchronized per-app language selection without a duplicate DataStore preference. Dates and exact nutrition values use the active app locale.
-- Room schema version 1 is exported under `app/schemas`. Future schema changes must include data-preserving migrations.
-- CameraX rear-camera capture and Android Photo Picker feed a shared local image preparation and review flow. Camera access is requested only for taking a photo; choosing a photo needs no broad storage permission.
-- Package review runs bundled PP-OCRv5 offline text detection and Russian/English eslav recognition, then deterministic nutrition parsing. The existing editor shows editable confirmation, raw recognized text, uncertainty and net weight; explicit save retains the selected diary date. Scan meal keeps its photo-ready endpoint. See [docs/PACKAGE_OCR.md](docs/PACKAGE_OCR.md).
-- New manual entries start with an empty required Amount eaten and focus the empty Food name once. Existing entries preserve their saved amount and do not reopen the keyboard automatically.
-- Private temporary images use URI references, EXIF-aware decoding and bounded downsampling. Diary, OCR and Local AI remain offline, without uploads, cloud backup, accounts or an external food database.
-- Settings → Updates checks the official GitHub Releases on app resume, at most once daily, with an off switch and a manual check. Downloads are explicit; size, SHA-256, package, version and signing certificate are verified before Android asks to install. Network access is confined to update metadata and APK delivery; GitHub receives a normal request including IP address and app version. See [docs/APP_UPDATES.md](docs/APP_UPDATES.md).
-
-## Experimental Local AI Lab
-
-Settings → Local AI Lab provides debug/developer functionality using the LiteRT-LM Kotlin API. Import a compatible Gemma 4 E2B vision `.litertlm` with Android's document picker; the Lab stores a private copy rather than bundling the model in the APK. Choose CPU or GPU, load the model, choose/take a food photo through the shared image pipeline, edit a prompt and run multimodal inference entirely on-device. Streaming, cancellation, repeated runs without reloading, explicit backend errors and runtime metrics are available.
-
-The Nutrition extraction preset enables JSON Schema constrained decoding and displays both the raw answer and a validated structured result. Values remain unverified and never enter the diary. This is experimental infrastructure, not production food recognition. There are no cloud AI calls, API keys, barcode services or model downloads inside the app. Production package OCR is independent of this Lab. See [docs/LOCAL_AI_LAB.md](docs/LOCAL_AI_LAB.md) for compatible-model setup, lifecycle checks and verified coverage.
+Optional automatic [GitHub update checks](docs/APP_UPDATES.md) run on resume at most
+daily; APK download and Android installation require user actions. Network use is
+limited to update requests and explicit model transfers. No diary, photo or prompt
+is uploaded. GitHub/model hosts receive normal connection metadata, including IP address.
 
 ## Build and test
 
-Open this directory as a Gradle project in Android Studio and use its compatible bundled JDK, or JDK 17. Install Android SDK package `platforms;android-37.0` and build tools 36.0.0, then use the Gradle Wrapper:
+Open in Android Studio with its bundled JDK, or use JDK 17. The project uses one
+app module, Kotlin, Compose Material 3 Expressive, Navigation 3, Room and Hilt.
+Install SDK `platforms;android-37.0` and build tools 36.0.0, then run the Wrapper:
 
 ```sh
-./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
-./gradlew :app:connectedDebugAndroidTest
+./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug
+./gradlew :app:assembleDebugAndroidTest
+bash scripts/test-release-notes.sh
+bash scripts/test-release-publication.sh
+bash scripts/check-doc-links.sh
 ```
 
-Connected tests require an emulator/device. They cover real Room history queries, day isolation, reopen persistence, edit/recalculation and deletion; DataStore profile/goal/theme persistence; and settings keyboard input, draft retention across tabs and Activity recreation, invalid-input handling, retained day navigation through both history and calendar, selected-date FAB/CRUD, and independently optional goals with reactive screen updates. JVM tests cover exact decimal arithmetic, locale-aware number presentation, independent brightness/palette drafts, validation, daily history summaries, selected-day creation, editor failure/retry/restoration, image decode budgets and scan/date navigation serialization, transactional model imports, strict nutrition JSON validation, and Lab load/run/repeat/cancel/cleanup state transitions. Image instrumentation tests cover all eight EXIF orientations, provider URIs, oversized/corrupt/missing images, private-file containment, launcher restoration, camera capture/retake and the real system Photo Picker. Camera tests require a working rear camera (the emulator virtual scene camera is sufficient); the picker system-UI fixture currently expects English device labels.
+Connected tests need an ARM64 device/emulator. Private-photo/model tests are opt-in;
+see the relevant evidence reproduction instructions before enabling them.
+Debug uses a separate package/diary; production signing secrets are unnecessary.
+[RELEASING.md](docs/RELEASING.md) covers all release-tooling checks, signing and recovery.
 
-UI tests use Compose's v2 JUnit API and Espresso 3.7.0; the older transitive Espresso version cannot initialize its input manager on API 37.
+## Project references
 
-## Release builds
+- [AGENTS.md](AGENTS.md): contribution and completion rules.
+- [DESIGN.md](DESIGN.md): visual source of truth.
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md): current implementation contracts.
+- [version.properties](version.properties): explicit application version.
+- [RELEASE_HIGHLIGHTS.md](docs/RELEASE_HIGHLIGHTS.md): small draft for the next release.
 
-Android CI checks pull requests and pushes to `master` with unit tests, lint, debug assembly and Gradle caching. Successful default-branch builds retain a version/commit-named debug APK as an Actions artifact for 14 days.
-
-Android Release is manually triggered with a version and optional source ref. It validates the existing `version.properties`, runs tests/lint, builds and verifies signed release APK/AAB, calculates SHA-256 checksums, then creates the matching `vMAJOR.MINOR.PATCH` tag and GitHub Release with generated notes. Signing uses one persistent key supplied through GitHub Secrets; ordinary CI needs no secrets. Debug artifacts are separate from production release assets. See [docs/RELEASING.md](docs/RELEASING.md) for one-time key setup, exact release steps and update verification.
-
-The green leaf launcher identity uses adaptive foreground/background layers and an explicit monochrome layer for themed icons on Android 13+. Android supplies the mask.
-
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the implemented navigation, persistence and global-action boundaries.
+Copyright (C) 2026 alexdru and Just Cal contributors. Licensed under
+[GPL-3.0-or-later](LICENSE), without warranty; see [NOTICE](NOTICE) and
+[third-party licensing](docs/LICENSING.md). Imported/downloaded models retain their
+own licenses. Version tags identify corresponding release source.

@@ -1,227 +1,115 @@
 # Just Cal — Agent Instructions
 
-## Licensing
+## Product and scope
 
-Just Cal is licensed under GPL-3.0-or-later. Contributed code must remain compatible with this license.
+GPL-3.0-or-later; contributions must remain compatible. Just Cal is a privacy-first,
+offline-first Android calorie diary. Optimize for low-effort food logging and native UX.
+Implement only the requested milestone; future documentation is context, not permission.
+Inspect current code before changing it. Preserve unrelated work. Explain significant,
+difficult-to-reverse tradeoffs; choose simple solutions for small reversible decisions.
 
-## Project
+Without an explicit request, do not add backends, cloud AI, accounts, external food
+databases or barcode scanning. Diary, OCR and inference must work offline. Network use
+is limited to configured update checks and explicit model transfers.
 
-Just Cal is a cutting-edge, privacy-first, offline-first Android calorie tracker focused on making food logging nearly effortless through on-device intelligence and carefully designed native Android UX.
+## Architecture and data
 
-Package-label logging uses bundled offline OCR followed by editable confirmation. Visual meal estimation remains a future feature.
+Use the single app module, Kotlin, Compose Material 3/Expressive, Navigation 3, Room,
+Hilt, Coroutines and StateFlow. Prefer current stable Android approaches when useful;
+do not add dependencies or speculative layers when existing APIs suffice. Organize by
+responsibility: ui, data, domain, camera, ai and ocr. Keep UI, persistence, deterministic
+logic and inference separate. Keep repositories between Room and UI.
 
-The application should remain usable without an internet connection.
-
-Unless explicitly requested, do not introduce:
-- backend services;
-- cloud AI APIs;
-- user accounts;
-- external food databases;
-- barcode scanning.
-
-## Product and technology direction
-
-Just Cal is intended to be a cutting-edge native Android application with first-class UI/UX.
-
-"Cutting-edge" means using modern Android platform capabilities and current production-ready Jetpack technologies when they materially improve the product. It does not mean adopting experimental dependencies without a concrete benefit.
-
-Prefer modern stable Android approaches over legacy compatibility patterns when the project's supported Android versions allow it.
-
-The application should feel native to current-generation Android rather than like a generic cross-platform or legacy Material application.
-
-For UI work:
-
-- use Jetpack Compose;
-- use Material 3 and Material 3 Expressive intentionally;
-- prefer Navigation 3 for Compose navigation;
-- design edge-to-edge;
-- preserve predictive-back behavior;
-- handle system insets correctly;
-- use responsive, meaningful motion;
-- treat typography, spacing, shapes and hierarchy as part of the product;
-- support accessibility, font scaling, dark appearance and appropriate system personalization.
-
-Do not blindly use default Material components without considering the resulting hierarchy and interaction design.
-
-Do not overuse cards, containers, gradients, borders or animations.
-
-Prefer a small coherent design system over one-off styling in individual screens.
-
-UI/UX quality is a functional requirement of Just Cal, not a final polishing phase.
-
-The primary UX objective is to minimize the effort required to log food.
-
-## Technology
-
-The Android application uses:
-
-- Kotlin
-- Jetpack Compose
-- Material 3
-- Room
-- Hilt
-- Kotlin Coroutines
-- StateFlow
-
-Use current Android APIs and established project dependencies.
-
-Do not add a new dependency when the platform or an existing dependency already solves the problem adequately.
-
-## Architecture
-
-Keep the architecture simple and appropriate for the current project size.
-
-Use a single `app` Gradle module unless there is a demonstrated reason to split it.
-
-Prefer packages organized by responsibility, including:
-
-- `ui`
-- `data`
-- `domain`
-- `camera`
-- `ai`
-
-Keep UI, persistence, deterministic business logic, and AI inference separated.
-
-Do not introduce generic base classes, speculative abstractions, or architectural layers that have no current use.
-
-Prefer explicit, readable Kotlin over clever abstractions.
-
-## Nutrition calculations
-
-Nutrition calculations must be deterministic Kotlin code.
-
-AI may extract or estimate input values, but must not be responsible for arithmetic used to calculate diary totals.
-
-Keep units explicit.
-
-Distinguish between:
-- values per 100 g;
-- serving/package weight;
-- amount actually eaten.
-
-Avoid floating-point assumptions that can produce incorrect displayed nutrition values.
-
-## AI
-
-Keep experimental on-device AI separate from the core diary functionality.
-
-Keep AI implementations behind a small application-facing interface so that models and runtimes can be replaced without changing diary or UI logic.
-
-Do not couple domain models to a specific AI framework.
-
-AI-produced nutrition information must be treated as untrusted input and validated before persistence.
-
-Users must be able to review and correct recognized values before they are added to the diary.
-
-- Keep AI Playground (the retained LocalAiLab route) experimental and independent from production sessions. Playground results must never create diary entries. Production uses FoodRecognitionRouter with explicit artifact/task quality admission; no automatic model download or selection.
-- Import external models through SAF into app-private, backup-excluded storage; never bundle multi-GB models or pass content URIs as native filesystem paths.
-- Keep native AI engine/conversation types inside the runtime adapter. Initialize, infer and close off the main thread; cancellation must finish native processing before freeing resources.
-- Reuse the generic bounded image boundary. Keep model preprocessing in the AI adapter and large Bitmaps out of ViewModels/saved state.
-- Report backend failures explicitly and benchmark only measured values. JSON-constrained output remains untrusted nutrition input; preserve raw responses and explicit missing values.
+Nutrition arithmetic belongs in deterministic Kotlin with exact decimal/integer units.
+Distinguish per-100-g values, package/serving weight and consumed amount. Validate
+untrusted recognition before persistence; review is editable and Save is always explicit.
+Preserve Room migrations, portable IDs, exported schemas and backup compatibility.
+Never use destructive production migrations without an explicit request.
+Current contracts: [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## UI
 
-- `DESIGN.md` is the visual source of truth; read it before implementing UI changes.
-- Follow its established tokens and composition principles. Proposed refinements remain subject to design approval.
-- Use relevant design skills when appropriate, and validate major UI changes visually on a device or emulator.
-- Do not introduce arbitrary visual patterns that conflict with the approved design system.
-- Edge-to-edge is required for every new or updated screen, including Settings tools. Keep scroll viewports behind system bars; put safe-area/top-bar/end spacing inside scroll content, consume insets once, and keep focused inputs/actions clear of the IME. Do not pad or clip the entire scroll viewport away from system bars.
-- Separate grouped navigation and diary/history rows with narrow surface gaps and connected outer/inner corners, not painted divider lines. Use the shared Material 3 Expressive segmented list treatment and meaningful Material Symbols icons.
+Read [DESIGN.md](DESIGN.md) before UI edits and use relevant design skills. It is the
+visual source of truth; refinements need design approval. UX quality is functional:
+consider hierarchy, typography, spacing, motion, accessibility, font scaling, EN/RU,
+dark appearance and system personalization. Use semantic colors and shared components;
+avoid one-off cards, gradients, borders and decorative motion. Validate major changes
+visually on a device/emulator.
 
-Optimize for fast calorie logging and low interaction count.
+- Preserve predictive Back and independent retained top-level Navigation 3 stacks.
+  History and direct calendar navigation converge on Day Detail.
+- Every updated screen is edge-to-edge. Scroll viewports extend behind bars and
+  floating controls; put safe-area/app-bar/final spacing inside content, consume
+  insets once, and clear focused fields above controls and IME.
+- Use shared Expressive segmented rows with narrow surface gaps, connected corners
+  and meaningful Material Symbols; no painted row dividers.
+- Keep the floating pill content-sized and centered in a transparent host, with a
+  separate FAB above/right. Reserve the action row when Settings hides the FAB.
+  Pinned bottom actions also use transparent hosts and measured content clearance.
+- Brightness and color style stay independent in the existing DataStore. Just Cal is
+  default; Material You uses dynamic colors on API 31+ and branded fallback below it.
+  Macro goals are independently optional; clearing removes the goal, never shows zero.
+- Language uses Android application locales, AppCompatActivity/autoStoreLocales on
+  API 30–32 and AGP-generated supported EN/RU locale config. No duplicate locale key.
+  Keep matching EN/RU strings, language-independent routes and localized dates/numbers.
+- Telegram is a geometry/interaction reference only; never copy its code or styling.
 
-Use Material 3 and Jetpack Compose.
+## Images and AI
 
-Support system light and dark themes.
+- Package/meal scans share local CameraX/Photo Picker acquisition with mode/date retained.
+  Ask for camera permission only for Take photo; use no broad media/storage permission.
+  Treat external images as URIs, never native paths. Keep owned files private and release
+  them on flow exit. Decode off-main within the shared bounded image boundary; no large
+  Bitmaps or camera/native runtime objects in ViewModels or saved state.
+- Generic decoding/orientation belongs in camera; OCR/model preprocessing belongs in
+  its adapter. Preserve OCR raw evidence, basis, independent mass and missing values.
+  Bundled hashes, dictionaries and notices: [PACKAGE_OCR.md](docs/PACKAGE_OCR.md).
+- PP-OCRv5 stays the package baseline. Optional Gemma fills only admitted missing macros;
+  failure preserves OCR. Meal assistance is admitted name-only; numerical meal estimates
+  and photo-derived consumed weight stay disabled. Offer Models/manual recovery.
+- FoodRecognitionRouter requires exact artifact/runtime/task quality admission.
+  Successful inference or valid JSON never proves quality. No automatic model download
+  or task selection. Playground retains LocalAiLab, an independent session and no
+  diary-writing capability. Keep raw responses, explicit nulls and measured metrics.
+- SAF imports and explicit downloads go into private backup-excluded storage; never
+  bundle multi-GB weights or pass content URIs to JNI. Keep native types in adapters.
+  Initialize/infer/close off-main. Cancellation must finish native work before disposal.
+  Preserve the process-wide runtime lease, bounded images and explicit backend failures.
+- New manual entries have empty consumed amount and one-shot empty-name focus.
+  Edits retain saved amount without initial focus. Recognition always opens review.
+- Preserve model metadata, task-quality evidence, reproducible fixtures and license notices.
+  AI status and open gates: [AI_REDESIGN_PLAN.md](docs/AI_REDESIGN_PLAN.md).
 
-Prefer clear native Android interactions over custom UI components unless the custom interaction materially improves the workflow.
+## Verification and cleanup
 
-Avoid premature visual polish when implementing infrastructure or domain work.
+Use Android Studio project information, diagnostics, terminal and SDK/device tools.
+Use its file tools to inspect/edit files and respect unsaved buffers. Do not clean
+unrelated code. Remove only confirmed obsolete content; use Git history for completed
+reports. Never delete a test merely because production does not reference it.
 
-- Telegram is a navigation geometry and interaction reference only; do not copy its source or styling.
-- Keep Just Cal's floating navigation content-sized and horizontally centered in a transparent host; its separate global FAB sits above/right. Reserve the action row when Settings hides the FAB, and reserve enough screen content space for all floating controls.
-- Keep pinned bottom actions in transparent hosts. Scroll content behind floating controls with end padding for the final item; focus scrolling must clear the controls and keyboard.
-- Retain each top-level Navigation 3 stack when switching tabs.
-- History selection and direct “go to day” navigation must converge on the same Day Detail flow.
-- Macro goals are independently optional; clearing a goal removes it. Never display an absent goal as a zero target.
-- Keep brightness and color style independent in the existing DataStore. Just Cal is the branded default; Material You uses dynamic colors on Android 12+ and the branded fallback below that. Use semantic theme colors in components.
-- Language belongs to Android application locales, never a duplicate DataStore key. Retain AppCompatActivity/autoStoreLocales for Android 11/12 and AGP-generated locale config filtered to supported resource languages.
-- Keep user-visible strings in matching English/Russian resources, route identifiers language-independent, and displayed dates/nutrition numbers locale-aware.
+Test calculations, parsing/validation, meaningful database behavior and non-trivial
+state changes. Run the narrowest affected tests first. Before completing substantial
+work: compile, run relevant/full practical tests, inspect IDE/build diagnostics and
+exercise the workflow when practical. Resolve introduced errors/warnings and state
+remaining gaps precisely. Private photos, large model transfers and AI benchmarks
+require explicit scope; skipped opt-in tests are not quality passes.
 
-## Image acquisition
+## Versions, releases and completion
 
-- Package and meal scans share the local-only CameraX / Photo Picker pipeline; always retain scan mode and target diary date.
-- Use Photo Picker for individual images, never broad media/storage permissions. Request camera access only for Take photo.
-- Treat external images as URIs; never resolve content URIs to filesystem paths. Keep owned temporary files private and release them when their flow ends.
-- Keep Bitmaps and camera resources out of ViewModels and saved navigation state. Decode off the main thread within the image budget.
-- Generic orientation/decoding belongs in the image boundary; OCR preprocessing and inference belong in the `ocr` runtime adapter.
-- Package Use photo retains bundled offline OCR and deterministic parsing, then opens the existing editable editor with the original date. VLM fallback requires measured quality admission and must preserve OCR on failure. Meal Use photo can use an admitted name-only model; otherwise offer Models/manual entry. Numerical meal estimates and photo-derived consumed weight remain disabled. Saving is always explicit.
-- Keep OCR runtime types out of UI/domain. Preserve raw OCR evidence, per-100-g versus serving basis, independent net mass and missing values; uncertain fields stay empty. Bundled OCR model revisions, dictionaries, hashes and notices are documented in `docs/PACKAGE_OCR.md`.
-- New manual entries start with an empty consumed amount and request empty-name focus once; edits preserve the saved amount and do not request initial focus.
-
-## Persistence
-
-Use Room for persistent application data.
-
-Database migrations must preserve existing user data.
-
-Do not use destructive migration strategies for production schema changes unless explicitly requested.
-
-Repositories should isolate Room implementation details from UI code.
-
-## Testing
-
-Write tests for:
-- nutrition calculations;
-- parsing and validation;
-- database behavior where meaningful;
-- non-trivial state transitions.
-
-Do not add tests that only repeat trivial implementation details.
-
-When changing existing behavior, run the narrowest relevant tests first.
-
-Before completing a substantial task, run the relevant build and test commands.
-
-## Working with Android Studio
-
-Use IDE-provided project information, build diagnostics, Android SDK tools, terminal access, and emulator controls when available.
-
-Inspect existing code before creating new abstractions or changing architecture.
-
-Resolve warnings or errors introduced by your changes.
-
-Do not modify unrelated files solely for cleanup.
-
-## Scope control
-
-Implement only the requested milestone.
-
-Future features described in documentation are context, not permission to implement them.
-
-When a request exposes a significant architectural tradeoff, explain the tradeoff briefly before committing to a difficult-to-reverse design.
-
-For small reversible decisions, choose the simplest reasonable implementation and proceed.
-
-## Release engineering
-
-- Edit application versions explicitly in `version.properties`; never derive or rewrite them from Git.
-- Automatically update the version once per completed application-changing task unless the user has already supplied or bumped the version for that task. Use a patch increment for fixes and a minor increment for new features; increase `versionCode` with each version change. Keep that version during implementation and verification retries. Do not bump versions for discussion or documentation-only changes.
-- Release tags must equal `v` plus `versionName`. Increase `versionCode` for every published Android release and preserve published tags.
-- Release APK/AAB must be signed with the persistent release key; never publish debug or unsigned builds as production releases.
-- Never commit keystores, signing credentials, encoded keys or generated release binaries. Debug CI must work without release secrets.
-- Debug CI artifacts and production GitHub Release assets are distinct; create release tags only after successful build, signature and version verification.
-- Preserve adaptive foreground/background and explicit monochrome launcher support.
-- CI and releases use the Gradle Wrapper; ordinary CI must work without release signing secrets.
-- Keep release procedures in `docs/RELEASING.md`.
-
-## Completion
-
-Before declaring a coding task complete:
-
-1. verify the changed code compiles;
-2. run relevant tests;
-3. inspect relevant IDE/build diagnostics;
-4. verify the affected workflow when practical;
-5. summarize the changes and any unresolved issues.
+- Edit version.properties explicitly, never derive/rewrite it from Git. Once per
+  completed application-changing task, increment patch for fixes or minor for features
+  and increase versionCode, unless already supplied/bumped for that task. Retain it
+  through retries; discussion/documentation-only work needs no bump.
+- Maintain [RELEASE_HIGHLIGHTS.md](docs/RELEASE_HIGHLIGHTS.md) for meaningful user-facing
+  changes: replace the small current-release draft, retain 3–6 factual concise bullets,
+  update its version and cite included evidence commits. Never describe unfinished
+  features as released. See [RELEASING.md](docs/RELEASING.md) for format and verification.
+- Release tags equal v + versionName; published tags/releases are immutable.
+  Production APK/AAB use the persistent release key. Never commit keys, credentials
+  or generated binaries. Debug CI needs no secrets; use the Gradle Wrapper.
+  Preserve signing/ref/version/checksum/recovery safeguards and adaptive/monochrome icons.
+- Do not automatically commit, push, tag or publish.
+- Every completed coding task ends with a concise implementation summary, build/test
+  verification and remaining limitations, followed by exactly one short English Git
+  commit message. Use imperative mood, describe the main change, preferably at most
+  72 characters, and omit version numbers unless necessary.

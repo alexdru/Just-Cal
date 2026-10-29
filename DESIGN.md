@@ -133,7 +133,7 @@ components:
 
 # Just Cal design system
 
-Modern Material 3 Expressive is the approved consumer direction. Compose Material3 targets `1.5.0-beta01` or a newer beta/stable release; the current explicit dependency is `1.5.0-beta02` (October 21, 2026). The stable Compose BOM remains independent. Preserve the evergreen/lime
+Modern Material 3 Expressive is the approved consumer direction. Compose Material3 targets `1.5.0-beta01` or a newer beta/stable release; the current explicit dependency is `1.5.0-beta02` (see `gradle/libs.versions.toml`). The stable Compose BOM remains independent. Preserve the evergreen/lime
 leaf identity, warm neutral canvas, dominant calorie number, quiet macro strip and floating
 navigation. Motion gives changes spatial meaning and makes controls feel immediate.
 Composition, useful information and native interactions take priority over decoration.
@@ -295,5 +295,9 @@ semantics, logical focus order and text contrast. Hide inactive pager semantics 
 decorative graphics. Validate English/Russian, light/dark, Android 12+ dynamic colors,
 narrow/wide portrait windows, IME, root swipes, gesture Back and disabled animations.
 Font/UI scaling acceptance stops at **150%** per the approved scope; do not run 200%
-or landscape checks. Static images document composition; device gestures/traces validate
+or landscape checks. Recorded component/navigation tests cover API 30 and API 37;
+OnePlus 12, release frame/startup benchmarks and full spoken TalkBack remain open.
+An intermittent API 37 rapid hardware-key input reorder was observed historically;
+later passing runs do not establish its cause or a definitive fix.
+Static images document composition; device gestures/traces validate
 motion separately. Do not claim TalkBack certification or leak/jank absence without evidence.
