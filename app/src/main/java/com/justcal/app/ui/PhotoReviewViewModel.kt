@@ -83,7 +83,7 @@ class PhotoReviewViewModel @Inject constructor(
                     val reason = failure.message?.takeIf { it in setOf(
                         "No verified meal model selected", "Selected model unavailable",
                         "Meal model has not passed image quality validation",
-                        "Test this model with an image in Playground first", "AI runtime is busy",
+                        "Selected model is incompatible with image recognition", "AI runtime is busy",
                         "Insufficient available memory", "Unexpected meal fields",
                         "Uncertain meal must not supply a name", "Meal response exceeded budget",
                     ) } ?: failure.javaClass.simpleName

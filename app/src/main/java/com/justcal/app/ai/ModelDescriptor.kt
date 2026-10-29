@@ -39,6 +39,23 @@ data class ModelDescriptor(
 
     fun admitsMealName() = profile == ModelTaskProfile.GENERAL_VISION &&
         mealNameAdmission?.matches(sha256, AI_RUNTIME_VERSION, MealRecognition.PROFILE_VERSION) == true
+
+    /** A fresh install can be selected before its first user-requested image run.
+     * Device image probes are runtime evidence, never a prerequisite or task-quality admission.
+     */
+    fun supportsRecognition(task: String, validation: ModelValidation): Boolean {
+        val admitted = when (task) {
+            "package" -> admitsPackage()
+            "meal" -> admitsMealName()
+            else -> false
+        }
+        val capabilities = validation.capabilities
+        return admitted && (validation.sha256 == sha256) && (validation.runtime == AI_RUNTIME_VERSION) &&
+            capabilities.vision && (capabilities.contextTokens > 0) &&
+            (capabilities.dynamicContext || (capabilities.contextTokens <= 4096)) &&
+            BackendSelector.runtimeSupported(capabilities.minimumRuntime) &&
+            BackendSelector.candidates(capabilities).isNotEmpty()
+    }
 }
 
 /** Reviewed evidence is separate from container compatibility and a local image smoke. */

@@ -94,6 +94,51 @@ class ModelPolicyTest {
         assertFalse(macros.copy(sha256 = "c".repeat(64)).admitsPackage())
     }
 
+    private fun admittedVisionModel(): ModelDescriptor {
+        val hash = "b".repeat(64)
+        return ModelDescriptor(id = "vision", name = "Vision", repository = "test/vision",
+            revision = "a".repeat(40), filename = "vision.litertlm", bytes = 1, sha256 = hash,
+            license = "Apache-2.0", licenseUrl = "https://example.test/license",
+            profile = ModelTaskProfile.GENERAL_VISION, contextTokens = 4096, outputTokens = 512,
+            packageAdmission = TaskQualityAdmission(hash, AI_RUNTIME_VERSION, PackageMacroAssistance.PROFILE_VERSION, "package-gate"),
+            mealNameAdmission = TaskQualityAdmission(hash, AI_RUNTIME_VERSION, MealRecognition.PROFILE_VERSION, "meal-gate"))
+    }
+
+    @Test fun freshInstallDoesNotNeedAPlaygroundImageRunBeforeSelection() {
+        val model = admittedVisionModel()
+        val validation = ModelValidation(model.sha256,
+            ModelCapabilities(true, 4096, false, AI_RUNTIME_VERSION, listOf("CPU", "GPU"), listOf("CPU")))
+        assertNull(validation.imageProbe)
+        for (task in listOf("package", "meal")) {
+            assertTrue(model.supportsRecognition(task, validation))
+            assertTrue(model.supportsRecognition(task, validation.copy(imageProbe = "another-device/old-runtime/GPU")))
+        }
+        assertFalse(model.supportsRecognition("unknown-task", validation))
+    }
+
+    @Test fun missingDeviceProbeCannotBypassTaskAdmissionOrContainerCompatibility() {
+        val model = admittedVisionModel()
+        val capabilities = ModelCapabilities(true, 4096, false, null, listOf("CPU"), listOf("CPU"))
+        val validation = ModelValidation(model.sha256, capabilities)
+        val invalid = listOf(
+            validation.copy(sha256 = "c".repeat(64)),
+            validation.copy(runtime = "0.17.1"),
+            validation.copy(capabilities = capabilities.copy(vision = false)),
+            validation.copy(capabilities = capabilities.copy(minimumRuntime = "0.19.0")),
+            validation.copy(capabilities = capabilities.copy(visionBackends = listOf("GPU"))),
+            validation.copy(capabilities = capabilities.copy(textBackends = emptyList())),
+            validation.copy(capabilities = capabilities.copy(contextTokens = 0)),
+            validation.copy(capabilities = capabilities.copy(contextTokens = 8192)),
+        )
+        for (task in listOf("package", "meal")) {
+            invalid.forEach { assertFalse(model.supportsRecognition(task, it)) }
+            assertFalse(model.copy(packageAdmission = null, mealNameAdmission = null)
+                .supportsRecognition(task, validation.copy(imageProbe = "successful-image-probe")))
+        }
+        assertTrue(model.supportsRecognition("meal",
+            validation.copy(capabilities = capabilities.copy(contextTokens = 8192, dynamicContext = true))))
+    }
+
     @Test fun rejectedMealEvidenceRemainsAvailableWithoutAnyPrefill() {
         val malformed = """{"isFood":true,"singleDish":false,"name":"apple and banana"}"""
         val rejected = MealRecognition.review(malformed)

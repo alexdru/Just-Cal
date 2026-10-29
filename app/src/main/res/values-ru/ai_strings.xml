@@ -26,13 +26,13 @@
     <string name="ai_previous">Предыдущий результат</string>
     <string name="ai_compare">Сравнить с прошлым запуском</string>
     <string name="ai_diagnostics">Диагностика</string>
-    <string name="ai_task_hint">Выбрать можно только допущенную модель с актуальной проверкой изображения. Установка модели не меняет ваш выбор распознавания.</string>
+    <string name="ai_task_hint">Выберите совместимую установленную модель с допуском к задаче. На этом телефоне она запустится при первом сканировании фото. Установка модели не меняет ваш выбор распознавания.</string>
     <string name="ai_package_macros_hint">После встроенного OCR Gemma дополняет пустые БЖУ на 100 г. Калории, название, масса упаковки и заполненные данные OCR сохраняются. Проверьте результат перед сохранением.</string>
     <string name="ai_package_macros_and_name">Упаковки: недостающие БЖУ · еда: только название</string>
     <string name="ai_package_macro_suggestions">AI · помощь с недостающими БЖУ. Калории и массу проверьте по упаковке.</string>
     <string name="ai_profile_label">Текст этикеток</string>
     <string name="ai_profile_vision">Изображения и еда</string>
-    <string name="ai_use_photo_manual">Перейти к ручному вводу</string>
+    <string name="ai_use_photo_manual">Вручную</string>
     <string name="ai_runtime_error">Не удалось запустить модель. Выберите другую совместимую модель или введите данные вручную.</string>
     <string name="ai_suggestions">Подсказки AI · проверьте каждое поле. Съеденный вес укажите самостоятельно.</string>
     <string name="ai_conflicts">Данные OCR и модели расходятся. Спорные поля оставлены пустыми; сравните исходные данные.</string>
@@ -47,12 +47,12 @@
     <string name="ai_installed_status">Установлена</string>
     <string name="ai_import_hint">Выбрать совместимую модель .litertlm для изображений</string>
     <string name="ai_paused">Приостановлено · загружено %1$s</string>
-    <string name="ai_package_assistance">Помощь локальной модели</string>
-    <string name="ai_package_assistance_model">%1$s · только для этого сканирования</string>
+    <string name="ai_package_assistance">Дополнить БЖУ</string>
+    <string name="ai_package_assistance_model">%1$s · только это фото</string>
     <string name="ai_package_assistance_checking">Проверяем выбранную модель…</string>
-    <string name="ai_package_assistance_missing">Выберите допущенную модель в AI Моделях</string>
+    <string name="ai_package_assistance_missing">Подключить помощь с БЖУ</string>
     <string name="ai_package_assistance_scope">Если OCR оставит БЖУ пустыми, модель сможет дополнить их на 100 г. Встроенный OCR работает всегда.</string>
     <string name="ai_package_assistance_off">Для этого фото используем только встроенный OCR. Общий выбор модели не меняется.</string>
-    <string name="ai_package_model_processing">Дополняем БЖУ на устройстве с помощью %1$s…</string>
+    <string name="ai_package_model_processing">Дополняем БЖУ…</string>
     <string name="ai_package_with_model">OCR + %1$s</string>
 </resources>

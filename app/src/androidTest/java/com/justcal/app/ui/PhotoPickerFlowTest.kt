@@ -101,7 +101,7 @@ class PhotoPickerFlowTest {
             selectPhoto(0)
             click(R.string.use_photo)
             compose.waitUntil(20000) {
-                check(compose.onAllNodesWithText(label(R.string.ocr_failed)).fetchSemanticsNodes().isEmpty()) { "Real OCR failed on the rendered text fixture" }
+                check(compose.onAllNodesWithText(label(R.string.review_failed)).fetchSemanticsNodes().isEmpty()) { "Real OCR failed on the rendered text fixture" }
                 compose.onAllNodesWithText(label(R.string.ocr_confirmation)).fetchSemanticsNodes().isNotEmpty()
             }
             val screenshot = automation.takeScreenshot()
@@ -155,7 +155,10 @@ class PhotoPickerFlowTest {
         fun entries() = kotlinx.coroutines.runBlocking { database.diaryDao().observeDay(date.toEpochDay()).first() }
         val baseline = entries().map { it.id }.toSet()
         val uniqueName = "Meal flow " + UUID.randomUUID()
+        val modelFiles = com.justcal.app.ai.ModelFiles(java.io.File(context.noBackupFilesDir, "local-ai-models"))
+        val originalValidation = requireNotNull(modelFiles.validation(model))
         try {
+            modelFiles.saveValidation(model, originalValidation.copy(imageProbe = null))
             resolver.openOutputStream(photo)!!.use { output ->
                 java.io.File(compose.activity.getExternalFilesDir(null), "meal-fixtures/apple.jpg").inputStream().use { it.copyTo(output) }
             }
@@ -189,11 +192,12 @@ class PhotoPickerFlowTest {
             }
             compose.onNode(usePhoto).assertIsEnabled().performClick()
             compose.waitUntil(90_000) {
-                check(compose.onAllNodesWithText(label(R.string.ai_runtime_error)).fetchSemanticsNodes().isEmpty()) { "Meal model failed; inspect JustCalAI diagnostics" }
+                check(compose.onAllNodesWithText(label(R.string.review_failed)).fetchSemanticsNodes().isEmpty()) { "Meal model failed; inspect JustCalAI diagnostics" }
                 compose.onAllNodes(hasText(label(R.string.food_name)) and hasSetTextAction()).fetchSemanticsNodes().isNotEmpty()
             }
             fun field(id: Int) = compose.onNode(hasText(label(id)) and hasSetTextAction())
             compose.onNodeWithText(label(R.string.ai_suggestions)).assertExists()
+            org.junit.Assert.assertNotNull(kotlinx.coroutines.runBlocking { models.validate(model).imageProbe })
             field(R.string.food_name).performScrollTo()
             field(R.string.food_name).assertTextContains("apple", ignoreCase = true)
             field(R.string.amount).performScrollTo().assert(SemanticsMatcher.expectValue(
@@ -214,13 +218,15 @@ class PhotoPickerFlowTest {
             org.junit.Assert.assertEquals(12000L, saved.single().eatenGramsHundredths)
             org.junit.Assert.assertEquals(EntrySource.MANUAL, saved.single().toDomain().source)
         } finally {
-            kotlinx.coroutines.runBlocking {
-                previousChoices.forEach { (task, id) -> preferences.selectAiModel(task, id) }
-                entries().filter { it.name == uniqueName }.forEach { database.diaryDao().delete(it.id) }
-            }
-            database.close()
-            resolver.delete(photo, null, null)
-            resolver.delete(extra, null, null)
+            try {
+                kotlinx.coroutines.runBlocking {
+                    previousChoices.forEach { (task, id) -> preferences.selectAiModel(task, id) }
+                    entries().filter { it.name == uniqueName }.forEach { database.diaryDao().delete(it.id) }
+                }
+                database.close()
+                resolver.delete(photo, null, null)
+                resolver.delete(extra, null, null)
+            } finally { modelFiles.saveValidation(model, originalValidation) }
         }
     }
 
@@ -241,7 +247,10 @@ class PhotoPickerFlowTest {
         fun entries() = kotlinx.coroutines.runBlocking { database.diaryDao().observeDay(date.toEpochDay()).first() }
         val baseline = entries().map { it.id }.toSet()
         val uniqueName = "Package macros " + UUID.randomUUID()
+        val modelFiles = com.justcal.app.ai.ModelFiles(java.io.File(context.noBackupFilesDir, "local-ai-models"))
+        val originalValidation = requireNotNull(modelFiles.validation(model))
         try {
+            modelFiles.saveValidation(model, originalValidation.copy(imageProbe = null))
             repeat(2) {
                 val photo = requireNotNull(resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ContentValues().apply {
                     put(MediaStore.Images.Media.DISPLAY_NAME, "JustCal-package-${UUID.randomUUID()}.jpg")
@@ -297,6 +306,7 @@ class PhotoPickerFlowTest {
             compose.onNodeWithText(label(R.string.ai_package_macro_suggestions)).assertDoesNotExist()
             org.junit.Assert.assertEquals(baseline, entries().map { it.id }.toSet())
             org.junit.Assert.assertEquals(model.id, kotlinx.coroutines.runBlocking { preferences.aiModels.first()["package"] })
+            org.junit.Assert.assertNull(kotlinx.coroutines.runBlocking { models.validate(model).imageProbe })
             compose.onNodeWithContentDescription(label(R.string.close)).performClick()
             compose.onNodeWithContentDescription(label(R.string.add_food)).performClick()
             click(R.string.scan_package)
@@ -311,9 +321,10 @@ class PhotoPickerFlowTest {
             }
             click(R.string.use_photo)
             compose.waitUntil(90_000) {
-                check(compose.onAllNodesWithText(label(R.string.ocr_failed)).fetchSemanticsNodes().isEmpty())
+                check(compose.onAllNodesWithText(label(R.string.review_failed)).fetchSemanticsNodes().isEmpty())
                 compose.onAllNodesWithText(label(R.string.ai_package_macro_suggestions)).fetchSemanticsNodes().isNotEmpty()
             }
+            org.junit.Assert.assertNotNull(kotlinx.coroutines.runBlocking { models.validate(model).imageProbe })
             field(R.string.energy).performScrollTo().assertTextContains("150")
             field(R.string.protein).performScrollTo().assertTextContains("4.5")
             field(R.string.fat).performScrollTo().assertTextContains("3.6")
@@ -344,12 +355,14 @@ class PhotoPickerFlowTest {
             org.junit.Assert.assertEquals(12000L, saved.single().eatenGramsHundredths)
             org.junit.Assert.assertEquals(EntrySource.PACKAGE_SCAN, saved.single().toDomain().source)
         } finally {
-            kotlinx.coroutines.runBlocking {
-                preferences.selectAiModel("package", previous)
-                entries().filter { it.name == uniqueName }.forEach { database.diaryDao().delete(it.id) }
-            }
-            database.close()
-            photos.forEach { resolver.delete(it, null, null) }
+            try {
+                kotlinx.coroutines.runBlocking {
+                    preferences.selectAiModel("package", previous)
+                    entries().filter { it.name == uniqueName }.forEach { database.diaryDao().delete(it.id) }
+                }
+                database.close()
+                photos.forEach { resolver.delete(it, null, null) }
+            } finally { modelFiles.saveValidation(model, originalValidation) }
         }
     }
 
@@ -383,7 +396,7 @@ class PhotoPickerFlowTest {
             selectPhoto(0)
             compose.onNodeWithText(label(R.string.mode_package)).assertExists()
             compose.onNodeWithText(label(R.string.review_package_guidance)).assertExists()
-            compose.onNodeWithText(label(R.string.review_package_ocr)).assertExists()
+            compose.onNodeWithText(label(R.string.ai_use_photo_manual)).assertExists()
             compose.onNodeWithText(label(R.string.choose_another)).performScrollTo().performClick()
             selectPhoto(1)
             compose.onNodeWithText(label(R.string.mode_package)).assertExists()
@@ -393,7 +406,7 @@ class PhotoPickerFlowTest {
             }
             click(R.string.use_photo)
             compose.waitUntil(20000) {
-                compose.onAllNodesWithText(label(R.string.ocr_failed)).fetchSemanticsNodes().isNotEmpty()
+                compose.onAllNodesWithText(label(R.string.review_failed)).fetchSemanticsNodes().isNotEmpty()
             }
             compose.onNodeWithText(label(R.string.retry)).assertIsEnabled()
             compose.onNodeWithText(label(R.string.ai_use_photo_manual)).performScrollTo().performClick()

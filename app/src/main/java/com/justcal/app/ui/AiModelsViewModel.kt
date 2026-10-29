@@ -85,10 +85,7 @@ class AiModelsViewModel @Inject constructor(
 
     fun selectable(task: String, installed: InstalledAiModel): Boolean {
         val validation = installed.validation ?: return false
-        val approved = if (task == "package") installed.descriptor?.admitsPackage() == true else installed.descriptor?.admitsMealName() == true
-        return approved && BackendSelector.candidates(validation.capabilities).any {
-            validation.imageProbe == store.probeFingerprint(it)
-        }
+        return installed.descriptor?.supportsRecognition(task, validation) == true
     }
 
     fun select(task: String, installed: InstalledAiModel?) = mutate(R.string.ai_storage_error) {

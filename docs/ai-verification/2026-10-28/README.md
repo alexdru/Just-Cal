@@ -45,7 +45,7 @@ The separate production consumer accepts only **blank protein/fat/carbohydrate**
 
 Paddle crop-v2 yielded six nonempty parser results, sixteen empty extractions and five 90-second inference deadlines. Its actual routed merge recovered seven missing fields but incorrectly accepted **fat 19.5 instead of 4.4 g** on `1792612058945.jpg` (the printed 19.5 is carbohydrate). Thus both its numerical minimum and final gate fail; it stays Playground-only. Its old crop-v1 numerical minimum above is not retroactively changed or used to admit v2.
 
-The new package task is offered under **Settings → AI Models → Scan package → Gemma 4 E2B**. Installation never selects it automatically; a current SDK/device image probe is also required. PP-OCRv5 remains available without any VLM. Missing basis/crop, complete OCR, unsupported model, timeout or native failure preserve baseline rather than trigger a download.
+The new package task is offered under **Settings → AI Models → Scan package → Gemma 4 E2B**. Installation never selects it automatically. The 0.18.0 build used a prior SDK/device image probe; 0.19.1 removes that onboarding prerequisite and checks the first real scan instead, retaining the same artifact/task quality admission (see LOCAL_AI_LAB.md). PP-OCRv5 remains available without any VLM. Missing basis/crop, complete OCR, unsupported model, timeout or native failure preserve baseline rather than trigger a download.
 
 ## Final implementation verification
 

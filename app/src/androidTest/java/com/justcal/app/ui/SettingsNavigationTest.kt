@@ -113,7 +113,11 @@ class SettingsNavigationTest {
             store.list().first { store.validate(it).catalogId == "gemma4-e2b" }
         }
         val previous = kotlinx.coroutines.runBlocking { preferences.aiModels.first()["package"] }
+        val modelFiles = com.justcal.app.ai.ModelFiles(java.io.File(context.noBackupFilesDir, "local-ai-models"))
+        val originalValidation = requireNotNull(modelFiles.validation(model))
         try {
+            // Reproduce a newly downloaded artifact on this device, without touching its weights.
+            modelFiles.saveValidation(model, originalValidation.copy(imageProbe = null))
             kotlinx.coroutines.runBlocking { preferences.selectAiModel("package", null) }
             tab(R.string.settings).performClick()
             compose.onNodeWithText(label(R.string.ai_models)).performScrollTo()
@@ -157,8 +161,10 @@ class SettingsNavigationTest {
                 }
             }
         } finally {
-            compose.mainClock.autoAdvance = true
-            kotlinx.coroutines.runBlocking { preferences.selectAiModel("package", previous) }
+            try {
+                compose.mainClock.autoAdvance = true
+                kotlinx.coroutines.runBlocking { preferences.selectAiModel("package", previous) }
+            } finally { modelFiles.saveValidation(model, originalValidation) }
         }
     }
 

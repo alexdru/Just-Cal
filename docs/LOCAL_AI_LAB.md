@@ -16,9 +16,19 @@ Place original food-package photos in `test-data/package-photos/` at the project
 
 The checked-in CI workflow runs `:app:testDebugUnitTest :app:lintDebug :app:assembleDebug`; it does not run device-photo tests or require this ignored inbox. Unit tests use in-code data, not private photos. Opt-in Android tests check their instrumentation arguments **before** accessing fixtures/models: `packagePhotoBatch=true` for both batch classes, `realPackageMacros=true` for the real package editor flow, and `realAiModels=true` for real-model runtime/selection tests. Without those arguments JUnit reports a skip. An explicitly requested real-photo run still fails if its required files are absent; do not treat missing requested fixtures as a quality pass.
 
+## Fresh model installation — 0.19.1
+
+A downloaded/imported curated model can be selected once its exact artifact/task admission and container/runtime/image-backend compatibility pass. A prior Playground image response is **not required**. Version 0.19.0 incorrectly required a device/SDK image-probe record before selection and production routing; a fresh installation on a new phone had no way to obtain that record through the normal scan flow.
+
+ModelDescriptor.supportsRecognition centralizes the same checks for Models, package readiness and production routing. The optional imageProbe field remains runtime evidence: a successful user-requested image run records it, but its absence or an older device fingerprint cannot block a compatible admitted artifact. Quality admission still matches the artifact SHA-256, runtime and task version. Unknown/unadmitted artifacts and unsupported image backends remain unavailable for production.
+
+Installation and task selection do not initialize native inference. Initialization/device compatibility is exercised on the user's first actual scan request; no synthetic image, extra download or automatic task choice is added. Runtime failures still preserve OCR or offer manual recovery, and native cancellation/cleanup rules are unchanged. Existing installed weights/metadata remain readable without downloading them again.
+
+Verification: 167 unit tests, debug app/AndroidTest APK builds and lint passed. Three opt-in device regressions passed in 80.060 s on OnePlus 7T/API 30: task selection without an image-probe record, first real meal-name scan, and package OCR-only/first assisted scan through explicit Save. Each temporarily removed only the chosen model's probe field, retained all weights/admission metadata, asserted first inference records a probe and restored original metadata/preferences/test-owned rows/photos in finally. OnePlus 12 was not connected, so its native runtime was not tested in this fix. No fresh download or wider model-quality benchmark is claimed.
+
 ## Per-scan assistance control — 0.19.0
 
-Photo Review shows the selected, admitted and image-checked package model and a native **Local model assistance** switch. It is enabled only when such a model is available; otherwise AI Models remains available to choose one explicitly. Turning it off bypasses optional model lookup/loading/inference for that photo while retaining bundled OCR. The choice survives Activity recreation and a trip to Models, but does not change the global default or apply to the next new scan. No new DataStore preference is introduced.
+Photo Review shows the selected, admitted and metadata-compatible package model and a native **Local model assistance** switch. It is enabled only when such a model is available; otherwise AI Models remains available to choose one explicitly. Turning it off bypasses optional model lookup/loading/inference for that photo while retaining bundled OCR. The choice survives Activity recreation and a trip to Models, but does not change the global default or apply to the next new scan. No new DataStore preference is introduced.
 
 The loading label names the model only when a reliable crop has been found and the optional native stage actually starts. A complete OCR result or unsuitable basis/crop never implies an additional model call merely because the switch is on. Successful assistance retains its existing AI banner/raw evidence in the editor; failure preserves OCR. Use photo stays pinned in a transparent host while the action viewport scrolls behind it with final-item clearance.
 
@@ -36,7 +46,7 @@ Without opt-in arguments, both photo-batch tests and the real-package UI test re
 
 The two Paddle names are different models/runtimes. PP-OCRv5 is specialized text detection/recognition through ONNX Runtime/OpenCV. PaddleOCR-VL-1.6 is a generative vision-language model through LiteRT-LM. Installation stores private weights; it neither replaces bundled OCR nor selects a task. Removing a downloaded model leaves bundled OCR available.
 
-**Enable package assistance:** Settings → AI Models → Scan package → Gemma 4 E2B. The exact installed artifact also needs a successful image probe for this SDK/device; if needed, load it in Playground and run an image. Production uses its own session. No download, selection or inference starts automatically.
+**Enable package assistance:** Settings → AI Models → Scan package → Gemma 4 E2B. The installed artifact must pass task admission and container/runtime/image-backend checks; as of 0.19.1 no preliminary Playground image test is required. Production uses its own session. No download, selection or inference starts automatically.
 
 Gemma runs only when OCR has an explicit per-100-g basis, a blank protein/fat/carbohydrate field and a reliable nutrition crop. The strict consumer accepts only missing P/F/C on the same 100-g basis, with decimal bounds and combined macros ≤100 g. It cannot alter OCR calories, name, mass or any nonempty macro. Its own calorie/name/mass answers are ignored; weight remains editable and saving is explicit. Failed/unsupported inference preserves OCR.
 

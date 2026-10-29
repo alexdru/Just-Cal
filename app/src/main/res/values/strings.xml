@@ -87,11 +87,11 @@
     <string name="camera_error">Camera unavailable. Try again or choose a photo.</string>
     <string name="image_error">Couldn’t open this photo. It may be unavailable, damaged or too large. Choose another photo.</string>
     <string name="preparing_image">Preparing photo…</string>
-    <string name="review_photo">Review photo</string>
+    <string name="review_photo">Check your photo</string>
     <string name="photo_description">Selected food photo</string>
     <string name="use_photo">Use photo</string>
     <string name="retake">Retake</string>
-    <string name="choose_another">Choose another</string>
+    <string name="choose_another">Another photo</string>
     <string name="done">Done</string>
     <string name="image_dimensions">%1$d × %2$d px</string>
     <string name="app_license" translatable="false">GPL-3.0-or-later</string>
@@ -113,7 +113,7 @@
     <string name="language_russian">Русский</string>
     <string name="nutrition_with_unit">%1$s %2$s</string>
     <string name="review_package_ocr">Read the label on this device, then review and correct its nutrition. Nothing is saved automatically.</string>
-    <string name="ocr_processing">Reading the label offline…</string>
+    <string name="ocr_processing">Reading the label…</string>
     <string name="ocr_failed">Couldn’t read the label. Try again, choose a sharper photo or enter the values manually.</string>
     <string name="ocr_confirmation">Check label values</string>
     <string name="ocr_review_values">Check every value against the label. Fill in any empty fields, and change the amount if you ate less than the package.</string>
@@ -123,8 +123,8 @@
     <string name="ocr_show_text">Show recognized text</string>
     <string name="ocr_hide_text">Hide recognized text</string>
     <string name="macro_detail">P %1$s g · F %2$s g · C %3$s g</string>
-    <string name="review_package_guidance">Check that the full nutrition label is sharp, readable and free of glare.</string>
-    <string name="review_meal_guidance">Check that the whole meal is visible and the photo is sharp.</string>
+    <string name="review_package_guidance">Keep the full nutrition label clear and free of glare.</string>
+    <string name="review_meal_guidance">Keep the whole dish in frame. We will suggest its name.</string>
     <string name="capturing_photo">Taking photo…</string>
     <string name="expanded">Expanded</string>
     <string name="collapsed">Collapsed</string>
@@ -172,4 +172,7 @@
     <string name="updates_install_help_title">Installing this update</string>
     <string name="updates_install_help">1. If Android asks, enable “Allow from this source” for Just Cal, then go back.</string>
     <string name="updates_protect_help">2. If Play Protect has not seen this developer before, tap “Install anyway”.</string>
+    <string name="review_failed">Could not recognize this photo</string>
+    <string name="review_retry_hint">Try again, choose another photo or enter the details manually.</string>
+    <string name="review_image_unavailable">Photo unavailable. Choose another.</string>
 </resources>

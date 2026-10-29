@@ -43,7 +43,7 @@ class FoodRecognitionRouter @Inject constructor(
     private val preferences: GoalPreferences, private val runtime: LiteRtLocalAiEngine,
     private val cropper: LabelImageCropper,
 ) {
-    /** UI availability uses the same admission/probe checks as production, without loading a model. */
+    /** UI availability uses the same task/metadata checks as production, without loading a model. */
     suspend fun packageModelName(id: String?): String? = validatedPackageModel(id)?.second?.name
 
     private suspend fun validatedPackageModel(id: String?): Pair<LocalModel, ModelDescriptor>? {
@@ -54,10 +54,7 @@ class FoodRecognitionRouter @Inject constructor(
             catch (_: Exception) { return null }
             catch (_: LinkageError) { return null }
         val descriptor = catalog.matching(validation.sha256)
-        if (descriptor?.admitsPackage() != true) return null
-        if (BackendSelector.candidates(validation.capabilities).none {
-            validation.imageProbe == store.probeFingerprint(it)
-        }) return null
+        if (descriptor?.supportsRecognition("package", validation) != true) return null
         return model to descriptor
     }
 
@@ -106,9 +103,9 @@ class FoodRecognitionRouter @Inject constructor(
         val validation = store.validate(model)
         val descriptor = catalog.matching(validation.sha256)
         require(descriptor?.admitsMealName() == true) { "Meal model has not passed image quality validation" }
-        require(BackendSelector.candidates(validation.capabilities).any {
-            validation.imageProbe == store.probeFingerprint(it)
-        }) { "Test this model with an image in Playground first" }
+        require(descriptor.supportsRecognition("meal", validation)) {
+            "Selected model is incompatible with image recognition"
+        }
         val raw = StringBuilder()
         val metrics: AiMetrics
         try {

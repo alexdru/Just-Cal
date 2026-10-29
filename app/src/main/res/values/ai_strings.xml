@@ -26,13 +26,13 @@
     <string name="ai_previous">Previous result</string>
     <string name="ai_compare">Compare with previous run</string>
     <string name="ai_diagnostics">Diagnostics</string>
-    <string name="ai_task_hint">Only admitted models with a current image check can be selected. Installing a model leaves your recognition choice unchanged.</string>
+    <string name="ai_task_hint">Choose a compatible installed model admitted for this task. It runs on this device when you first scan a photo. Installing a model leaves your recognition choice unchanged.</string>
     <string name="ai_package_macros_hint">Gemma supplements missing protein, fat and carbs per 100 g after bundled OCR. Calories, name, package weight and existing OCR values are preserved. Review before saving.</string>
     <string name="ai_package_macros_and_name">Package labels: missing macros · meals: name only</string>
     <string name="ai_package_macro_suggestions">AI assistance for missing macros. Check calories and weight against the label.</string>
     <string name="ai_profile_label">Label transcription</string>
     <string name="ai_profile_vision">Images and meals</string>
-    <string name="ai_use_photo_manual">Continue with manual entry</string>
+    <string name="ai_use_photo_manual">Enter manually</string>
     <string name="ai_runtime_error">Model could not run. Try another compatible model or use manual entry.</string>
     <string name="ai_suggestions">AI suggestions · review every field. Enter the consumed amount yourself.</string>
     <string name="ai_conflicts">OCR and model values disagree. Conflicting fields are empty; compare the original evidence.</string>
@@ -47,12 +47,12 @@
     <string name="ai_installed_status">Installed</string>
     <string name="ai_import_hint">Choose a compatible .litertlm image model</string>
     <string name="ai_paused">Paused · %1$s downloaded</string>
-    <string name="ai_package_assistance">Local model assistance</string>
-    <string name="ai_package_assistance_model">%1$s · this scan only</string>
+    <string name="ai_package_assistance">Complete macros</string>
+    <string name="ai_package_assistance_model">%1$s · this photo only</string>
     <string name="ai_package_assistance_checking">Checking the selected model…</string>
-    <string name="ai_package_assistance_missing">Choose a verified model in AI Models</string>
+    <string name="ai_package_assistance_missing">Set up help with missing macros</string>
     <string name="ai_package_assistance_scope">If OCR leaves macros blank, the model can supplement them per 100 g. Bundled OCR always runs.</string>
     <string name="ai_package_assistance_off">This photo will use bundled OCR only. Your default model selection stays unchanged.</string>
-    <string name="ai_package_model_processing">Supplementing macros on this device with %1$s…</string>
+    <string name="ai_package_model_processing">Completing missing macros…</string>
     <string name="ai_package_with_model">OCR + %1$s</string>
 </resources>

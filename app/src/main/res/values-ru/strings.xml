@@ -87,11 +87,11 @@
     <string name="camera_error">Камера недоступна. Повторите попытку или выберите фото.</string>
     <string name="image_error">Не удалось открыть фото. Возможно, оно недоступно, повреждено или слишком велико. Выберите другое.</string>
     <string name="preparing_image">Подготовка фото…</string>
-    <string name="review_photo">Проверить фото</string>
+    <string name="review_photo">Проверьте фото</string>
     <string name="photo_description">Выбранное фото еды</string>
     <string name="use_photo">Использовать фото</string>
     <string name="retake">Переснять</string>
-    <string name="choose_another">Выбрать другое</string>
+    <string name="choose_another">Другое фото</string>
     <string name="done">Готово</string>
     <string name="image_dimensions">%1$d × %2$d пикс.</string>
     <string name="app_license_notice">Copyright © 2026 alexdru и участники проекта. Свободное ПО; распространение и изменение разрешены по GPL v3 или более поздней версии. Без гарантий. Лицензия доступна в репозитории исходного кода (LICENSE).</string>
@@ -109,7 +109,7 @@
     <string name="language_russian">Русский</string>
     <string name="nutrition_with_unit">%1$s %2$s</string>
     <string name="review_package_ocr">Прочитаем этикетку на устройстве, затем вы сможете проверить и исправить пищевую ценность. Ничего не сохраняется автоматически.</string>
-    <string name="ocr_processing">Распознаём этикетку без интернета…</string>
+    <string name="ocr_processing">Читаем этикетку…</string>
     <string name="ocr_failed">Не удалось прочитать этикетку. Повторите попытку, выберите более чёткое фото или введите значения вручную.</string>
     <string name="ocr_confirmation">Проверить значения</string>
     <string name="ocr_review_values">Сверьте все значения с этикеткой. Заполните пустые поля и измените съеденный вес, если съели не всю упаковку.</string>
@@ -119,8 +119,8 @@
     <string name="ocr_show_text">Показать распознанный текст</string>
     <string name="ocr_hide_text">Скрыть распознанный текст</string>
     <string name="macro_detail">Б %1$s г · Ж %2$s г · У %3$s г</string>
-    <string name="review_package_guidance">Проверьте, что вся таблица пищевой ценности в кадре, текст чёткий и без бликов.</string>
-    <string name="review_meal_guidance">Проверьте, что всё блюдо в кадре и фото чёткое.</string>
+    <string name="review_package_guidance">Таблица пищевой ценности должна быть чёткой и без бликов.</string>
+    <string name="review_meal_guidance">Блюдо целиком в кадре. Распознаем его название.</string>
     <string name="capturing_photo">Съёмка…</string>
     <string name="expanded">Развёрнуто</string>
     <string name="collapsed">Свёрнуто</string>
@@ -168,4 +168,7 @@
     <string name="updates_install_help_title">Установка обновления</string>
     <string name="updates_install_help">1. По запросу Android включите «Разрешить из этого источника» для Just Cal и вернитесь назад.</string>
     <string name="updates_protect_help">2. Если Play Protect не знает разработчика, нажмите «Установить всё равно» (Install anyway).</string>
+    <string name="review_failed">Не удалось распознать фото</string>
+    <string name="review_retry_hint">Повторите попытку, выберите другое фото или введите данные вручную.</string>
+    <string name="review_image_unavailable">Фото недоступно. Выберите другое.</string>
 </resources>

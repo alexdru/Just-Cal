@@ -203,7 +203,7 @@ class LiteRtLocalAiEngine @Inject constructor(
                 loadedModel?.takeIf { firstResponseMillis != null }?.let {
                     try { models.recordImageProbe(it, selectedBackend) }
                     catch (cancelled: CancellationException) { throw cancelled }
-                    catch (_: Exception) { /* A missing probe record keeps production selection disabled. */ }
+                    catch (_: Exception) { /* Probe persistence is diagnostic evidence; recognition admission is independent. */ }
                 }
                 fingerprint?.let { context.getSharedPreferences("local-ai-backends", Context.MODE_PRIVATE)
                     .edit { putString(it, selectedBackend.name) } }
