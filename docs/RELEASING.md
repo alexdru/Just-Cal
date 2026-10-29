@@ -199,11 +199,22 @@ tag; a first release uses the root commit. Review this range when drafting notes
 The public body includes only the bullets and a **Full Changelog** GitHub comparison
 link; Evidence lines remain in source for review.
 
-After committing the draft, preview without a GitHub write:
+Refresh published tags before validating a draft: a checkout missing recent tags can
+incorrectly accept changes that already shipped. After committing the draft, preview
+without a GitHub write:
 
 ```sh
+git fetch origin --tags
+CHECK_PROJECT_DRAFT=true bash scripts/test-release-notes.sh
 GH_REPO=alexdru/Just-Cal bash scripts/create-release-notes.sh vMAJOR.MINOR.PATCH
 ```
+
+If notes fail because a highlight was already included in the comparison base, replace
+it with an actual change after that base; do not weaken the evidence check or relabel
+an old feature. A documentation-only revision need not be published as an app release.
+After correcting a committed draft, start a new workflow dispatch from the updated
+master commit with its matching version (leave ref blank). Rerunning an old failed
+run retains its old source and cannot pick up the corrected draft.
 
 The release job validates notes before signing and the publisher regenerates them
 before any tag/draft mutation. Creation uses --notes-file; recovery supplies the
