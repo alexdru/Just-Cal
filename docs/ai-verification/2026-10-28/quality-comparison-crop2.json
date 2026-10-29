@@ -1,0 +1,5029 @@
+{
+  "schemaVersion": 1,
+  "runId": "2026-10-28-crop2",
+  "method": "Exact BigDecimal comparison against visible print. OCR uses its editor; Paddle uses the actual hybrid only where the production router would request a reliable crop; complete OCR, no crop and failures retain baseline; Gemma crop/full rows score standalone JSON. The separate gemma4-e2b-macros row replays those exact native responses through the production missing-macro consumer; energy, name, mass and existing OCR fields cannot change. Correct OCR fields removed by a candidate also prevent recommendation.",
+  "fieldOrder": [
+    "energyKcal",
+    "proteinGrams",
+    "fatGrams",
+    "carbsGrams",
+    "netGrams"
+  ],
+  "variants": [
+    {
+      "variant": "ocr",
+      "allFiles": {
+        "photos": 27,
+        "visible": 127,
+        "correct": 82,
+        "productionCropRecoveries": 0,
+        "wrongFields": 0,
+        "missingFields": 45,
+        "inventedAbsentFields": 0,
+        "recoveredMissingNutritionFields": 0,
+        "removedCorrectOcrFields": 0,
+        "unsafeNutritionBasisPhotos": 0
+      },
+      "independentViews": {
+        "photos": 25,
+        "visible": 117,
+        "correct": 76,
+        "productionCropRecoveries": 0,
+        "wrongFields": 0,
+        "missingFields": 41,
+        "inventedAbsentFields": 0,
+        "recoveredMissingNutritionFields": 0,
+        "removedCorrectOcrFields": 0,
+        "unsafeNutritionBasisPhotos": 0
+      },
+      "minimumNumericalGatePassed": false,
+      "packageCandidateGatePassed": false,
+      "cases": [
+        {
+          "fixture": "1792612056936.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            "170"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "320",
+            "8.5",
+            "21",
+            "24",
+            "170"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            "170"
+          ],
+          "visible": 5,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 8854
+        },
+        {
+          "fixture": "1792612057327.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "159",
+            "5",
+            "7",
+            "19",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "159",
+            "5",
+            "7",
+            "19",
+            "260"
+          ],
+          "actual": [
+            "159",
+            "5",
+            "7",
+            "19",
+            null
+          ],
+          "visible": 5,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 14789
+        },
+        {
+          "fixture": "1792612057628.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "293",
+            "55",
+            "7.6",
+            "1.2",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "293",
+            "55",
+            "7.6",
+            "1.2",
+            null
+          ],
+          "actual": [
+            "293",
+            "55",
+            "7.6",
+            "1.2",
+            null
+          ],
+          "visible": 4,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 9734
+        },
+        {
+          "fixture": "1792612058012.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "189",
+            null,
+            null,
+            "17",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "189",
+            "11",
+            "8.5",
+            "17",
+            null
+          ],
+          "actual": [
+            "189",
+            null,
+            null,
+            "17",
+            null
+          ],
+          "visible": 4,
+          "correct": 2,
+          "wrongFields": [],
+          "missingFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 7677
+        },
+        {
+          "fixture": "1792612058338.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "150",
+            null,
+            null,
+            "24.8",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "150",
+            "4.5",
+            "3.6",
+            "24.8",
+            null
+          ],
+          "actual": [
+            "150",
+            null,
+            null,
+            "24.8",
+            null
+          ],
+          "visible": 4,
+          "correct": 2,
+          "wrongFields": [],
+          "missingFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 5465
+        },
+        {
+          "fixture": "1792612058637.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            "13",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "121",
+            "5",
+            "6",
+            "13",
+            null
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            "13",
+            null
+          ],
+          "visible": 4,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 7106
+        },
+        {
+          "fixture": "1792612058945.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "138",
+            null,
+            null,
+            "19.5",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "138",
+            "5",
+            "4.4",
+            "19.5",
+            null
+          ],
+          "actual": [
+            "138",
+            null,
+            null,
+            "19.5",
+            null
+          ],
+          "visible": 4,
+          "correct": 2,
+          "wrongFields": [],
+          "missingFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 6345
+        },
+        {
+          "fixture": "1792612059644.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "155",
+            "5",
+            "11",
+            "9",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "155",
+            "5",
+            "11",
+            "9",
+            "250"
+          ],
+          "actual": [
+            "155",
+            "5",
+            "11",
+            "9",
+            null
+          ],
+          "visible": 5,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 15542
+        },
+        {
+          "fixture": "1792612059984.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "162",
+            null,
+            null,
+            "17.1",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "162",
+            "5.1",
+            "8.1",
+            "17.1",
+            null
+          ],
+          "actual": [
+            "162",
+            null,
+            null,
+            "17.1",
+            null
+          ],
+          "visible": 4,
+          "correct": 2,
+          "wrongFields": [],
+          "missingFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 7213
+        },
+        {
+          "fixture": "1792661540668.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "98.5",
+            "5.9",
+            "3.7",
+            "10.4",
+            "205"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "98.5",
+            "5.9",
+            "3.7",
+            "10.4",
+            "205"
+          ],
+          "actual": [
+            "98.5",
+            "5.9",
+            "3.7",
+            "10.4",
+            "205"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 8746
+        },
+        {
+          "fixture": "1792661541124.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "actual": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 7972
+        },
+        {
+          "fixture": "1792661541536.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "196.8",
+            "9.7",
+            "8.8",
+            "19.7",
+            "200"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "196.8",
+            "9.7",
+            "8.8",
+            "19.7",
+            "200"
+          ],
+          "actual": [
+            "196.8",
+            "9.7",
+            "8.8",
+            "19.7",
+            "200"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 7338
+        },
+        {
+          "fixture": "1793208394902.jpg",
+          "independent": false,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "actual": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 8007
+        },
+        {
+          "fixture": "1793208395235.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "168",
+            "8.4",
+            "5.7",
+            "19.3",
+            null
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "visible": 4,
+          "correct": 0,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 8386
+        },
+        {
+          "fixture": "1793208395550.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "162.5",
+            "8.4",
+            "7.7",
+            "14.9",
+            "220"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "162.5",
+            "8.4",
+            "7.7",
+            "14.9",
+            "220"
+          ],
+          "actual": [
+            "162.5",
+            "8.4",
+            "7.7",
+            "14.9",
+            "220"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 6424
+        },
+        {
+          "fixture": "1793208395872.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "338.3",
+            "9.9",
+            "21.5",
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "338.3",
+            "9.9",
+            "21.5",
+            "26.3",
+            "120"
+          ],
+          "actual": [
+            "338.3",
+            "9.9",
+            "21.5",
+            null,
+            null
+          ],
+          "visible": 5,
+          "correct": 3,
+          "wrongFields": [],
+          "missingFields": [
+            "carbsGrams",
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 9130
+        },
+        {
+          "fixture": "1793208396211.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            "13",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "200",
+            "6",
+            "14",
+            "13",
+            null
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            "13",
+            null
+          ],
+          "visible": 4,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 5586
+        },
+        {
+          "fixture": "1793208396897.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "118",
+            "6",
+            "6.4",
+            "9.1",
+            "230"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "118",
+            "6",
+            "6.4",
+            "9.1",
+            "230"
+          ],
+          "actual": [
+            "118",
+            "6",
+            "6.4",
+            "9.1",
+            "230"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 6877
+        },
+        {
+          "fixture": "1793208397221.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "293.3",
+            "12.8",
+            "19.7",
+            "16.2",
+            "240"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "293.3",
+            "12.8",
+            "19.7",
+            "16.2",
+            "240"
+          ],
+          "actual": [
+            "293.3",
+            "12.8",
+            "19.7",
+            "16.2",
+            "240"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 7388
+        },
+        {
+          "fixture": "1793208397817.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "183.2",
+            "11",
+            "6.4",
+            "20.4",
+            "240"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "183.2",
+            "11",
+            "6.4",
+            "20.4",
+            "240"
+          ],
+          "actual": [
+            "183.2",
+            "11",
+            "6.4",
+            "20.4",
+            "240"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 14814
+        },
+        {
+          "fixture": "1793208398503.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "219.6",
+            "9.7",
+            "9.2",
+            "24.5",
+            "140"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "219.6",
+            "9.7",
+            "9.2",
+            "24.5",
+            "140"
+          ],
+          "actual": [
+            "219.6",
+            "9.7",
+            "9.2",
+            "24.5",
+            "140"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 6709
+        },
+        {
+          "fixture": "1793208398847.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "173.2",
+            "9.6",
+            null,
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "173.2",
+            "9.6",
+            "5.2",
+            "22",
+            "250"
+          ],
+          "actual": [
+            "173.2",
+            "9.6",
+            null,
+            null,
+            null
+          ],
+          "visible": 5,
+          "correct": 2,
+          "wrongFields": [],
+          "missingFields": [
+            "fatGrams",
+            "carbsGrams",
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 13321
+        },
+        {
+          "fixture": "1793208399179.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "80",
+            "0.9",
+            "4.8",
+            "8.3",
+            "150"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "80",
+            "0.9",
+            "4.8",
+            "8.3",
+            "150"
+          ],
+          "actual": [
+            "80",
+            "0.9",
+            "4.8",
+            "8.3",
+            "150"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 6859
+        },
+        {
+          "fixture": "1793208399470.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            "3.6",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "86",
+            "7",
+            "4.7",
+            "3.6",
+            "300"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            "3.6",
+            null
+          ],
+          "visible": 5,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 12115
+        },
+        {
+          "fixture": "1793208399766.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            "250"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "145",
+            "8.5",
+            "5.8",
+            "14.7",
+            "250"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            "250"
+          ],
+          "visible": 5,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 4772
+        },
+        {
+          "fixture": "1793208400097.jpg",
+          "independent": true,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            "250"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "238.7",
+            "8.4",
+            "10.7",
+            "27.2",
+            "250"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            "250"
+          ],
+          "visible": 5,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 8058
+        },
+        {
+          "fixture": "1793208400177.jpg",
+          "independent": false,
+          "engine": "ocr",
+          "sourceVariant": "ocr",
+          "evaluatedTaskVersion": "bundled-package-ocr-v1",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            "170"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "320",
+            "8.5",
+            "21",
+            "24",
+            "170"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            "170"
+          ],
+          "visible": 5,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 9186
+        }
+      ]
+    },
+    {
+      "variant": "gemma4-e2b-crop",
+      "allFiles": {
+        "photos": 27,
+        "visible": 127,
+        "correct": 68,
+        "productionCropRecoveries": 0,
+        "wrongFields": 14,
+        "missingFields": 45,
+        "inventedAbsentFields": 0,
+        "recoveredMissingNutritionFields": 16,
+        "removedCorrectOcrFields": 31,
+        "unsafeNutritionBasisPhotos": 0
+      },
+      "independentViews": {
+        "photos": 25,
+        "visible": 117,
+        "correct": 65,
+        "productionCropRecoveries": 0,
+        "wrongFields": 13,
+        "missingFields": 39,
+        "inventedAbsentFields": 0,
+        "recoveredMissingNutritionFields": 16,
+        "removedCorrectOcrFields": 28,
+        "unsafeNutritionBasisPhotos": 0
+      },
+      "minimumNumericalGatePassed": false,
+      "packageCandidateGatePassed": false,
+      "cases": [
+        {
+          "fixture": "1792612056936.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "320",
+            "8.5",
+            "21",
+            "24",
+            "170"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "visible": 5,
+          "correct": 0,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams",
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "netGrams"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24490
+        },
+        {
+          "fixture": "1792612057327.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "159",
+            "5",
+            "7",
+            "19",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "159",
+            "5",
+            "7",
+            "19",
+            "260"
+          ],
+          "actual": [
+            "159",
+            "5",
+            "7",
+            "19",
+            null
+          ],
+          "visible": 5,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 25269
+        },
+        {
+          "fixture": "1792612057628.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "293",
+            "55",
+            "7.6",
+            "1.2",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "293",
+            "55",
+            "7.6",
+            "1.2",
+            null
+          ],
+          "actual": [
+            "293",
+            "55",
+            "7.6",
+            "1.2",
+            null
+          ],
+          "visible": 4,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 23564
+        },
+        {
+          "fixture": "1792612058012.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "529",
+            "11",
+            "8.5",
+            "17",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "189",
+            "11",
+            "8.5",
+            "17",
+            null
+          ],
+          "actual": [
+            "529",
+            "11",
+            "8.5",
+            "17",
+            null
+          ],
+          "visible": 4,
+          "correct": 3,
+          "wrongFields": [
+            "energyKcal"
+          ],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [
+            "energyKcal"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 23552
+        },
+        {
+          "fixture": "1792612058338.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "598",
+            "4.5",
+            "3.6",
+            "24.8",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "150",
+            "4.5",
+            "3.6",
+            "24.8",
+            null
+          ],
+          "actual": [
+            "598",
+            "4.5",
+            "3.6",
+            "24.8",
+            null
+          ],
+          "visible": 4,
+          "correct": 3,
+          "wrongFields": [
+            "energyKcal"
+          ],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [
+            "energyKcal"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 23855
+        },
+        {
+          "fixture": "1792612058637.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "505",
+            "5",
+            "6",
+            "13",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "121",
+            "5",
+            "6",
+            "13",
+            null
+          ],
+          "actual": [
+            "505",
+            "5",
+            "6",
+            "13",
+            null
+          ],
+          "visible": 4,
+          "correct": 3,
+          "wrongFields": [
+            "energyKcal"
+          ],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 22956
+        },
+        {
+          "fixture": "1792612058945.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "576",
+            "5",
+            "4.4",
+            "19.5",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "138",
+            "5",
+            "4.4",
+            "19.5",
+            null
+          ],
+          "actual": [
+            "576",
+            "5",
+            "4.4",
+            "19.5",
+            null
+          ],
+          "visible": 4,
+          "correct": 3,
+          "wrongFields": [
+            "energyKcal"
+          ],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [
+            "energyKcal"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 23337
+        },
+        {
+          "fixture": "1792612059644.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "155",
+            "5",
+            "11",
+            "9",
+            "250"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "visible": 5,
+          "correct": 0,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams",
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 25462
+        },
+        {
+          "fixture": "1792612059984.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            "5.1",
+            "8.1",
+            "17.1",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "162",
+            "5.1",
+            "8.1",
+            "17.1",
+            null
+          ],
+          "actual": [
+            null,
+            "5.1",
+            "8.1",
+            "17.1",
+            null
+          ],
+          "visible": 4,
+          "correct": 3,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [
+            "energyKcal"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 30897
+        },
+        {
+          "fixture": "1792661540668.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "414",
+            "5.9",
+            "3.7",
+            "10.4",
+            "205"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "98.5",
+            "5.9",
+            "3.7",
+            "10.4",
+            "205"
+          ],
+          "actual": [
+            "414",
+            "5.9",
+            "3.7",
+            "10.4",
+            "205"
+          ],
+          "visible": 5,
+          "correct": 4,
+          "wrongFields": [
+            "energyKcal"
+          ],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "energyKcal"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 23552
+        },
+        {
+          "fixture": "1792661541124.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "1379.3",
+            "15.8",
+            "15.5",
+            "31.6",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "actual": [
+            "1379.3",
+            "15.8",
+            "15.5",
+            "31.6",
+            null
+          ],
+          "visible": 5,
+          "correct": 3,
+          "wrongFields": [
+            "energyKcal"
+          ],
+          "missingFields": [
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "energyKcal",
+            "netGrams"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24794
+        },
+        {
+          "fixture": "1792661541536.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "196.8",
+            "9.7",
+            "8.8",
+            "19.7",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "196.8",
+            "9.7",
+            "8.8",
+            "19.7",
+            "200"
+          ],
+          "actual": [
+            "196.8",
+            "9.7",
+            "8.8",
+            "19.7",
+            null
+          ],
+          "visible": 5,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "netGrams"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24622
+        },
+        {
+          "fixture": "1793208394902.jpg",
+          "independent": false,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "1379.3",
+            "15.8",
+            "15.5",
+            "31.6",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "actual": [
+            "1379.3",
+            "15.8",
+            "15.5",
+            "31.6",
+            null
+          ],
+          "visible": 5,
+          "correct": 3,
+          "wrongFields": [
+            "energyKcal"
+          ],
+          "missingFields": [
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "energyKcal",
+            "netGrams"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24950
+        },
+        {
+          "fixture": "1793208395235.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "168",
+            "8.4",
+            "5.7",
+            "19.3",
+            null
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "visible": 4,
+          "correct": 0,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 25523
+        },
+        {
+          "fixture": "1793208395550.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "681",
+            "8.4",
+            "7.7",
+            "14.9",
+            "220"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "162.5",
+            "8.4",
+            "7.7",
+            "14.9",
+            "220"
+          ],
+          "actual": [
+            "681",
+            "8.4",
+            "7.7",
+            "14.9",
+            "220"
+          ],
+          "visible": 5,
+          "correct": 4,
+          "wrongFields": [
+            "energyKcal"
+          ],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "energyKcal"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24842
+        },
+        {
+          "fixture": "1793208395872.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            "120"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "338.3",
+            "9.9",
+            "21.5",
+            "26.3",
+            "120"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            "120"
+          ],
+          "visible": 5,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 27647
+        },
+        {
+          "fixture": "1793208396211.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "838",
+            "6",
+            "14",
+            "13",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "200",
+            "6",
+            "14",
+            "13",
+            null
+          ],
+          "actual": [
+            "838",
+            "6",
+            "14",
+            "13",
+            null
+          ],
+          "visible": 4,
+          "correct": 3,
+          "wrongFields": [
+            "energyKcal"
+          ],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 23489
+        },
+        {
+          "fixture": "1793208396897.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "493.5",
+            "6",
+            "6.4",
+            "9.1",
+            "230"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "118",
+            "6",
+            "6.4",
+            "9.1",
+            "230"
+          ],
+          "actual": [
+            "493.5",
+            "6",
+            "6.4",
+            "9.1",
+            "230"
+          ],
+          "visible": 5,
+          "correct": 4,
+          "wrongFields": [
+            "energyKcal"
+          ],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "energyKcal"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24887
+        },
+        {
+          "fixture": "1793208397221.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "704",
+            "12.8",
+            "19.7",
+            "16.2",
+            "240"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "293.3",
+            "12.8",
+            "19.7",
+            "16.2",
+            "240"
+          ],
+          "actual": [
+            "704",
+            "12.8",
+            "19.7",
+            "16.2",
+            "240"
+          ],
+          "visible": 5,
+          "correct": 4,
+          "wrongFields": [
+            "energyKcal"
+          ],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "energyKcal"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 25113
+        },
+        {
+          "fixture": "1793208397817.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "770.6",
+            "11",
+            "6.4",
+            "20.4",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "183.2",
+            "11",
+            "6.4",
+            "20.4",
+            "240"
+          ],
+          "actual": [
+            "770.6",
+            "11",
+            "6.4",
+            "20.4",
+            null
+          ],
+          "visible": 5,
+          "correct": 3,
+          "wrongFields": [
+            "energyKcal"
+          ],
+          "missingFields": [
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "energyKcal",
+            "netGrams"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24089
+        },
+        {
+          "fixture": "1793208398503.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "921.8",
+            "9.7",
+            "9.2",
+            "24.5",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "219.6",
+            "9.7",
+            "9.2",
+            "24.5",
+            "140"
+          ],
+          "actual": [
+            "921.8",
+            "9.7",
+            "9.2",
+            "24.5",
+            null
+          ],
+          "visible": 5,
+          "correct": 3,
+          "wrongFields": [
+            "energyKcal"
+          ],
+          "missingFields": [
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "energyKcal",
+            "netGrams"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24007
+        },
+        {
+          "fixture": "1793208398847.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            "9.6",
+            "5.2",
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "173.2",
+            "9.6",
+            "5.2",
+            "22",
+            "250"
+          ],
+          "actual": [
+            null,
+            "9.6",
+            "5.2",
+            null,
+            null
+          ],
+          "visible": 5,
+          "correct": 2,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "carbsGrams",
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [
+            "energyKcal"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 26923
+        },
+        {
+          "fixture": "1793208399179.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "334",
+            "0.9",
+            "4.8",
+            "8.3",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "80",
+            "0.9",
+            "4.8",
+            "8.3",
+            "150"
+          ],
+          "actual": [
+            "334",
+            "0.9",
+            "4.8",
+            "8.3",
+            null
+          ],
+          "visible": 5,
+          "correct": 3,
+          "wrongFields": [
+            "energyKcal"
+          ],
+          "missingFields": [
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "energyKcal",
+            "netGrams"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 23838
+        },
+        {
+          "fixture": "1793208399470.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            "86",
+            "7",
+            "4.7",
+            "3.6",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "86",
+            "7",
+            "4.7",
+            "3.6",
+            "300"
+          ],
+          "actual": [
+            "86",
+            "7",
+            "4.7",
+            "3.6",
+            null
+          ],
+          "visible": 5,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 23712
+        },
+        {
+          "fixture": "1793208399766.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "145",
+            "8.5",
+            "5.8",
+            "14.7",
+            "250"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "visible": 5,
+          "correct": 0,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams",
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "netGrams"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24601
+        },
+        {
+          "fixture": "1793208400097.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "238.7",
+            "8.4",
+            "10.7",
+            "27.2",
+            "250"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "visible": 5,
+          "correct": 0,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams",
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "netGrams"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 30113
+        },
+        {
+          "fixture": "1793208400177.jpg",
+          "independent": false,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-photo-crop-json-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": false,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "320",
+            "8.5",
+            "21",
+            "24",
+            "170"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "visible": 5,
+          "correct": 0,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams",
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [
+            "netGrams"
+          ],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 26242
+        }
+      ]
+    },
+    {
+      "variant": "gemma4-e2b-macros",
+      "allFiles": {
+        "photos": 27,
+        "visible": 127,
+        "correct": 94,
+        "productionCropRecoveries": 12,
+        "wrongFields": 0,
+        "missingFields": 33,
+        "inventedAbsentFields": 0,
+        "recoveredMissingNutritionFields": 12,
+        "removedCorrectOcrFields": 0,
+        "unsafeNutritionBasisPhotos": 0
+      },
+      "independentViews": {
+        "photos": 25,
+        "visible": 117,
+        "correct": 88,
+        "productionCropRecoveries": 12,
+        "wrongFields": 0,
+        "missingFields": 29,
+        "inventedAbsentFields": 0,
+        "recoveredMissingNutritionFields": 12,
+        "removedCorrectOcrFields": 0,
+        "unsafeNutritionBasisPhotos": 0
+      },
+      "minimumNumericalGatePassed": true,
+      "packageCandidateGatePassed": true,
+      "cases": [
+        {
+          "fixture": "1792612056936.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            "170"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "320",
+            "8.5",
+            "21",
+            "24",
+            "170"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            "170"
+          ],
+          "visible": 5,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24490
+        },
+        {
+          "fixture": "1792612057327.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "159",
+            "5",
+            "7",
+            "19",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "159",
+            "5",
+            "7",
+            "19",
+            "260"
+          ],
+          "actual": [
+            "159",
+            "5",
+            "7",
+            "19",
+            null
+          ],
+          "visible": 5,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 25269
+        },
+        {
+          "fixture": "1792612057628.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "293",
+            "55",
+            "7.6",
+            "1.2",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "293",
+            "55",
+            "7.6",
+            "1.2",
+            null
+          ],
+          "actual": [
+            "293",
+            "55",
+            "7.6",
+            "1.2",
+            null
+          ],
+          "visible": 4,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 23564
+        },
+        {
+          "fixture": "1792612058012.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "189",
+            "11",
+            "8.5",
+            "17",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "189",
+            "11",
+            "8.5",
+            "17",
+            null
+          ],
+          "actual": [
+            "189",
+            "11",
+            "8.5",
+            "17",
+            null
+          ],
+          "visible": 4,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 2,
+          "elapsedMs": 23552
+        },
+        {
+          "fixture": "1792612058338.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "150",
+            "4.5",
+            "3.6",
+            "24.8",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "150",
+            "4.5",
+            "3.6",
+            "24.8",
+            null
+          ],
+          "actual": [
+            "150",
+            "4.5",
+            "3.6",
+            "24.8",
+            null
+          ],
+          "visible": 4,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 2,
+          "elapsedMs": 23855
+        },
+        {
+          "fixture": "1792612058637.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            "5",
+            "6",
+            "13",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "121",
+            "5",
+            "6",
+            "13",
+            null
+          ],
+          "actual": [
+            null,
+            "5",
+            "6",
+            "13",
+            null
+          ],
+          "visible": 4,
+          "correct": 3,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 2,
+          "elapsedMs": 22956
+        },
+        {
+          "fixture": "1792612058945.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "138",
+            "5",
+            "4.4",
+            "19.5",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "138",
+            "5",
+            "4.4",
+            "19.5",
+            null
+          ],
+          "actual": [
+            "138",
+            "5",
+            "4.4",
+            "19.5",
+            null
+          ],
+          "visible": 4,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 2,
+          "elapsedMs": 23337
+        },
+        {
+          "fixture": "1792612059644.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "155",
+            "5",
+            "11",
+            "9",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "155",
+            "5",
+            "11",
+            "9",
+            "250"
+          ],
+          "actual": [
+            "155",
+            "5",
+            "11",
+            "9",
+            null
+          ],
+          "visible": 5,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 25462
+        },
+        {
+          "fixture": "1792612059984.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "162",
+            "5.1",
+            "8.1",
+            "17.1",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "162",
+            "5.1",
+            "8.1",
+            "17.1",
+            null
+          ],
+          "actual": [
+            "162",
+            null,
+            null,
+            "17.1",
+            null
+          ],
+          "visible": 4,
+          "correct": 2,
+          "wrongFields": [],
+          "missingFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 30897
+        },
+        {
+          "fixture": "1792661540668.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "98.5",
+            "5.9",
+            "3.7",
+            "10.4",
+            "205"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "98.5",
+            "5.9",
+            "3.7",
+            "10.4",
+            "205"
+          ],
+          "actual": [
+            "98.5",
+            "5.9",
+            "3.7",
+            "10.4",
+            "205"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 23552
+        },
+        {
+          "fixture": "1792661541124.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "actual": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24794
+        },
+        {
+          "fixture": "1792661541536.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "196.8",
+            "9.7",
+            "8.8",
+            "19.7",
+            "200"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "196.8",
+            "9.7",
+            "8.8",
+            "19.7",
+            "200"
+          ],
+          "actual": [
+            "196.8",
+            "9.7",
+            "8.8",
+            "19.7",
+            "200"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24622
+        },
+        {
+          "fixture": "1793208394902.jpg",
+          "independent": false,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "actual": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24950
+        },
+        {
+          "fixture": "1793208395235.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "168",
+            "8.4",
+            "5.7",
+            "19.3",
+            null
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "visible": 4,
+          "correct": 0,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 25523
+        },
+        {
+          "fixture": "1793208395550.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "162.5",
+            "8.4",
+            "7.7",
+            "14.9",
+            "220"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "162.5",
+            "8.4",
+            "7.7",
+            "14.9",
+            "220"
+          ],
+          "actual": [
+            "162.5",
+            "8.4",
+            "7.7",
+            "14.9",
+            "220"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24842
+        },
+        {
+          "fixture": "1793208395872.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "338.3",
+            "9.9",
+            "21.5",
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "338.3",
+            "9.9",
+            "21.5",
+            "26.3",
+            "120"
+          ],
+          "actual": [
+            "338.3",
+            "9.9",
+            "21.5",
+            null,
+            null
+          ],
+          "visible": 5,
+          "correct": 3,
+          "wrongFields": [],
+          "missingFields": [
+            "carbsGrams",
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 27647
+        },
+        {
+          "fixture": "1793208396211.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            "6",
+            "14",
+            "13",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "200",
+            "6",
+            "14",
+            "13",
+            null
+          ],
+          "actual": [
+            null,
+            "6",
+            "14",
+            "13",
+            null
+          ],
+          "visible": 4,
+          "correct": 3,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 2,
+          "elapsedMs": 23489
+        },
+        {
+          "fixture": "1793208396897.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "118",
+            "6",
+            "6.4",
+            "9.1",
+            "230"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "118",
+            "6",
+            "6.4",
+            "9.1",
+            "230"
+          ],
+          "actual": [
+            "118",
+            "6",
+            "6.4",
+            "9.1",
+            "230"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24887
+        },
+        {
+          "fixture": "1793208397221.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "293.3",
+            "12.8",
+            "19.7",
+            "16.2",
+            "240"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "293.3",
+            "12.8",
+            "19.7",
+            "16.2",
+            "240"
+          ],
+          "actual": [
+            "293.3",
+            "12.8",
+            "19.7",
+            "16.2",
+            "240"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 25113
+        },
+        {
+          "fixture": "1793208397817.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "183.2",
+            "11",
+            "6.4",
+            "20.4",
+            "240"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "183.2",
+            "11",
+            "6.4",
+            "20.4",
+            "240"
+          ],
+          "actual": [
+            "183.2",
+            "11",
+            "6.4",
+            "20.4",
+            "240"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24089
+        },
+        {
+          "fixture": "1793208398503.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "219.6",
+            "9.7",
+            "9.2",
+            "24.5",
+            "140"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "219.6",
+            "9.7",
+            "9.2",
+            "24.5",
+            "140"
+          ],
+          "actual": [
+            "219.6",
+            "9.7",
+            "9.2",
+            "24.5",
+            "140"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24007
+        },
+        {
+          "fixture": "1793208398847.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "173.2",
+            "9.6",
+            "5.2",
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "173.2",
+            "9.6",
+            "5.2",
+            "22",
+            "250"
+          ],
+          "actual": [
+            "173.2",
+            "9.6",
+            null,
+            null,
+            null
+          ],
+          "visible": 5,
+          "correct": 2,
+          "wrongFields": [],
+          "missingFields": [
+            "fatGrams",
+            "carbsGrams",
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 26923
+        },
+        {
+          "fixture": "1793208399179.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "80",
+            "0.9",
+            "4.8",
+            "8.3",
+            "150"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "80",
+            "0.9",
+            "4.8",
+            "8.3",
+            "150"
+          ],
+          "actual": [
+            "80",
+            "0.9",
+            "4.8",
+            "8.3",
+            "150"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 23838
+        },
+        {
+          "fixture": "1793208399470.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            "7",
+            "4.7",
+            "3.6",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "86",
+            "7",
+            "4.7",
+            "3.6",
+            "300"
+          ],
+          "actual": [
+            null,
+            "7",
+            "4.7",
+            "3.6",
+            null
+          ],
+          "visible": 5,
+          "correct": 3,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 2,
+          "elapsedMs": 23712
+        },
+        {
+          "fixture": "1793208399766.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            "250"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "145",
+            "8.5",
+            "5.8",
+            "14.7",
+            "250"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            "250"
+          ],
+          "visible": 5,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 24601
+        },
+        {
+          "fixture": "1793208400097.jpg",
+          "independent": true,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            "250"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "238.7",
+            "8.4",
+            "10.7",
+            "27.2",
+            "250"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            "250"
+          ],
+          "visible": 5,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 30113
+        },
+        {
+          "fixture": "1793208400177.jpg",
+          "independent": false,
+          "engine": "gemma4-e2b",
+          "sourceVariant": "gemma4-e2b-crop",
+          "evaluatedTaskVersion": "package-macros-v1-nutrition-crop-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            "170"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "320",
+            "8.5",
+            "21",
+            "24",
+            "170"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            "170"
+          ],
+          "visible": 5,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 26242
+        }
+      ]
+    },
+    {
+      "variant": "paddleocr-vl16",
+      "allFiles": {
+        "photos": 27,
+        "visible": 127,
+        "correct": 89,
+        "productionCropRecoveries": 7,
+        "wrongFields": 1,
+        "missingFields": 37,
+        "inventedAbsentFields": 0,
+        "recoveredMissingNutritionFields": 7,
+        "removedCorrectOcrFields": 0,
+        "unsafeNutritionBasisPhotos": 0
+      },
+      "independentViews": {
+        "photos": 25,
+        "visible": 117,
+        "correct": 83,
+        "productionCropRecoveries": 7,
+        "wrongFields": 1,
+        "missingFields": 33,
+        "inventedAbsentFields": 0,
+        "recoveredMissingNutritionFields": 7,
+        "removedCorrectOcrFields": 0,
+        "unsafeNutritionBasisPhotos": 0
+      },
+      "minimumNumericalGatePassed": false,
+      "packageCandidateGatePassed": false,
+      "cases": [
+        {
+          "fixture": "1792612056936.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            "170"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "320",
+            "8.5",
+            "21",
+            "24",
+            "170"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            "170"
+          ],
+          "visible": 5,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 39424
+        },
+        {
+          "fixture": "1792612057327.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "159",
+            "5",
+            "7",
+            "19",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "159",
+            "5",
+            "7",
+            "19",
+            "260"
+          ],
+          "actual": [
+            "159",
+            "5",
+            "7",
+            "19",
+            null
+          ],
+          "visible": 5,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 96988
+        },
+        {
+          "fixture": "1792612057628.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "293",
+            "55",
+            "7.6",
+            "1.2",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "EMPTY",
+          "expected": [
+            "293",
+            "55",
+            "7.6",
+            "1.2",
+            null
+          ],
+          "actual": [
+            "293",
+            "55",
+            "7.6",
+            "1.2",
+            null
+          ],
+          "visible": 4,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 94730
+        },
+        {
+          "fixture": "1792612058012.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "189",
+            null,
+            null,
+            "17",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "EMPTY",
+          "expected": [
+            "189",
+            "11",
+            "8.5",
+            "17",
+            null
+          ],
+          "actual": [
+            "189",
+            null,
+            null,
+            "17",
+            null
+          ],
+          "visible": 4,
+          "correct": 2,
+          "wrongFields": [],
+          "missingFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 33671
+        },
+        {
+          "fixture": "1792612058338.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "150",
+            "4.5",
+            "3.6",
+            "24.8",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "150",
+            "4.5",
+            "3.6",
+            "24.8",
+            null
+          ],
+          "actual": [
+            "150",
+            "4.5",
+            "3.6",
+            "24.8",
+            null
+          ],
+          "visible": 4,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 2,
+          "elapsedMs": 32115
+        },
+        {
+          "fixture": "1792612058637.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            "5",
+            "6",
+            "13",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "121",
+            "5",
+            "6",
+            "13",
+            null
+          ],
+          "actual": [
+            null,
+            "5",
+            "6",
+            "13",
+            null
+          ],
+          "visible": 4,
+          "correct": 3,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 2,
+          "elapsedMs": 31475
+        },
+        {
+          "fixture": "1792612058945.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "138",
+            "5",
+            "19.5",
+            "19.5",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "138",
+            "5",
+            "4.4",
+            "19.5",
+            null
+          ],
+          "actual": [
+            "138",
+            "5",
+            "19.5",
+            "19.5",
+            null
+          ],
+          "visible": 4,
+          "correct": 3,
+          "wrongFields": [
+            "fatGrams"
+          ],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams"
+          ],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 1,
+          "elapsedMs": 31668
+        },
+        {
+          "fixture": "1792612059644.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "155",
+            "5",
+            "11",
+            "9",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "155",
+            "5",
+            "11",
+            "9",
+            "250"
+          ],
+          "actual": [
+            "155",
+            "5",
+            "11",
+            "9",
+            null
+          ],
+          "visible": 5,
+          "correct": 4,
+          "wrongFields": [],
+          "missingFields": [
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 52795
+        },
+        {
+          "fixture": "1792612059984.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "162",
+            null,
+            null,
+            "17.1",
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "162",
+            "5.1",
+            "8.1",
+            "17.1",
+            null
+          ],
+          "actual": [
+            "162",
+            null,
+            null,
+            "17.1",
+            null
+          ],
+          "visible": 4,
+          "correct": 2,
+          "wrongFields": [],
+          "missingFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 39323
+        },
+        {
+          "fixture": "1792661540668.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "98.5",
+            "5.9",
+            "3.7",
+            "10.4",
+            "205"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "EMPTY",
+          "expected": [
+            "98.5",
+            "5.9",
+            "3.7",
+            "10.4",
+            "205"
+          ],
+          "actual": [
+            "98.5",
+            "5.9",
+            "3.7",
+            "10.4",
+            "205"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 37091
+        },
+        {
+          "fixture": "1792661541124.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "EMPTY",
+          "expected": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "actual": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 94362
+        },
+        {
+          "fixture": "1792661541536.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "196.8",
+            "9.7",
+            "8.8",
+            "19.7",
+            "200"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "EMPTY",
+          "expected": [
+            "196.8",
+            "9.7",
+            "8.8",
+            "19.7",
+            "200"
+          ],
+          "actual": [
+            "196.8",
+            "9.7",
+            "8.8",
+            "19.7",
+            "200"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 42187
+        },
+        {
+          "fixture": "1793208394902.jpg",
+          "independent": false,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "EMPTY",
+          "expected": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "actual": [
+            "329.1",
+            "15.8",
+            "15.5",
+            "31.6",
+            "140"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 94318
+        },
+        {
+          "fixture": "1793208395235.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "168",
+            "8.4",
+            "5.7",
+            "19.3",
+            null
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "visible": 4,
+          "correct": 0,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 95710
+        },
+        {
+          "fixture": "1793208395550.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "162.5",
+            "8.4",
+            "7.7",
+            "14.9",
+            "220"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "EMPTY",
+          "expected": [
+            "162.5",
+            "8.4",
+            "7.7",
+            "14.9",
+            "220"
+          ],
+          "actual": [
+            "162.5",
+            "8.4",
+            "7.7",
+            "14.9",
+            "220"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 40531
+        },
+        {
+          "fixture": "1793208395872.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "338.3",
+            null,
+            "21.5",
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "COMPLETE",
+          "expected": [
+            "338.3",
+            "9.9",
+            "21.5",
+            "26.3",
+            "120"
+          ],
+          "actual": [
+            "338.3",
+            "9.9",
+            "21.5",
+            null,
+            null
+          ],
+          "visible": 5,
+          "correct": 3,
+          "wrongFields": [],
+          "missingFields": [
+            "carbsGrams",
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 99772
+        },
+        {
+          "fixture": "1793208396211.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            "6",
+            "14",
+            "13",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "200",
+            "6",
+            "14",
+            "13",
+            null
+          ],
+          "actual": [
+            null,
+            "6",
+            "14",
+            "13",
+            null
+          ],
+          "visible": 4,
+          "correct": 3,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [
+            "proteinGrams",
+            "fatGrams"
+          ],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 2,
+          "elapsedMs": 38828
+        },
+        {
+          "fixture": "1793208396897.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "118",
+            "6",
+            null,
+            "9.1",
+            "230"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "COMPLETE",
+          "expected": [
+            "118",
+            "6",
+            "6.4",
+            "9.1",
+            "230"
+          ],
+          "actual": [
+            "118",
+            "6",
+            "6.4",
+            "9.1",
+            "230"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 54918
+        },
+        {
+          "fixture": "1793208397221.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "293.3",
+            "12.8",
+            "19.7",
+            "16.2",
+            "240"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "DEADLINE",
+          "expected": [
+            "293.3",
+            "12.8",
+            "19.7",
+            "16.2",
+            "240"
+          ],
+          "actual": [
+            "293.3",
+            "12.8",
+            "19.7",
+            "16.2",
+            "240"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 107957
+        },
+        {
+          "fixture": "1793208397817.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "183.2",
+            "11",
+            "6.4",
+            "20.4",
+            "240"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "DEADLINE",
+          "expected": [
+            "183.2",
+            "11",
+            "6.4",
+            "20.4",
+            "240"
+          ],
+          "actual": [
+            "183.2",
+            "11",
+            "6.4",
+            "20.4",
+            "240"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 108045
+        },
+        {
+          "fixture": "1793208398503.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "219.6",
+            "9.7",
+            "9.2",
+            "24.5",
+            "140"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "EMPTY",
+          "expected": [
+            "219.6",
+            "9.7",
+            "9.2",
+            "24.5",
+            "140"
+          ],
+          "actual": [
+            "219.6",
+            "9.7",
+            "9.2",
+            "24.5",
+            "140"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 52347
+        },
+        {
+          "fixture": "1793208398847.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "173.2",
+            "9.6",
+            null,
+            null,
+            null
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "173.2",
+            "9.6",
+            "5.2",
+            "22",
+            "250"
+          ],
+          "actual": [
+            "173.2",
+            "9.6",
+            null,
+            null,
+            null
+          ],
+          "visible": 5,
+          "correct": 2,
+          "wrongFields": [],
+          "missingFields": [
+            "fatGrams",
+            "carbsGrams",
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 63863
+        },
+        {
+          "fixture": "1793208399179.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            "80",
+            "0.9",
+            "4.8",
+            "8.3",
+            "150"
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "DEADLINE",
+          "expected": [
+            "80",
+            "0.9",
+            "4.8",
+            "8.3",
+            "150"
+          ],
+          "actual": [
+            "80",
+            "0.9",
+            "4.8",
+            "8.3",
+            "150"
+          ],
+          "visible": 5,
+          "correct": 5,
+          "wrongFields": [],
+          "missingFields": [],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 107852
+        },
+        {
+          "fixture": "1793208399470.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": true,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            "3.6",
+            null
+          ],
+          "inputMode": "OCR_NUTRITION_CROP",
+          "outcome": "EMPTY",
+          "expected": [
+            "86",
+            "7",
+            "4.7",
+            "3.6",
+            "300"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            "3.6",
+            null
+          ],
+          "visible": 5,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "netGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": true,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 47692
+        },
+        {
+          "fixture": "1793208399766.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            "250"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "DEADLINE",
+          "expected": [
+            "145",
+            "8.5",
+            "5.8",
+            "14.7",
+            "250"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            "250"
+          ],
+          "visible": 5,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 107715
+        },
+        {
+          "fixture": "1793208400097.jpg",
+          "independent": true,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            "250"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "DEADLINE",
+          "expected": [
+            "238.7",
+            "8.4",
+            "10.7",
+            "27.2",
+            "250"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            "250"
+          ],
+          "visible": 5,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 107607
+        },
+        {
+          "fixture": "1793208400177.jpg",
+          "independent": false,
+          "engine": "paddleocr-vl16",
+          "sourceVariant": "paddleocr-vl16",
+          "evaluatedTaskVersion": "label-transcription-v2",
+          "wouldRunPackageFallback": false,
+          "currentPackageTaskContract": true,
+          "candidateActual": [
+            null,
+            null,
+            null,
+            null,
+            "170"
+          ],
+          "inputMode": "FULL_FRAME",
+          "outcome": "EMPTY",
+          "expected": [
+            "320",
+            "8.5",
+            "21",
+            "24",
+            "170"
+          ],
+          "actual": [
+            null,
+            null,
+            null,
+            null,
+            "170"
+          ],
+          "visible": 5,
+          "correct": 1,
+          "wrongFields": [],
+          "missingFields": [
+            "energyKcal",
+            "proteinGrams",
+            "fatGrams",
+            "carbsGrams"
+          ],
+          "inventedAbsentFields": [],
+          "basisCorrect": false,
+          "recoveredMissingNutritionFields": [],
+          "removedCorrectOcrFields": [],
+          "productionCropRecoveries": 0,
+          "elapsedMs": 46078
+        }
+      ]
+    }
+  ]
+}

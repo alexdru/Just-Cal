@@ -4,7 +4,7 @@ import com.justcal.app.domain.*
 import com.justcal.app.ocr.*
 
 object TranscriptionNutrition {
-    const val PROFILE_VERSION = "label-transcription-v1"
+    const val PROFILE_VERSION = "label-transcription-v2"
     fun merge(ocr: ParsedNutritionLabel, raw: String): RecognitionDraft {
         val vlm = NutritionLabelParser.parseUnscoredTranscription(raw)
         val base = ocr.draft()

@@ -13,10 +13,17 @@ apply. Net package grams can initialize Amount eaten, with a separate explanatio
 New manual amounts start empty; edits retain the saved amount. Empty new manual
 names request focus/keyboard once, with saved event state.
 
-Production recognition is coordinated by FoodRecognitionRouter. Bundled PP-OCRv5
-remains the package baseline; optional LiteRT-LM transcription requires explicit
-artifact/task admission and cannot discard the available OCR on failure. Current
-catalog models have not passed package admission, so this fallback remains off.
+Production recognition is coordinated by FoodRecognitionRouter. PP-OCRv5 always
+runs first. Explicitly selected Gemma may fill only blank protein/fat/carbohydrate
+fields from a reliable nutrition-crop-v2, with OCR and model both referring to
+100 g. It preserves OCR energy, title, mass and nonempty macros; model energy,
+name and mass are ignored. Failure preserves the baseline after native cleanup.
+The separate Paddle transcription task has no production admission. The new
+[27-photo comparison and task gate](ai-verification/2026-10-28/README.md) records
+82/127 correct OCR editor fields versus 94/127 with twelve correct macro
+recoveries, zero wrong accepted values and zero OCR losses in this sample.
+Thirty-three visible fields remain empty. This is a narrow task admission, not
+full nutrition extraction; other devices/labels require broader evaluation.
 AI Models and the separate AI Playground are described in [LOCAL_AI_LAB.md](LOCAL_AI_LAB.md).
 Meal assistance is name-only; numerical estimates and photo-derived weight are disabled.
 Recognition has no network or Google Play Services dependency and no Python runtime.

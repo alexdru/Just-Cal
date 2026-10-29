@@ -1,6 +1,6 @@
 # План развития локального AI в Just Cal
 
-Дата сверки реализации и качества: **2026-10-22–23**, приложение **0.17.1 (44)**. Базовая реализация появилась в 0.16.0 (40); качество и критерии завершения остаются частично закрыты. Фактические конфигурации, результаты и оставшиеся проверки находятся в [LOCAL_AI_LAB.md](LOCAL_AI_LAB.md). Разделы исходного плана ниже сохранены как критерии реализации, а не как утверждение о выполненных тестах.
+Дата сверки реализации и качества: **2026-10-28–29**, приложение **0.18.0 (46)**. Базовая реализация появилась в 0.16.0 (40); качество и критерии завершения остаются частично закрыты. Фактические конфигурации, результаты и оставшиеся проверки находятся в [LOCAL_AI_LAB.md](LOCAL_AI_LAB.md). Разделы исходного плана ниже сохранены как критерии реализации, а не как утверждение о выполненных тестах.
 
 ## Решение и границы
 
@@ -8,18 +8,18 @@
 
 Первый каталог ограничить двумя кандидатами: **Gemma 4 E2B для общего vision/meal** и **PaddleOCR-VL-1.6 для сложного текста**. Их доступность в каталоге не означает готовность к production. Qwen3.5 Vision и SmolVLM2 оставить для сравнения в Playground; второй inference runtime, конвертер моделей, NPU, агентские инструменты, облако и поиск по внешним базам в этот план не входят.
 
-Реализация обновляет конкретные контракты AGENTS.md/DESIGN.md: Playground по-прежнему не пишет в дневник; Scan meal с выбранной допущенной моделью открывает проверяемую подсказку названия. Числовые estimates и package VLM fallback остаются выключенными по результатам quality gates. Визуальные токены и остальные ограничения сохранены.
+Реализация обновляет конкретные контракты AGENTS.md/DESIGN.md: Playground по-прежнему не пишет в дневник; Scan meal с выбранной допущенной моделью открывает проверяемую подсказку названия. Числовые meal estimates выключены. Для упаковки отдельно допущена Gemma только к дополнению отсутствующих БЖУ на 100 г; калории, масса, название и заполненные OCR поля не меняются. Paddle package fallback остаётся выключенным. Визуальные токены и остальные ограничения сохранены.
 
 ## Текущая сверка и оставшаяся работа
 
-Подробные raw-ответы, измерения и границы выборки: [quality-audit.md](ai-verification/2026-10-22/quality-audit.md). Успешная сборка, metadata, image smoke и качество задачи — отдельные уровни проверки.
+Актуальные 27 фото, raw-ответы, сравнение и узкий допуск Gemma: [package batch](ai-verification/2026-10-28/README.md). Предыдущая сверка: [quality-audit.md](ai-verification/2026-10-22/quality-audit.md). Успешная сборка, metadata, image smoke и качество задачи — отдельные уровни проверки.
 
 | Шаг | Фактическое состояние | Что ещё требуется |
 | --- | --- | --- |
 | 1. Runtime spike | LiteRT-LM 0.18.1, оба pinned artifact запускают image inference на API 30; Gemma CPU/CPU, Paddle GPU/GPU | Повторные GPU cancel/retry/exit и контролируемая оценка памяти; другие устройства и 16-KiB-page runtime не проверены |
 | 2. Storage / Models | SAF, private atomic commit, pinned length/hash, resumable transfer policy и durable stop/restart реализованы | Полный HTTPS transfer и real 200/206/416/ETag interruption flow; API 34+ UIDT/OS stop, ENOSPC и delete/download race. Маленькие policy/state tests не заменяют эти проверки |
 | 3. Playground / Auto / UI | Отдельная сессия, Auto по metadata, native cancellation, скрытый Profile Name с сохранением данных, единая компоновка M3 Expressive | Непрерывные повторные циклы native памяти; широкий accessibility/device sweep вне текущей проверки |
-| 4. Package hybrid | PP-OCRv5 остаётся production baseline; bounded crop/transcription и conflict review реализованы | Качество bundled OCR неполное; VLM gate «минимум 2 восстановленных поля, 0 новых неверных чисел» не пройден. Package VLM не включать. Нужны сложные crop/EXIF end-to-end проверки |
+| 4. Package hybrid | Все 27 локальных фото проверены OCR, Gemma и Paddle. Исправлен nutrition-crop-v2. Допущен отдельный missing-macros consumer Gemma: +12 верных БЖУ на 6 независимых фото, 0 ошибок/потерь OCR; 94/127 верных полей вместо 82/127 | 33 поля ещё пусты. Paddle crop-v2 добавил ошибочное число, его gate закрыт. Полная nutrition JSON, название/масса/калории модели не допущены. Нужна новая независимая выборка и более широкие crop/EXIF/device проверки |
 | 5. Meal | Допущена только name-only Gemma + строгий validator; сквозной real-model UI тест подтвердил дату, пустой amount, восстановление правок и единственный явный Save | Шире размеченная выборка реальных составных блюд; число nutrients/масса по фото выключены. Импорт новой модели или smoke не создаёт допуск |
 
 В 0.17.1 закрыты дополнительные пробелы: допуск привязан к artifact hash, runtime и версии задачи со ссылкой на evidence; устаревший допуск не применяется автоматически после upgrade. Локальный тайм-аут необязательного package VLM возвращает OCR только после cleanup, отмена пользователя продолжает распространяться. Meal refusal/invalid output сохраняет bounded raw в локальной подробной диагностике и не открывает редактор с пустым «успешным» результатом. Отчёты тестов отдельно считают корректный ответ модели и безопасное отклонение валидатором.
@@ -52,7 +52,7 @@
 
 **SDK:** закреплён **LiteRT-LM 0.18.1**. Текущая реализация с этим pin собрана и запускала оба vision-артефакта на физическом API 30. [Kotlin guide](https://github.com/google-ai-edge/LiteRT-LM/blob/v0.18.1/docs/api/kotlin/getting_started.md) и [Conversation API](https://github.com/google-ai-edge/LiteRT-LM/blob/v0.18.1/kotlin/java/com/google/ai/edge/litertlm/Conversation.kt) относятся к этой закреплённой версии. 0.17.1 ниже — историческая runtime-база до реализации, а не текущая версия приложения; `latest.release` не использовать.
 
-Для двух curated-вариантов revision, filename, byte count и SHA-256 уже закреплены в `assets/ai_models.json`. Новые артефакты требуют отдельной проверки. Model card и desktop benchmark не доказывают качество vision на Android. Текущий допуск Gemma относится только к name-only задаче; package VLM gate не пройден.
+Для двух curated-вариантов revision, filename, byte count и SHA-256 уже закреплены в `assets/ai_models.json`. Новые артефакты требуют отдельной проверки. Model card и desktop benchmark не доказывают качество vision на Android. Gemma имеет два независимых допуска: meal name-only и package missing-P/F/C на 100 г (`package-macros-v1-nutrition-crop-v2`). Paddle transcription-v2 не допущен.
 
 ## Что взять из Google AI Edge Gallery
 
@@ -153,4 +153,4 @@ Playground развить из `LocalAiLabScreen/ViewModel`, сохранив о
 - Неизвестные custom-модели и JNI могут завершить процесс. В первом этапе только Playground, запрет автоматического повторного запуска и сохранение дневника независимым от AI.
 - GPL-код и отдельно загружаемые веса имеют разные лицензии. Сохранять источники/notices, не добавлять restricted-веса в curated-каталог без проверки условий; не считать одно расширение файла разрешением на распространение.
 
-**Результат реализации:** AI Models, AI Playground, pinned LiteRT-LM 0.18.1, Auto по фактической metadata, безопасные transfer/import/runtime boundaries и production router. PP-OCRv5 остаётся основным package engine; VLM fallback не допущен из-за ошибок чисел. Gemma допущена только для редактируемого названия блюда, без числовых estimates. Room/backup schema, update/signing infrastructure сохранены. Полные измерения и ограничения проверки приведены в [LOCAL_AI_LAB.md](LOCAL_AI_LAB.md).
+**Результат реализации:** AI Models, AI Playground, pinned LiteRT-LM 0.18.1, Auto по фактической metadata, безопасные transfer/import/runtime boundaries и production router. PP-OCRv5 остаётся основным package engine. Gemma отдельно допущена к дополнению отсутствующих БЖУ на 100 г из надёжного nutrition crop и к редактируемому названию блюда. Полная nutrition JSON и Paddle transcription не допущены; meal estimates выключены. Room/backup schema, update/signing infrastructure сохранены. Полные измерения и ограничения проверки приведены в [LOCAL_AI_LAB.md](LOCAL_AI_LAB.md).

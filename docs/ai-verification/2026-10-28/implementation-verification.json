@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-29",
+  "appVersion": "0.18.0-debug",
+  "versionCode": 46,
+  "device": "OnePlus HD1900",
+  "api": 30,
+  "gradle": {
+    "unitTests": {
+      "passed": 165,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tasks": [
+      ":app:testDebugUnitTest",
+      ":app:assembleDebug",
+      ":app:assembleDebugAndroidTest",
+      ":app:lintDebug"
+    ],
+    "result": "PASSED"
+  },
+  "deviceQualityReplay": {
+    "test": "PackagePhotoBatchQualityDeviceTest#compareSavedLocalPackagePhotos",
+    "nativeRunId": "2026-10-28-crop2",
+    "variants": [
+      "ocr",
+      "gemma4-e2b-crop",
+      "gemma4-e2b-macros",
+      "paddleocr-vl16"
+    ],
+    "rows": 108,
+    "requireMacroQuality": true,
+    "elapsedSeconds": "1.654",
+    "result": "PASSED",
+    "newInference": false
+  },
+  "freshProductionFlow": {
+    "test": "PhotoPickerFlowTest#selectedPackageModelOnlyCompletesMissingMacrosUntilExplicitSave",
+    "fixture": "1792612058338.jpg",
+    "realNativeInference": true,
+    "elapsedSeconds": "40.759",
+    "result": "PASSED",
+    "expectedEditor": {
+      "energy": "150",
+      "protein": "4.5",
+      "fat": "3.6",
+      "carbs": "24.8",
+      "initialAmount": ""
+    },
+    "retainedAfterRecreation": true,
+    "diaryUnchangedUntilExplicitSave": true,
+    "savedCount": 1,
+    "savedAmountGrams": "120",
+    "savedSource": "PACKAGE_SCAN",
+    "selectedDate": "2026-10-01",
+    "cleanup": "Restored previous package choice and deleted only test-owned Room entry and two media copies. Original corpus preserved."
+  },
+  "visualReview": {
+    "editor": "PASSED; actual screenshot inspected",
+    "modelsSheet": "PASSED; Gemma enabled, Paddle VLM absent, built-in OCR remains selected; matching Russian scope text"
+  },
+  "limitations": [
+    "27 development-sample photos / 25 independent views, no holdout accuracy claim",
+    "No new meal-quality evaluation",
+    "No API34+ UIDT or controlled sustained native-memory/16-KiB-device coverage",
+    "Two earlier UI attempts failed before interaction while device was asleep/locked; final unlocked attempt passed"
+  ]
+}

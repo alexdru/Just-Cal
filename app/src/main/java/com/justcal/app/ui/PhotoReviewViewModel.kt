@@ -10,13 +10,14 @@ import com.justcal.app.diagnostics.OcrDiagnosticSession
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 data class PackageReviewState(val busy: Boolean = false, val failed: Boolean = false, val prefill: PackageScanPrefill? = null,
-    val recognition: com.justcal.app.domain.RecognitionDraft? = null)
+    val recognition: com.justcal.app.domain.RecognitionDraft? = null, val processingModel: String? = null)
+
+data class PackageAssistanceModel(val loading: Boolean = true, val name: String? = null)
 
 @HiltViewModel
 class PhotoReviewViewModel @Inject constructor(
@@ -24,6 +25,7 @@ class PhotoReviewViewModel @Inject constructor(
     private val router: com.justcal.app.ai.FoodRecognitionRouter,
     private val savedState: SavedStateHandle,
     private val diagnostics: OcrDiagnosticSession,
+    preferences: com.justcal.app.data.GoalPreferences,
 ) : ViewModel() {
     private var owned: PreparedImage? = null
     private var operation: Job? = null
@@ -39,6 +41,15 @@ class PhotoReviewViewModel @Inject constructor(
         prefill = restored, recognition = restoredMeal,
     ))
     val state = mutableState.asStateFlow()
+    val packageAssistanceEnabled = savedState.getStateFlow("packageAssistanceEnabled", true)
+    val packageModel = preferences.aiModels.distinctUntilChanged().map { choices ->
+        PackageAssistanceModel(loading = false, name = router.packageModelName(choices["package"]))
+    }.catch { emit(PackageAssistanceModel(loading = false)) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PackageAssistanceModel())
+
+    fun setPackageAssistance(enabled: Boolean) {
+        if (!closing && !state.value.busy) savedState["packageAssistanceEnabled"] = enabled
+    }
     fun attach(image: PreparedImage) { owned = image }
 
     fun recognize(image: PreparedImage) {
@@ -84,13 +95,16 @@ class PhotoReviewViewModel @Inject constructor(
             }
             return
         }
+        val allowModel = packageAssistanceEnabled.value
         mutableState.value = PackageReviewState(busy = true)
         savedState["ocrStarted"] = true
         val attempt = diagnostics.begin(image)
         operation = viewModelScope.launch {
             var stage = "OCR_RECOGNITION_FAILURE"
             try {
-                val (result, routed) = router.packageOcr(image)
+                val (result, routed) = router.packageOcr(image, allowModel = allowModel) { name ->
+                    mutableState.update { it.copy(processingModel = name) }
+                }
                 check(result.lines.isNotEmpty()) { "No readable text found" }
                 stage = "NUTRITION_PARSER_FAILURE"
                 val parseStarted = SystemClock.elapsedRealtime()

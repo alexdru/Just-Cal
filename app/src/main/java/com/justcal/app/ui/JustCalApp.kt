@@ -229,6 +229,8 @@ fun JustCalApp(splashVisible: Boolean = false) {
                             val viewModel = hiltViewModel<PhotoReviewViewModel>()
                             viewModel.attach(route.image)
                             val packageState by viewModel.state.collectAsStateWithLifecycle()
+                            val packageModel by viewModel.packageModel.collectAsStateWithLifecycle()
+                            val packageAssistance by viewModel.packageAssistanceEnabled.collectAsStateWithLifecycle()
                             LaunchedEffect(packageState.recognition) {
                                 packageState.recognition?.let { draft ->
                                     if (stack.lastOrNull() == route) stack[stack.lastIndex] =
@@ -249,6 +251,8 @@ fun JustCalApp(splashVisible: Boolean = false) {
                             }
                             PhotoReviewScreen(route.image, viewModel.images,
                                 packageState = packageState,
+                                packageModel = packageModel, packageAssistanceEnabled = packageAssistance,
+                                onPackageAssistance = viewModel::setPackageAssistance,
                                 onModels = { if (stack.lastOrNull() == route) stack.add(AiModels) },
                                 onRecognize = { viewModel.recognize(route.image) },
                                 onManual = {

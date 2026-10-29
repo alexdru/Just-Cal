@@ -18,6 +18,7 @@ data class AiModelsState(
     val installed: List<InstalledAiModel> = emptyList(),
     val busy: Boolean = false, val importedBytes: Long = 0, val error: Int? = null,
     val interrupted: Boolean = false,
+    val importing: Boolean = false,
 )
 
 @HiltViewModel
@@ -71,7 +72,7 @@ class AiModelsViewModel @Inject constructor(
         mutable.update { it.copy(installed = installed, interrupted = interrupted) }
     }
 
-    fun import(uri: Uri) = mutate(R.string.ai_import_error) {
+    fun import(uri: Uri) = mutate(R.string.ai_import_error, importing = true) {
         store.import(uri) { bytes -> mutable.update { it.copy(importedBytes = bytes) } }
         reload()
     }
@@ -113,15 +114,15 @@ class AiModelsViewModel @Inject constructor(
     fun cancelImport() { operation?.cancel() }
     fun dismissError() { mutable.update { it.copy(error = null) } }
 
-    private fun mutate(error: Int, action: suspend () -> Unit) {
+    private fun mutate(error: Int, importing: Boolean = false, action: suspend () -> Unit) {
         if (state.value.busy) return
-        mutable.update { it.copy(busy = true, error = null, importedBytes = 0) }
+        mutable.update { it.copy(busy = true, importing = importing, error = null, importedBytes = 0) }
         operation = viewModelScope.launch {
             try { action() }
             catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { mutable.update { it.copy(error = error) } }
             catch (_: LinkageError) { mutable.update { it.copy(error = error) } }
-            finally { mutable.update { it.copy(busy = false) } }
+            finally { mutable.update { it.copy(busy = false, importing = false) } }
         }
     }
 }

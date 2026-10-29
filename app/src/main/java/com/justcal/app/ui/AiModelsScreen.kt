@@ -22,6 +22,7 @@ import com.justcal.app.R
 import com.justcal.app.ai.*
 import com.justcal.app.ui.theme.CalLayout
 import com.justcal.app.ui.theme.CalSpacing
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,11 +69,11 @@ fun AiModelsScreen(vm: AiModelsViewModel, onBack: () -> Unit) {
             ),
             verticalArrangement = Arrangement.spacedBy(CalSpacing.section),
         ) {
-            if (state.interrupted || state.busy || state.error != null) item {
+            if (state.interrupted || state.importing || state.error != null) item(key = "status") {
                 Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
                     if (state.interrupted) Text(stringResource(R.string.ai_interrupted), color = MaterialTheme.colorScheme.error)
-                    if (state.busy) {
-                        CalWorkProgressRow()
+                    if (state.importing) {
+                        CalWorkProgressRow(Modifier.testTag("ai_model_import_progress"))
                         if (state.importedBytes > 0) Text(stringResource(R.string.lab_imported,
                             Formatter.formatFileSize(context, state.importedBytes)))
                         TextButton(onClick = vm::cancelImport) { Text(stringResource(R.string.cancel)) }
@@ -84,12 +85,13 @@ fun AiModelsScreen(vm: AiModelsViewModel, onBack: () -> Unit) {
                     }
                 }
             }
-            item {
+            item(key = "defaults") {
                 Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                     SectionTitle(stringResource(R.string.ai_defaults))
                     Column(verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)) {
                         CalSettingsRow(stringResource(R.string.ai_package_engine), R.drawable.ic_package,
-                            subtitle = modelName(choices["package"], stringResource(R.string.ai_builtin)),
+                            subtitle = modelName(choices["package"], "").takeIf(String::isNotBlank)
+                                ?.let { stringResource(R.string.ai_package_with_model, it) } ?: stringResource(R.string.ai_builtin),
                             index = 0, count = 2, enabled = !state.busy) { choosingTask = "package" }
                         CalSettingsRow(stringResource(R.string.ai_meal_engine), R.drawable.ic_meal,
                             subtitle = modelName(choices["meal"], stringResource(R.string.ai_disabled)),
@@ -97,7 +99,7 @@ fun AiModelsScreen(vm: AiModelsViewModel, onBack: () -> Unit) {
                     }
                 }
             }
-            item {
+            item(key = "installed") {
                 Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                     SectionTitle(stringResource(R.string.ai_installed))
                     if (state.installed.isEmpty() && !state.busy) Text(stringResource(R.string.ai_empty),
@@ -113,7 +115,7 @@ fun AiModelsScreen(vm: AiModelsViewModel, onBack: () -> Unit) {
                     }
                 }
             }
-            if (available.isNotEmpty()) item {
+            if (available.isNotEmpty()) item(key = "catalog") {
                 Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                     SectionTitle(stringResource(R.string.ai_available))
                     Column(verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)) {
@@ -145,13 +147,13 @@ fun AiModelsScreen(vm: AiModelsViewModel, onBack: () -> Unit) {
                     }
                 }
             }
-            item {
+            item(key = "import") {
                 CalSettingsRow(stringResource(R.string.lab_import_model), R.drawable.ic_upload_file,
                     subtitle = stringResource(R.string.ai_import_hint), enabled = !state.busy) {
                     picker.launch(arrayOf("*/*"))
                 }
             }
-            item { Text(stringResource(R.string.ai_privacy), style = MaterialTheme.typography.bodySmall,
+            item(key = "privacy") { Text(stringResource(R.string.ai_privacy), style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant) }
         }
     }
@@ -159,14 +161,32 @@ fun AiModelsScreen(vm: AiModelsViewModel, onBack: () -> Unit) {
         val models = state.installed.filter {
             if (task == "package") it.descriptor?.admitsPackage() == true else it.descriptor?.admitsMealName() == true
         }
-        ModalBottomSheet(onDismissRequest = { choosingTask = null }, sheetMaxWidth = CalLayout.readingWidth) {
+        val sheetState = rememberBottomSheetState(
+            SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+        )
+        val scope = rememberCoroutineScope()
+        fun select(installed: InstalledAiModel?) {
+            vm.select(task, installed)
+            scope.launch {
+                sheetState.hide()
+                if (!sheetState.isVisible) choosingTask = null
+            }
+        }
+        ModalBottomSheet(
+            onDismissRequest = { choosingTask = null },
+            sheetState = sheetState,
+            sheetMaxWidth = CalLayout.readingWidth,
+            modifier = Modifier.testTag("ai_model_task_sheet"),
+        ) {
             Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(CalSpacing.page)
                 .navigationBarsPadding(), verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                 SectionTitle(stringResource(if (task == "package") R.string.ai_package_engine else R.string.ai_meal_engine))
+                if (task == "package") Text(stringResource(R.string.ai_package_macros_hint),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 val count = models.size + 1
                 Column(verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)) {
                     SegmentedListItem(selected = choices[task] == null,
-                        onClick = { vm.select(task, null); choosingTask = null },
+                        onClick = { select(null) },
                         enabled = !state.busy,
                         shapes = ListItemDefaults.segmentedShapes(0, count),
                         leadingContent = { CalLeadingIcon(if (task == "package") R.drawable.ic_package else R.drawable.ic_edit) },
@@ -175,12 +195,13 @@ fun AiModelsScreen(vm: AiModelsViewModel, onBack: () -> Unit) {
                     }
                     models.forEachIndexed { index, installed ->
                         SegmentedListItem(selected = choices[task] == installed.model.id,
-                            onClick = { vm.select(task, installed); choosingTask = null },
+                            onClick = { select(installed) },
                             enabled = !state.busy && vm.selectable(task, installed),
                             shapes = ListItemDefaults.segmentedShapes(index + 1, count),
                             leadingContent = { CalLeadingIcon(R.drawable.ic_memory) },
                             trailingContent = { RadioButton(selected = choices[task] == installed.model.id, onClick = null) }) {
-                            Text(installed.descriptor?.name ?: installed.model.name)
+                            val name = installed.descriptor?.name ?: installed.model.name
+                            Text(if (task == "package") stringResource(R.string.ai_package_with_model, name) else name)
                         }
                     }
                 }
@@ -195,7 +216,7 @@ fun AiModelsScreen(vm: AiModelsViewModel, onBack: () -> Unit) {
                 .navigationBarsPadding(), verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                 AiSectionTitle(model.name, R.drawable.ic_memory)
                 Text(Formatter.formatFileSize(context, model.bytes))
-                Text(stringResource(if (model.admitsMealName()) R.string.ai_name_only else R.string.ai_unverified))
+                Text(stringResource(model.purposeLabel()))
                 Text(stringResource(R.string.ai_privacy), style = MaterialTheme.typography.bodySmall)
                 transfers[model.id]?.let { ModelTransferStatus(it, model) }
                 val transfer = transfers[model.id]
@@ -238,7 +259,7 @@ fun AiModelsScreen(vm: AiModelsViewModel, onBack: () -> Unit) {
                     Text("${descriptor.repository}\n${descriptor.revision}", style = MaterialTheme.typography.bodySmall)
                     TextButton(onClick = { uri.openUri(descriptor.licenseUrl) }) { Text(descriptor.license) }
                 }
-                Text(stringResource(if (installed.descriptor?.admitsMealName() == true) R.string.ai_name_only else R.string.ai_unverified),
+                Text(stringResource(installed.descriptor?.purposeLabel() ?: R.string.ai_unverified),
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 TextButton(onClick = { details = null; deleting = installed.model }, enabled = !state.busy) {
                     CalIcon(R.drawable.ic_delete)
@@ -257,6 +278,13 @@ fun AiModelsScreen(vm: AiModelsViewModel, onBack: () -> Unit) {
             } },
             dismissButton = { TextButton(onClick = { deleting = null }) { Text(stringResource(R.string.cancel)) } })
     }
+}
+
+private fun ModelDescriptor.purposeLabel(): Int = when {
+    admitsPackage() && profile == ModelTaskProfile.GENERAL_VISION -> R.string.ai_package_macros_and_name
+    admitsMealName() -> R.string.ai_name_only
+    admitsPackage() -> R.string.ai_profile_label
+    else -> R.string.ai_unverified
 }
 
 private fun ModelTransfer.active() = phase in setOf(TransferPhase.QUEUED, TransferPhase.DOWNLOADING, TransferPhase.VERIFYING)

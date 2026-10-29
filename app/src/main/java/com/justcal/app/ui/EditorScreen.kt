@@ -171,7 +171,9 @@ fun EditorScreen(
                     }
                     scan?.let { PackageRecognitionSummary(it) }
                     state.recognition?.let { result ->
-                        Text(stringResource(R.string.ai_suggestions), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(if (result.source == com.justcal.app.ai.PackageMacroAssistance.SOURCE)
+                            R.string.ai_package_macro_suggestions else R.string.ai_suggestions),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
                         if (result.conflicts.isNotEmpty()) Text(stringResource(R.string.ai_conflicts),
                             color = MaterialTheme.colorScheme.error)
                         var evidence by rememberSaveable { mutableStateOf(false) }

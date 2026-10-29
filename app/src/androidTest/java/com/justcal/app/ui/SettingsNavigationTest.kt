@@ -101,6 +101,67 @@ class SettingsNavigationTest {
         compose.onNodeWithContentDescription(label(R.string.close)).performClick()
     }
 
+    @Test fun changingPackageModelKeepsListStillWhileSheetAnimatesOut() {
+        org.junit.Assume.assumeTrue(
+            androidx.test.platform.app.InstrumentationRegistry.getArguments().getString("realAiModels") == "true",
+        )
+        val context = compose.activity.applicationContext
+        val preferences = com.justcal.app.data.GoalPreferences(context)
+        val catalog = com.justcal.app.ai.ModelCatalog(context)
+        val store = com.justcal.app.ai.LocalModelStore(context, com.justcal.app.ai.LiteRtModelInspector(), catalog)
+        val model = kotlinx.coroutines.runBlocking {
+            store.list().first { store.validate(it).catalogId == "gemma4-e2b" }
+        }
+        val previous = kotlinx.coroutines.runBlocking { preferences.aiModels.first()["package"] }
+        try {
+            kotlinx.coroutines.runBlocking { preferences.selectAiModel("package", null) }
+            tab(R.string.settings).performClick()
+            compose.onNodeWithText(label(R.string.ai_models)).performScrollTo()
+                .performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick) { it() }
+            val task = hasText(label(R.string.ai_package_engine)) and hasClickAction() and isEnabled()
+            compose.waitUntil(60_000) { compose.onAllNodes(task).fetchSemanticsNodes().isNotEmpty() }
+            val defaultsTop = compose.onNodeWithText(label(R.string.ai_defaults)).fetchSemanticsNode().boundsInRoot.top
+            val installedTop = compose.onNodeWithText(label(R.string.ai_installed)).fetchSemanticsNode().boundsInRoot.top
+            repeat(4) { index ->
+                compose.onNode(task).performClick()
+                compose.onNodeWithTag("ai_model_task_sheet").assertExists()
+                val choice = if (index % 2 == 0) "Gemma 4 E2B" else label(R.string.ai_builtin)
+                compose.onAllNodes(hasText(choice, substring = true) and hasClickAction() and isEnabled()).onLast().assertIsEnabled()
+                compose.mainClock.autoAdvance = false
+                compose.onAllNodes(hasText(choice, substring = true) and hasClickAction() and isEnabled()).onLast().performClick()
+                compose.mainClock.advanceTimeByFrame()
+                // A choice must animate the existing sheet out rather than remove its composition.
+                compose.onNodeWithTag("ai_model_task_sheet").assertExists()
+                var previousTop = compose.onNodeWithTag("ai_model_task_sheet").fetchSemanticsNode().boundsInWindow.top
+                repeat(6) {
+                    compose.mainClock.advanceTimeByFrame()
+                    val sheets = compose.onAllNodesWithTag("ai_model_task_sheet").fetchSemanticsNodes()
+                    if (sheets.isNotEmpty()) {
+                        val top = sheets.single().boundsInWindow.top
+                        org.junit.Assert.assertTrue("Closing sheet must move down", top >= previousTop - 1f)
+                        previousTop = top
+                    }
+                    compose.onNodeWithTag("ai_model_import_progress").assertDoesNotExist()
+                    org.junit.Assert.assertEquals(defaultsTop,
+                        compose.onNodeWithText(label(R.string.ai_defaults)).fetchSemanticsNode().boundsInRoot.top, 1f)
+                    org.junit.Assert.assertEquals(installedTop,
+                        compose.onNodeWithText(label(R.string.ai_installed)).fetchSemanticsNode().boundsInRoot.top, 1f)
+                }
+                compose.mainClock.autoAdvance = true
+                compose.waitUntil(5_000) {
+                    compose.onAllNodesWithTag("ai_model_task_sheet").fetchSemanticsNodes().isEmpty()
+                }
+                val expected = if (index % 2 == 0) model.id else null
+                compose.waitUntil(5_000) {
+                    kotlinx.coroutines.runBlocking { preferences.aiModels.first()["package"] == expected }
+                }
+            }
+        } finally {
+            compose.mainClock.autoAdvance = true
+            kotlinx.coroutines.runBlocking { preferences.selectAiModel("package", previous) }
+        }
+    }
+
     @Test fun aiModelsAndPlaygroundAreChildSettingsDestinations() {
         tab(R.string.settings).performClick().assertIsSelected()
         compose.onNodeWithText(label(R.string.ai_models)).performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick) { it() }

@@ -183,7 +183,7 @@ class PhotoPickerFlowTest {
             // Returning from Models recreates the preview; wait for its asynchronous decode.
             // Semantics performClick on a disabled button would otherwise do nothing.
             val usePhoto = hasText(label(R.string.use_photo)) and hasClickAction()
-            compose.onNode(usePhoto).performScrollTo()
+            compose.onNode(usePhoto).assertIsDisplayed()
             compose.waitUntil(15_000) {
                 compose.onAllNodes(usePhoto and isEnabled()).fetchSemanticsNodes().isNotEmpty()
             }
@@ -224,6 +224,135 @@ class PhotoPickerFlowTest {
         }
     }
 
+    @Test fun selectedPackageModelOnlyCompletesMissingMacrosUntilExplicitSave() {
+        org.junit.Assume.assumeTrue(InstrumentationRegistry.getArguments().getString("realPackageMacros") == "true")
+        val context = compose.activity.applicationContext
+        val catalog = com.justcal.app.ai.ModelCatalog(context)
+        val models = com.justcal.app.ai.LocalModelStore(context, com.justcal.app.ai.LiteRtModelInspector(), catalog)
+        val preferences = com.justcal.app.data.GoalPreferences(context)
+        val previous = kotlinx.coroutines.runBlocking { preferences.aiModels.first()["package"] }
+        val model = kotlinx.coroutines.runBlocking { models.list().first {
+            models.validate(it).catalogId == "gemma4-e2b"
+        } }
+        val resolver = compose.activity.contentResolver
+        val photos = mutableListOf<Uri>()
+        val date = java.time.LocalDate.now().withDayOfMonth(1)
+        val database = androidx.room.Room.databaseBuilder(context, DiaryDatabase::class.java, "just-cal.db").build()
+        fun entries() = kotlinx.coroutines.runBlocking { database.diaryDao().observeDay(date.toEpochDay()).first() }
+        val baseline = entries().map { it.id }.toSet()
+        val uniqueName = "Package macros " + UUID.randomUUID()
+        try {
+            repeat(2) {
+                val photo = requireNotNull(resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ContentValues().apply {
+                    put(MediaStore.Images.Media.DISPLAY_NAME, "JustCal-package-${UUID.randomUUID()}.jpg")
+                    put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                    put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis() + 20_000)
+                    put(MediaStore.Images.Media.IS_PENDING, 1)
+                }))
+                photos += photo
+                resolver.openOutputStream(photo)!!.use { output ->
+                    java.io.File(context.getExternalFilesDir(null), "package-batch-fixtures/1792612058338.jpg")
+                        .inputStream().use { it.copyTo(output) }
+                }
+                resolver.update(photo, ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) }, null, null)
+            }
+            kotlinx.coroutines.runBlocking { preferences.selectAiModel("package", model.id) }
+            click(R.string.history)
+            click(R.string.choose_day)
+            val fullDate = date.format(java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.FULL)
+                .withLocale(compose.activity.resources.configuration.locales[0]))
+            compose.onNode(hasText(fullDate, substring = true, ignoreCase = true) and hasClickAction()).performClick()
+            click(R.string.open_day)
+            compose.onNodeWithContentDescription(label(R.string.add_food)).performClick()
+            click(R.string.scan_package)
+            click(R.string.choose_photo)
+            selectPhoto(0)
+            val assistance = compose.onNodeWithTag("package_ai_assistance")
+            fun awaitAssistance() {
+                compose.waitUntil(15_000) {
+                    compose.onAllNodes(hasTestTag("package_ai_assistance") and isEnabled()).fetchSemanticsNodes().isNotEmpty()
+                }
+            }
+            awaitAssistance()
+            assistance.performScrollTo().assertIsOn().performClick().assertIsOff()
+            compose.activityRule.scenario.recreate()
+            compose.onNodeWithTag("package_ai_assistance").performScrollTo().assertIsOff()
+            compose.onNodeWithText(label(R.string.ai_models)).performScrollTo().performClick()
+            compose.onNodeWithContentDescription(label(R.string.close)).performClick()
+            compose.onNodeWithTag("package_ai_assistance").performScrollTo().assertIsOff()
+            compose.waitUntil(15_000) {
+                compose.onAllNodes(hasText(label(R.string.use_photo)) and isEnabled()).fetchSemanticsNodes().isNotEmpty()
+            }
+            click(R.string.use_photo)
+            fun field(id: Int) = compose.onNode(hasText(label(id)) and hasSetTextAction())
+            compose.waitUntil(30_000) {
+                compose.onAllNodes(hasText(label(R.string.energy)) and hasSetTextAction()).fetchSemanticsNodes().isNotEmpty()
+            }
+            field(R.string.energy).performScrollTo().assertTextContains("150")
+            field(R.string.carbs).performScrollTo().assertTextContains("24.8")
+            for (id in listOf(R.string.protein, R.string.fat, R.string.amount)) {
+                field(id).performScrollTo().assert(SemanticsMatcher.expectValue(
+                    androidx.compose.ui.semantics.SemanticsProperties.EditableText, androidx.compose.ui.text.AnnotatedString("")))
+            }
+            compose.onNodeWithText(label(R.string.ai_package_macro_suggestions)).assertDoesNotExist()
+            org.junit.Assert.assertEquals(baseline, entries().map { it.id }.toSet())
+            org.junit.Assert.assertEquals(model.id, kotlinx.coroutines.runBlocking { preferences.aiModels.first()["package"] })
+            compose.onNodeWithContentDescription(label(R.string.close)).performClick()
+            compose.onNodeWithContentDescription(label(R.string.add_food)).performClick()
+            click(R.string.scan_package)
+            click(R.string.choose_photo)
+            selectPhoto(0)
+            awaitAssistance()
+            compose.onNodeWithTag("package_ai_assistance").performScrollTo().assertIsOn()
+            automation.takeScreenshot().let { bitmap ->
+                try { java.io.File(context.getExternalFilesDir(null), "package-assistance-review.png").outputStream().use {
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+                } } finally { bitmap.recycle() }
+            }
+            click(R.string.use_photo)
+            compose.waitUntil(90_000) {
+                check(compose.onAllNodesWithText(label(R.string.ocr_failed)).fetchSemanticsNodes().isEmpty())
+                compose.onAllNodesWithText(label(R.string.ai_package_macro_suggestions)).fetchSemanticsNodes().isNotEmpty()
+            }
+            field(R.string.energy).performScrollTo().assertTextContains("150")
+            field(R.string.protein).performScrollTo().assertTextContains("4.5")
+            field(R.string.fat).performScrollTo().assertTextContains("3.6")
+            field(R.string.carbs).performScrollTo().assertTextContains("24.8")
+            field(R.string.amount).performScrollTo().assert(SemanticsMatcher.expectValue(
+                androidx.compose.ui.semantics.SemanticsProperties.EditableText, androidx.compose.ui.text.AnnotatedString("")))
+            org.junit.Assert.assertEquals(baseline, entries().map { it.id }.toSet())
+            field(R.string.food_name).performScrollTo().performClick().performTextReplacement(uniqueName)
+            field(R.string.food_name).assertTextContains(uniqueName)
+            field(R.string.amount).performScrollTo().performClick().performTextReplacement("120")
+            field(R.string.food_name).assertTextContains(uniqueName)
+            androidx.test.espresso.Espresso.closeSoftKeyboard()
+            compose.activityRule.scenario.recreate()
+            field(R.string.food_name).performScrollTo().assertTextContains(uniqueName)
+            field(R.string.protein).performScrollTo().assertTextContains("4.5")
+            field(R.string.fat).performScrollTo().assertTextContains("3.6")
+            field(R.string.energy).performScrollTo().assertTextContains("150")
+            field(R.string.amount).performScrollTo().assertTextContains("120")
+            automation.takeScreenshot().let { bitmap ->
+                try { java.io.File(context.getExternalFilesDir(null), "package-macros-confirmation.png").outputStream().use {
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+                } } finally { bitmap.recycle() }
+            }
+            click(R.string.save_food)
+            compose.waitUntil(5000) { entries().any { it.name == uniqueName } }
+            val saved = entries().filter { it.name == uniqueName }
+            org.junit.Assert.assertEquals(1, saved.size)
+            org.junit.Assert.assertEquals(12000L, saved.single().eatenGramsHundredths)
+            org.junit.Assert.assertEquals(EntrySource.PACKAGE_SCAN, saved.single().toDomain().source)
+        } finally {
+            kotlinx.coroutines.runBlocking {
+                preferences.selectAiModel("package", previous)
+                entries().filter { it.name == uniqueName }.forEach { database.diaryDao().delete(it.id) }
+            }
+            database.close()
+            photos.forEach { resolver.delete(it, null, null) }
+        }
+    }
+
     @Test fun cancellingPickerReturnsDirectlyForBothScanModes() {
         listOf(R.string.scan_package, R.string.scan_meal).forEach { mode ->
             compose.onNodeWithContentDescription(label(R.string.add_food)).performClick()
@@ -255,7 +384,7 @@ class PhotoPickerFlowTest {
             compose.onNodeWithText(label(R.string.mode_package)).assertExists()
             compose.onNodeWithText(label(R.string.review_package_guidance)).assertExists()
             compose.onNodeWithText(label(R.string.review_package_ocr)).assertExists()
-            click(R.string.choose_another)
+            compose.onNodeWithText(label(R.string.choose_another)).performScrollTo().performClick()
             selectPhoto(1)
             compose.onNodeWithText(label(R.string.mode_package)).assertExists()
             compose.activityRule.scenario.recreate()

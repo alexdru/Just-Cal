@@ -28,8 +28,14 @@ data class ModelDescriptor(
 ) {
     val url get() = "https://huggingface.co/$repository/resolve/$revision/$filename"
 
-    fun admitsPackage() = profile == ModelTaskProfile.LABEL_TRANSCRIPTION &&
-        (packageAdmission?.matches(sha256, AI_RUNTIME_VERSION, TranscriptionNutrition.PROFILE_VERSION) == true)
+    fun admitsPackage(): Boolean {
+        val task = when (profile) {
+            ModelTaskProfile.LABEL_TRANSCRIPTION -> TranscriptionNutrition.PROFILE_VERSION
+            ModelTaskProfile.GENERAL_VISION -> PackageMacroAssistance.PROFILE_VERSION
+            ModelTaskProfile.CUSTOM -> return false
+        }
+        return packageAdmission?.matches(sha256, AI_RUNTIME_VERSION, task) == true
+    }
 
     fun admitsMealName() = profile == ModelTaskProfile.GENERAL_VISION &&
         mealNameAdmission?.matches(sha256, AI_RUNTIME_VERSION, MealRecognition.PROFILE_VERSION) == true

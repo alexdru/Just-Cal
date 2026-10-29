@@ -1,0 +1,425 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-28",
+  "method": "Manually transcribed visible print from all 27 original local photos. Missing printed mass stays null; no inferred weight or calculated energy. Names are compared semantically; numbers are exact decimal values. All input SHA-256 values are distinct, but two visually repeated views are conservatively grouped with their earlier photograph for admission evidence.",
+  "annotationReview": "A second visual reading corrected the initial transcription of onigiri protein/fat to 8.4/5.7 g and meat energy to 293.3 kcal. These are visible printed values, independent of model agreement; the corrections preceded inspection of Gemma/Paddle responses.",
+  "fieldOrder": [
+    "energyKcal",
+    "proteinGrams",
+    "fatGrams",
+    "carbsGrams",
+    "netGrams"
+  ],
+  "cases": [
+    {
+      "fixture": "1792612056936.jpg",
+      "name": "Сэндвич с ветчиной и сыром",
+      "nameVisible": true,
+      "values": [
+        "320",
+        "8.5",
+        "21",
+        "24",
+        "170"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1792612056936.jpg",
+      "inputSha256": "a13c78b2c06e47587b8db427c4ccb7507c0c64bee6d0027960521e266cb800e3"
+    },
+    {
+      "fixture": "1792612057327.jpg",
+      "name": "Котлета по-киевски с картофельным пюре",
+      "nameVisible": true,
+      "values": [
+        "159",
+        "5",
+        "7",
+        "19",
+        "260"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1792612057327.jpg",
+      "inputSha256": "160842672273e75f10f21d6abf497667de5fd0b1173fa7eb517424440ae3e5db"
+    },
+    {
+      "fixture": "1792612057628.jpg",
+      "name": "Продукт мясной из свинины, готовое сушёное мясо",
+      "nameVisible": true,
+      "values": [
+        "293",
+        "55",
+        "7.6",
+        "1.2",
+        null
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1792612057628.jpg",
+      "inputSha256": "842a549d55f4c99dd683c8e91be04c5293bca7baea42a177e37a93b2c7b9b1f8"
+    },
+    {
+      "fixture": "1792612058012.jpg",
+      "name": null,
+      "nameVisible": false,
+      "values": [
+        "189",
+        "11",
+        "8.5",
+        "17",
+        null
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1792612058012.jpg",
+      "inputSha256": "53b7735c610bb5483a424b602f1b590d86d11f4260c4a48786d252a56786955f"
+    },
+    {
+      "fixture": "1792612058338.jpg",
+      "name": null,
+      "nameVisible": false,
+      "values": [
+        "150",
+        "4.5",
+        "3.6",
+        "24.8",
+        null
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1792612058338.jpg",
+      "inputSha256": "e6d46ea45f696d838ce85166507c58f5e2947cd4603bb0fc75826c01e6e0b393"
+    },
+    {
+      "fixture": "1792612058637.jpg",
+      "name": null,
+      "nameVisible": false,
+      "values": [
+        "121",
+        "5",
+        "6",
+        "13",
+        null
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1792612058637.jpg",
+      "inputSha256": "66a090851b4540c1e3abdb240f7484c05c67aa312fcc71c4610532b43eb0bb3f"
+    },
+    {
+      "fixture": "1792612058945.jpg",
+      "name": "Яичная лапша с говядиной",
+      "nameVisible": true,
+      "values": [
+        "138",
+        "5",
+        "4.4",
+        "19.5",
+        null
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1792612058945.jpg",
+      "inputSha256": "a8b7b11a4d5fb3c474f2a21fa04885b105ce588536aece7b2e7ca1509826258f"
+    },
+    {
+      "fixture": "1792612059644.jpg",
+      "name": "Сосиски с картофельным пюре",
+      "nameVisible": true,
+      "values": [
+        "155",
+        "5",
+        "11",
+        "9",
+        "250"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1792612059644.jpg",
+      "inputSha256": "183d6b3401d18d656f9643e5daa08df88d2ae7a25ea2de65b56c9b2893929559"
+    },
+    {
+      "fixture": "1792612059984.jpg",
+      "name": "Куриные наггетсы с дольками запечённого картофеля",
+      "nameVisible": true,
+      "values": [
+        "162",
+        "5.1",
+        "8.1",
+        "17.1",
+        null
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1792612059984.jpg",
+      "inputSha256": "9001450f4ca25873b236ef634ff5e7452a6fd56edcb39b62910a9a5460d6fb4b"
+    },
+    {
+      "fixture": "1792661540668.jpg",
+      "name": "Боул Азиатский с говядиной, рисом и битыми огурцами",
+      "nameVisible": true,
+      "values": [
+        "98.5",
+        "5.9",
+        "3.7",
+        "10.4",
+        "205"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1792661540668.jpg",
+      "inputSha256": "b8843efc04d8a37d3f4ccf45721d4cb06d8c679f585760bcc7263e40e36a6118"
+    },
+    {
+      "fixture": "1792661541124.jpg",
+      "name": "Конвертики с курицей, шпинатом и сыром",
+      "nameVisible": true,
+      "values": [
+        "329.1",
+        "15.8",
+        "15.5",
+        "31.6",
+        "140"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1792661541124.jpg",
+      "inputSha256": "392b2e2f84e1a7b494bcba94616726ba46f90e84d153c617b1950c8e50e863fe"
+    },
+    {
+      "fixture": "1792661541536.jpg",
+      "name": "Рис с куриной бризолью",
+      "nameVisible": true,
+      "values": [
+        "196.8",
+        "9.7",
+        "8.8",
+        "19.7",
+        "200"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1792661541536.jpg",
+      "inputSha256": "75025cbb12c85eae3173714a8188c1e2f29a4095f082b4702d3da1baeb74dd64"
+    },
+    {
+      "fixture": "1793208394902.jpg",
+      "name": "Конвертики с курицей, шпинатом и сыром",
+      "nameVisible": true,
+      "values": [
+        "329.1",
+        "15.8",
+        "15.5",
+        "31.6",
+        "140"
+      ],
+      "basis": "PER_100_G",
+      "notes": "Visually repeated view of 1792661541124.jpg; distinct file hash, conservatively one admission evidence group.",
+      "evidenceGroup": "1792661541124.jpg",
+      "inputSha256": "76423ecd0b46c1e212cc31ef4dc06d08cd3596680e81a370a2de299796e5eaa8"
+    },
+    {
+      "fixture": "1793208395235.jpg",
+      "name": "Онигири с лососем и сливочным сыром",
+      "nameVisible": true,
+      "values": [
+        "168",
+        "8.4",
+        "5.7",
+        "19.3",
+        null
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1793208395235.jpg",
+      "inputSha256": "6ae6c80961ba3d15a8de88cf8803c2f7e1e13800c51f257a270abfe31836dd0b"
+    },
+    {
+      "fixture": "1793208395550.jpg",
+      "name": "Куриная котлета-гриль с гречкой",
+      "nameVisible": true,
+      "values": [
+        "162.5",
+        "8.4",
+        "7.7",
+        "14.9",
+        "220"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1793208395550.jpg",
+      "inputSha256": "c1a039a72c6f13c0a2f3c369de5a3ede86262010f2ea1abc76c6edcca9dcf00e"
+    },
+    {
+      "fixture": "1793208395872.jpg",
+      "name": "Пирожки с зеленью и яйцом на сметанном тесте",
+      "nameVisible": true,
+      "values": [
+        "338.3",
+        "9.9",
+        "21.5",
+        "26.3",
+        "120"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1793208395872.jpg",
+      "inputSha256": "52ac6c3dd85c68c0eb08431d922a198061c264940830b6c7c1851621c38764ce"
+    },
+    {
+      "fixture": "1793208396211.jpg",
+      "name": null,
+      "nameVisible": false,
+      "values": [
+        "200",
+        "6",
+        "14",
+        "13",
+        null
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1793208396211.jpg",
+      "inputSha256": "2e87a488182e9d873ed95fc3023a7de27784e1ad25ef875e6e79b61aa82a1a68"
+    },
+    {
+      "fixture": "1793208396897.jpg",
+      "name": "Бефстроганов из говядины с картофельным пюре",
+      "nameVisible": true,
+      "values": [
+        "118",
+        "6",
+        "6.4",
+        "9.1",
+        "230"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1793208396897.jpg",
+      "inputSha256": "09c12a184ad7670a9ba94352fdc3b79b3901b08ec584369cdb0a8839abbdf331"
+    },
+    {
+      "fixture": "1793208397221.jpg",
+      "name": "Мясо по-французски Традиционное",
+      "nameVisible": true,
+      "values": [
+        "293.3",
+        "12.8",
+        "19.7",
+        "16.2",
+        "240"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1793208397221.jpg",
+      "inputSha256": "ec6ae1bdf16afa783df3a9a86e64a3840c530fe00712bc370d1953d6eb6b91a0"
+    },
+    {
+      "fixture": "1793208397817.jpg",
+      "name": "Тальятелле со шпинатом и курицей в сырном соусе",
+      "nameAliases": [
+        "Тальятелле с курицей в сырном соусе"
+      ],
+      "nameVisible": true,
+      "values": [
+        "183.2",
+        "11",
+        "6.4",
+        "20.4",
+        "240"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1793208397817.jpg",
+      "inputSha256": "0b05f48248b38897c41627b0ae8657308d8f13aa19ef9f2a6d732a4647d9b750"
+    },
+    {
+      "fixture": "1793208398503.jpg",
+      "name": "Конвертики с яйцом и луком",
+      "nameVisible": true,
+      "values": [
+        "219.6",
+        "9.7",
+        "9.2",
+        "24.5",
+        "140"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1793208398503.jpg",
+      "inputSha256": "b767c4a409197b64edaf11c34458cfbda14e0dc9f600b94872b9ee24dfeca734"
+    },
+    {
+      "fixture": "1793208398847.jpg",
+      "name": "Филе курицы в сливочном соусе с гречкой",
+      "nameVisible": true,
+      "values": [
+        "173.2",
+        "9.6",
+        "5.2",
+        "22",
+        "250"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1793208398847.jpg",
+      "inputSha256": "2d82338b4f72c37af14c0254e4cf1e4588e7da969e50a7b2569f6f9f79e77003"
+    },
+    {
+      "fixture": "1793208399179.jpg",
+      "name": "Салат витаминный с лимонной заправкой",
+      "nameVisible": true,
+      "values": [
+        "80",
+        "0.9",
+        "4.8",
+        "8.3",
+        "150"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1793208399179.jpg",
+      "inputSha256": "bd3524caebd4937428aa09c464e54de48ff069d27eab40439fbbebd3b898a1cc"
+    },
+    {
+      "fixture": "1793208399470.jpg",
+      "name": "Суп-лапша куриный",
+      "nameVisible": true,
+      "values": [
+        "86",
+        "7",
+        "4.7",
+        "3.6",
+        "300"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1793208399470.jpg",
+      "inputSha256": "48b14cee6e55878399ee6235e1642ee6c72d5c75a52634373e857d2c8747de28"
+    },
+    {
+      "fixture": "1793208399766.jpg",
+      "name": "Котлета куриная с картофельным пюре",
+      "nameVisible": true,
+      "values": [
+        "145",
+        "8.5",
+        "5.8",
+        "14.7",
+        "250"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1793208399766.jpg",
+      "inputSha256": "78719f4b96764c93f224f8a703d40a1c9892ec7d892cd98765a8b1784a9b90d0"
+    },
+    {
+      "fixture": "1793208400097.jpg",
+      "name": "Курица с картофельным хашбрауном в тортилье",
+      "nameVisible": true,
+      "values": [
+        "238.7",
+        "8.4",
+        "10.7",
+        "27.2",
+        "250"
+      ],
+      "basis": "PER_100_G",
+      "evidenceGroup": "1793208400097.jpg",
+      "inputSha256": "7610fb4cbe2655f68d4c3f879413ae9c2d659710f36bb23e7f0d100a48bfe305"
+    },
+    {
+      "fixture": "1793208400177.jpg",
+      "name": "Сэндвич с ветчиной и сыром",
+      "nameVisible": true,
+      "values": [
+        "320",
+        "8.5",
+        "21",
+        "24",
+        "170"
+      ],
+      "basis": "PER_100_G",
+      "notes": "Visually repeated view of 1792612056936.jpg; distinct file hash, conservatively one admission evidence group.",
+      "evidenceGroup": "1792612056936.jpg",
+      "inputSha256": "edb05c69f16d95ab5a244136b0a6529638b211e1f1549d067014dd0a08cd7c5a"
+    }
+  ]
+}

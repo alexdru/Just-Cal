@@ -3,7 +3,7 @@ package com.justcal.app.ai
 import java.math.BigDecimal
 import kotlinx.serialization.json.*
 
-/** Lab output, never a diary input. JSON validity does not establish factual accuracy. */
+/** Untrusted structured transport. Production consumers need task admission and field-specific validation. */
 data class ExtractedNutrition(
     val productName: String?,
     val caloriesKcal: BigDecimal?,

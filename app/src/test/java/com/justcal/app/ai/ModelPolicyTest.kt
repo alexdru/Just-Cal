@@ -86,6 +86,12 @@ class ModelPolicyTest {
             packageAdmission = admission.copy(taskVersion = TranscriptionNutrition.PROFILE_VERSION))
         assertTrue(packageModel.admitsPackage())
         assertFalse(packageModel.copy(sha256 = "c".repeat(64)).admitsPackage())
+        val macros = model.copy(packageAdmission = admission.copy(taskVersion = PackageMacroAssistance.PROFILE_VERSION))
+        assertTrue(macros.admitsPackage())
+        assertTrue(macros.admitsMealName())
+        assertFalse(macros.copy(profile = ModelTaskProfile.LABEL_TRANSCRIPTION).admitsPackage())
+        assertFalse(macros.copy(packageAdmission = admission.copy(taskVersion = "package-macros-v1-nutrition-crop-v1")).admitsPackage())
+        assertFalse(macros.copy(sha256 = "c".repeat(64)).admitsPackage())
     }
 
     @Test fun rejectedMealEvidenceRemainsAvailableWithoutAnyPrefill() {

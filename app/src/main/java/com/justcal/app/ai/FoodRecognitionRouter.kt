@@ -43,31 +43,53 @@ class FoodRecognitionRouter @Inject constructor(
     private val preferences: GoalPreferences, private val runtime: LiteRtLocalAiEngine,
     private val cropper: LabelImageCropper,
 ) {
-    suspend fun packageOcr(image: PreparedImage): Pair<PackageOcrResult, PackageScanPrefill> {
-        val result = ocr.recognize(images.verify(image))
-        val baseline = PackageScanPrefill.from(result)
-        if (LabelRegionSelection.complete(result)) return result to baseline
-        val id = preferences.aiModels.first()["package"] ?: return result to baseline
-        val model = store.list().firstOrNull { it.id == id } ?: return result to baseline
+    /** UI availability uses the same admission/probe checks as production, without loading a model. */
+    suspend fun packageModelName(id: String?): String? = validatedPackageModel(id)?.second?.name
+
+    private suspend fun validatedPackageModel(id: String?): Pair<LocalModel, ModelDescriptor>? {
+        if (id == null) return null
+        val model = store.list().firstOrNull { (modelId) -> modelId == id } ?: return null
         val validation = try { store.validate(model) }
             catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { return result to baseline }
+            catch (_: Exception) { return null }
+            catch (_: LinkageError) { return null }
         val descriptor = catalog.matching(validation.sha256)
-        if (descriptor?.admitsPackage() != true)
-            return result to baseline
+        if (descriptor?.admitsPackage() != true) return null
+        if (BackendSelector.candidates(validation.capabilities).none {
+            validation.imageProbe == store.probeFingerprint(it)
+        }) return null
+        return model to descriptor
+    }
+
+    suspend fun packageOcr(
+        image: PreparedImage,
+        allowModel: Boolean = true,
+        onModelProcessing: (String) -> Unit = {},
+    ): Pair<PackageOcrResult, PackageScanPrefill> {
+        val result = ocr.recognize(images.verify(image))
+        val baseline = PackageScanPrefill.from(result)
+        // Opting out bypasses all optional model lookup, validation, loading and inference.
+        if (!allowModel || LabelRegionSelection.complete(result)) return result to baseline
+        val (model, descriptor) = validatedPackageModel(preferences.aiModels.first()["package"])
+            ?: return result to baseline
+        val macroTask = descriptor.profile == ModelTaskProfile.GENERAL_VISION
+        if (macroTask && !PackageMacroAssistance.shouldRun(baseline.label)) return result to baseline
         val enriched = packageEnrichmentOrBaseline(baseline) {
             var crop: PreparedImage? = null
             try {
                 crop = cropper.crop(image, result) ?: return@packageEnrichmentOrBaseline baseline
+                onModelProcessing(descriptor.name)
                 runtime.load(model, AiBackend.AUTO)
                 val raw = StringBuilder()
                 withTimeout(90.seconds) {
-                    runtime.generate(crop, "OCR:", false) {
-                        require(raw.length + it.length <= 16_000)
+                    runtime.generate(crop, if (macroTask) PackageMacroAssistance.PROMPT else "OCR:", macroTask) {
+                        require((raw.length + it.length) <= 16_000)
                         raw.append(it)
                     }
                 }
-                baseline.copy(recognition = TranscriptionNutrition.merge(baseline.label, raw.toString()))
+                val recognition = if (macroTask) PackageMacroAssistance.merge(baseline.label, raw.toString())
+                    else TranscriptionNutrition.merge(baseline.label, raw.toString())
+                baseline.copy(recognition = recognition)
             } finally {
                 withContext(NonCancellable) {
                     runtime.unload()

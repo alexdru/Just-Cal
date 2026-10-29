@@ -2,11 +2,53 @@
 
 AI Models manages private model files in Settings. AI Playground is the experimental image/prompt screen; its saved route remains `LocalAiLab`. It never writes to the diary. Production recognition uses a separate `FoodRecognitionRouter`, the existing editor and explicit Save.
 
-## Current audit — 0.17.1 (2026-10-22–23)
+## Earlier audit — 0.17.1 (2026-10-22–23)
+
+The 0.18.0 package-macro admission below supersedes this historical package-gate status.
 
 The follow-up [quality audit](ai-verification/2026-10-22/quality-audit.md) supersedes the earlier milestone completion notes below. It includes reproducible machine-readable reports, separate model-response and validator outcomes, current implementation gaps and the device workflow result. The meal gate remains name-only; the package VLM gate remains closed. The real-model photo → Models → review → edited editor → Activity recreation → explicit single Save workflow now passed in 28.177 s and again in 30.908 s on the final build, including original diary date and empty initial amount. Its earlier timeout came from clicking the disabled Use photo button before preview decoding completed; the test now waits for readiness. A fresh GPU Paddle crop regression on 2026-10-23 reproduced 196.8 → 1968 and degenerate repeated text on the second crop. The raw outputs and deterministic parser results are linked in the audit; nonempty smoke success is separate from numerical quality.
 
 Production admission is bound to the pinned artifact hash, LiteRT-LM version and versioned task contract, with a reviewed evidence reference. Changing runtime/task invalidates the old admission; matching metadata or an image smoke is insufficient. An optional package VLM deadline now preserves completed OCR after cleanup without swallowing caller cancellation. Invalid/refused meal responses retain bounded raw evidence and a validation category in detailed local diagnostics; they do not open an empty successful editor. Sanitized exports omit raw responses and prompts.
+
+## Local package photo fixtures
+
+Place original food-package photos in `test-data/package-photos/` at the project root. The directory and all nested contents are Git-ignored and outside Android assets/resources. Product subdirectories are allowed. These local originals are the inbox for explicitly requested OCR/model quality checks; adding photos does not automatically run tests or inference. Preserve original resolution and include readable nutrition basis/units where possible.
+
+The checked-in CI workflow runs `:app:testDebugUnitTest :app:lintDebug :app:assembleDebug`; it does not run device-photo tests or require this ignored inbox. Unit tests use in-code data, not private photos. Opt-in Android tests check their instrumentation arguments **before** accessing fixtures/models: `packagePhotoBatch=true` for both batch classes, `realPackageMacros=true` for the real package editor flow, and `realAiModels=true` for real-model runtime/selection tests. Without those arguments JUnit reports a skip. An explicitly requested real-photo run still fails if its required files are absent; do not treat missing requested fixtures as a quality pass.
+
+## Per-scan assistance control — 0.19.0
+
+Photo Review shows the selected, admitted and image-checked package model and a native **Local model assistance** switch. It is enabled only when such a model is available; otherwise AI Models remains available to choose one explicitly. Turning it off bypasses optional model lookup/loading/inference for that photo while retaining bundled OCR. The choice survives Activity recreation and a trip to Models, but does not change the global default or apply to the next new scan. No new DataStore preference is introduced.
+
+The loading label names the model only when a reliable crop has been found and the optional native stage actually starts. A complete OCR result or unsuitable basis/crop never implies an additional model call merely because the switch is on. Successful assistance retains its existing AI banner/raw evidence in the editor; failure preserves OCR. Use photo stays pinned in a transparent host while the action viewport scrolls behind it with final-item clearance.
+
+Verification on OnePlus 7T/API 30: the real package flow passed in 53.110 s with assistance off → OCR-only empty P/F, switch state retained across recreation and Models, then a fresh scan on → Gemma 4.5/3.6 g, edits retained and one explicit Save on the original day. The default model choice and test-owned data were restored. Three further device tests passed in 39.236 s: generated-image picker/reselect/manual recovery, real meal-name editor flow and four stable task-selection transitions. The test now focuses edited fields and asserts the name before/after recreation; an earlier unfocused test-input attempt stopped at missing-name validation, without a successful save.
+
+Without opt-in arguments, both photo-batch tests and the real-package UI test reported JUnit assumption skips before fixture access (three skips, zero failures). These skips are not quality passes. Final Gradle verification passed all 165 unit tests, lint, debug app and AndroidTest APK builds. This update does not repeat the 27-photo quality admission or establish new meal accuracy.
+
+## Which model is used today? — 0.18.0 quality admission (2026-10-28–29)
+
+| Component | Installation | Current use |
+| --- | --- | --- |
+| Bundled PP-OCRv5 detector + Eastern Slavic recognizer | Included in the APK; 12.13 MiB of model assets | Always the Scan package baseline, offline OCR + deterministic parsing + editable confirmation |
+| PaddleOCR-VL-1.6 | Separate 1.39 GB download/import | Playground label transcription only; crop-v2 still supplied a wrong nutrient, so no production admission |
+| Gemma 4 E2B | Separate 2.59 GB download/import | Explicitly selected, separately admitted meal name-only and package missing-macro assistance; Playground experiments |
+
+The two Paddle names are different models/runtimes. PP-OCRv5 is specialized text detection/recognition through ONNX Runtime/OpenCV. PaddleOCR-VL-1.6 is a generative vision-language model through LiteRT-LM. Installation stores private weights; it neither replaces bundled OCR nor selects a task. Removing a downloaded model leaves bundled OCR available.
+
+**Enable package assistance:** Settings → AI Models → Scan package → Gemma 4 E2B. The exact installed artifact also needs a successful image probe for this SDK/device; if needed, load it in Playground and run an image. Production uses its own session. No download, selection or inference starts automatically.
+
+Gemma runs only when OCR has an explicit per-100-g basis, a blank protein/fat/carbohydrate field and a reliable nutrition crop. The strict consumer accepts only missing P/F/C on the same 100-g basis, with decimal bounds and combined macros ≤100 g. It cannot alter OCR calories, name, mass or any nonempty macro. Its own calorie/name/mass answers are ignored; weight remains editable and saving is explicit. Failed/unsupported inference preserves OCR.
+
+[All 27 local package photos](ai-verification/2026-10-28/README.md) were processed by real OCR and both pinned VLMs. OCR prefills 82/127 visible numbers, all correct in this sample. The narrowly admitted Gemma consumer replays the measured crop responses into 94/127 correct fields: twelve missing macros recovered on six independent photos, zero new wrong numbers or removed OCR values. Its full seven-field JSON still has fourteen wrong numbers and is **not** admitted. Paddle crop-v2 recovers seven fields but adds a wrong fat value (19.5 instead of 4.4), with sixteen empty responses and five deadlines. It remains experimental.
+
+The cropper now recognizes actual RU/EN nutrition headings instead of ingredient “соль пищевая”, excludes neighboring ingredient/storage lines and clearly separate whole-dish/per-serving columns. Crop, transport and consumer versions are pinned in the evidence. New admission is `package-macros-v1-nutrition-crop-v2`; changing these contracts invalidates it.
+
+Fresh production photo → OCR + Gemma → editor → Activity recreation → explicit single Save passed on OnePlus 7T/API 30 in 40.759 s, including original date, empty initial amount, preserved 150 kcal and recovered 4.5/3.6 g macros. The test restored the prior model selection and deleted only its own photos/diary entry. Full 165-unit suite, debug application/test APKs and lint passed. This is a small local sample, not a general accuracy claim or a new meal-quality evaluation.
+
+To try Paddle: Settings → AI Playground → Select model → PaddleOCR-VL-1.6 → Load model → label photo → Package text → Run inference. Loading initializes native memory; installation stores weights. Its `OCR:` crop preset relies on OCR coordinates, so it cannot independently rescue a missing reliable crop. Playground never creates diary entries.
+
+Next quality work: new independently reviewed label photos, especially absent/ambiguous basis, kcal/kJ, decimal text and crop/EXIF boundaries; improve the remaining 33 empty fields without sacrificing baseline values. Package names/calories/mass and meal numerical estimates need separate evidence. Broader meal-name tests need real complex dishes. API 34+ transfer/UIDT, repeated GPU lifecycle and controlled memory/16-KiB-device checks remain open; installing more unmeasured models does not close them.
 
 ## Models and privacy
 
@@ -68,7 +110,7 @@ this UI change. Version: 0.16.2 (42).
 
 The seven-field constrained nutrition preset remains experimental. Exact keys, decimal numbers/nulls, units/basis and bounds are independently checked. All-null and repeated output are failed extraction, not successful nutrition recognition. Custom files cannot use an assumed Gemma JSON profile.
 
-Production package scanning retains bundled PP-OCRv5 as its baseline. A guarded crop/transcription merge path exists, but the catalog does **not** admit VLM package fallback: measured results have not recovered two previously missing fields without errors. OCR/VLM numerical conflicts become empty fields with retained evidence; serving and per-100-g bases never mix. VLM net mass never initializes consumed amount.
+Production package scanning retains PP-OCRv5 and permits only explicitly selected, artifact/runtime/task-admitted consumers. Gemma's missing-P/F/C consumer is enabled after the 27-photo gate; the full nutrition JSON and Paddle transcription consumers remain unadmitted. The transcription path retains conflict review and separate VLM net mass. The macro-only consumer ignores out-of-scope model fields and cannot overwrite OCR. Neither can derive consumed weight or persist without Save.
 
 Meal support is limited to a separately validated, editable **name-only** suggestion. The strict meal schema accepts only isFood/singleDish/name; non-food, unclear/multiple dishes or invalid output lead to manual entry. No photo-derived weight, total calories or numerical nutrient estimate is enabled. Model selection stays explicit in Settings. FoodValidator and NutritionCalculator remain the only path to a saved diary entry.
 
@@ -96,7 +138,7 @@ Post-call PSS snapshots: PP-OCR 131,650 KiB with process peak RSS 535,840 KiB; G
 
 Initial name-only tests correctly named apple, banana and pizza; dog, bus and blank returned null (22,098 / 17,260 / 16,917 / 16,461 / 16,593 / 16,363 ms; initialization 20,830 ms, CPU). The first multiple-food response incorrectly supplied a combined name. The prompt now explicitly addresses separate foods; the parser rejects contradictory flags/names and compound names. This conservative parser can also reject legitimate names containing conjunctions, sending them to manual entry.
 
-The final seven-image **model + validator** gate passed: apple/banana/pizza names; dog/bus/blank no suggestion; the apple+banana response had `singleDish:false` but supplied a name and was rejected. It is a successful safe refusal, not a claim that the model followed the schema. Final CPU timings were 14,139 / 14,021 / 13,806 / 13,505 / 13,623 / 12,540 / 13,939 ms; warm initialization 645 ms. Native cancellation joined, then a repeat apple inference completed. Gemma's catalog admission is limited to name-only assistance and still requires an image probe for the current SDK/device and explicit Settings selection.
+The final seven-image **model + validator** gate passed: apple/banana/pizza names; dog/bus/blank no suggestion; the apple+banana response had `singleDish:false` but supplied a name and was rejected. It is a successful safe refusal, not a claim that the model followed the schema. Final CPU timings were 14,139 / 14,021 / 13,806 / 13,505 / 13,623 / 12,540 / 13,939 ms; warm initialization 645 ms. Native cancellation joined, then a repeat apple inference completed. This October 22 admission was limited to meal name-only assistance; the separate October 28–29 package-macro evidence is documented above. Both require an image probe for the current SDK/device and explicit Settings selection.
 
 One earlier long-running instrumentation run was terminated by OnePlus background CPU policy (`OHPD BgDetect`, ActivityManager kill); no native crash was established. Runtime tests now hold a foreground Activity and the final run completed. No battery-policy setting was changed. Foreground success is not evidence of sustained background inference support.
 

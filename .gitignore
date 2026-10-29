@@ -29,3 +29,6 @@ release-files/
 # Local OCR experiments: private photo fixtures, tensor dumps, conversions and raw runs.
 # Bundled production models/dictionaries/notices and curated verification reports stay tracked.
 /.ocr-work/
+
+# Local food-package photo fixtures for recognition checks; never commit or bundle.
+/test-data/package-photos/
