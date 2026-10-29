@@ -114,8 +114,12 @@ The bundled catalog pins source revision, bytes/hash, license and task admission
 SAF import and explicit HTTPS transfers stream into private noBackupFilesDir staging
 and atomically install validated immutable UUID directories. Legacy metadata remains
 readable/lazily validated. No automatic download, selection or inference.
-Range/ETag checkpoints, pause/cancel and process restart are separate from runtime state;
-API 34+ uses UIDT JobService, API 30–33 a non-sticky dataSync service.
+Range/ETag checkpoints, pause/cancel and process restart are separate from runtime state.
+Only queued transfers may enter the writer; late callbacks cannot reinstall completed work.
+A restart truncates/fsyncs the partial file before persisting its new ETag. Pause cancels
+work and disconnects the active socket off-main before joining the writer; cancelled I/O
+remains paused rather than becoming a network failure. API 34+ uses UIDT JobService,
+API 30–33 a non-sticky dataSync service.
 Full network/OS transfer validation remains open; see [AI closeout](AI_REDESIGN_PLAN.md).
 
 LiteRT-LM 0.18.1 ModelInfo is inspected/closed off-main before Engine creation.

@@ -46,24 +46,42 @@ object ModelResumePolicy {
 }
 
 @Singleton
-class ModelDownloadRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val catalog: ModelCatalog, private val models: LocalModelStore,
+class ModelDownloadRepository internal constructor(
+    private val catalogModels: List<ModelDescriptor>,
+    private val root: File,
+    private val prepareStorage: (Long) -> Unit,
+    private val availableBytes: () -> Long,
+    private val openConnection: (URI) -> HttpURLConnection,
+    private val install: suspend (ModelDescriptor, File) -> Unit,
 ) {
+    @Inject constructor(
+        @ApplicationContext context: Context, catalog: ModelCatalog, models: LocalModelStore,
+    ) : this(
+        catalog.models, File(context.noBackupFilesDir, "local-ai-models"),
+        { required ->
+            val storage = context.getSystemService(android.os.storage.StorageManager::class.java)
+            val volume = storage.getUuidForPath(context.noBackupFilesDir)
+            require(storage.getAllocatableBytes(volume) >= required) { "Insufficient private storage" }
+            storage.allocateBytes(volume, required)
+        },
+        { context.noBackupFilesDir.usableSpace },
+        { it.toURL().openConnection() as HttpURLConnection },
+        { descriptor, file -> models.installDownload(descriptor, file); Unit },
+    )
     private val gate = Mutex()
-    private val root get() = File(context.noBackupFilesDir, "local-ai-models")
     private val mutable = MutableStateFlow<Map<String, ModelTransfer>>(restore())
     val state = mutable.asStateFlow()
     @Volatile private var active: Job? = null
     @Volatile private var activeId: String? = null
+    @Volatile private var activeConnection: HttpURLConnection? = null
     private val stopped = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
     private fun folder(id: String): File {
-        require(catalog.models.any { it.id == id })
+        require(catalogModels.any { it.id == id })
         return File(root, ".download-$id").also { check(it.mkdirs() || it.isDirectory) }
     }
 
-    private fun restore(): Map<String, ModelTransfer> = catalog.models.mapNotNull { model ->
+    private fun restore(): Map<String, ModelTransfer> = catalogModels.mapNotNull { model ->
         val directory = File(root, ".download-${model.id}")
         val checkpoint = File(directory, "checkpoint.json")
         if (!directory.exists()) null else {
@@ -95,12 +113,15 @@ class ModelDownloadRepository @Inject constructor(
 
     suspend fun transfer(id: String) = withContext(Dispatchers.IO) {
         if (!gate.tryLock()) return@withContext
-        if (id in stopped) { gate.unlock(); return@withContext }
+        if (id in stopped || state.value[id]?.phase != TransferPhase.QUEUED) {
+            gate.unlock()
+            return@withContext
+        }
         active = currentCoroutineContext().job
         activeId = id
         try {
             ensureTransferActive(id)
-            val descriptor = catalog.models.single { it.id == id }
+            val descriptor = catalogModels.single { it.id == id }
             val file = File(folder(id), "model.litertlm")
             var offset = file.length()
             if (offset == descriptor.bytes && state.value[id]?.error != null) {
@@ -108,11 +129,7 @@ class ModelDownloadRepository @Inject constructor(
                 offset = 0
             }
             require(offset <= descriptor.bytes) { "Partial model exceeds expected size; cancel and retry" }
-            val storage = context.getSystemService(android.os.storage.StorageManager::class.java)
-            val volume = storage.getUuidForPath(root)
-            val required = descriptor.bytes - offset + MODEL_STORAGE_RESERVE
-            require(storage.getAllocatableBytes(volume) >= required) { "Insufficient private storage" }
-            storage.allocateBytes(volume, required)
+            prepareStorage(descriptor.bytes - offset + MODEL_STORAGE_RESERVE)
             var etag = state.value[id]?.etag
             if (offset == descriptor.bytes) {
                 publish(ModelTransfer(id, TransferPhase.VERIFYING, offset, etag))
@@ -143,8 +160,11 @@ class ModelDownloadRepository @Inject constructor(
                     val length = connection.contentLengthLong
                     require(length < 0 || length == descriptor.bytes - offset) { "Unexpected model download length" }
                     etag = responseTag
-                    publish(ModelTransfer(id, TransferPhase.DOWNLOADING, offset, etag))
                     java.io.FileOutputStream(file, append).use { target ->
+                        // Persist truncation before associating a new validator with this file.
+                        // Otherwise process death could resume old bytes using the new ETag.
+                        if (!append) target.fd.sync()
+                        publish(ModelTransfer(id, TransferPhase.DOWNLOADING, offset, etag))
                         connection.inputStream.use { input ->
                             val buffer = ByteArray(1024 * 1024)
                             var lastCheckpoint = offset
@@ -154,7 +174,7 @@ class ModelDownloadRepository @Inject constructor(
                                 ensureTransferActive(id)
                                 if (count < 0) break
                                 require(offset + count <= descriptor.bytes) { "Download exceeds pinned size" }
-                                require(root.usableSpace > MODEL_STORAGE_RESERVE) { "Insufficient private storage" }
+                                require(availableBytes() > MODEL_STORAGE_RESERVE) { "Insufficient private storage" }
                                 target.write(buffer, 0, count)
                                 offset += count
                                 mutable.value = mutable.value + (id to ModelTransfer(id, TransferPhase.DOWNLOADING, offset, etag))
@@ -171,16 +191,26 @@ class ModelDownloadRepository @Inject constructor(
                 require(offset == descriptor.bytes) { "Download interrupted; resume to finish" }
                 publish(ModelTransfer(id, TransferPhase.VERIFYING, offset, etag))
             }
-            models.installDownload(descriptor, file)
+            install(descriptor, file)
             mutable.value = mutable.value + (id to ModelTransfer(id, TransferPhase.INSTALLED, descriptor.bytes))
         } catch (cancelled: CancellationException) {
             withContext(NonCancellable) { checkpointStopped(id, TransferPhase.PAUSED, null) }
             throw cancelled
         } catch (failure: Exception) {
+            if (!currentCoroutineContext().isActive || id in stopped) {
+                withContext(NonCancellable) { checkpointStopped(id, TransferPhase.PAUSED, null) }
+                throw CancellationException("Model transfer stopped", failure)
+            }
             checkpointStopped(id, TransferPhase.FAILED, failure.message?.takeUnless { "/" in it } ?: "Model download or validation failed")
         } catch (_: LinkageError) {
             checkpointStopped(id, TransferPhase.FAILED, "Model runtime unavailable")
-        } finally { active = null; activeId = null; gate.unlock() }
+        } finally {
+            activeConnection?.disconnect()
+            activeConnection = null
+            active = null
+            activeId = null
+            gate.unlock()
+        }
     }
 
     private fun checkpointStopped(id: String, phase: TransferPhase, error: String?) {
@@ -194,7 +224,11 @@ class ModelDownloadRepository @Inject constructor(
     suspend fun pause() {
         stopped.addAll(state.value.values.filter { it.phase == TransferPhase.QUEUED }.map { it.catalogId })
         activeId?.let(stopped::add)
-        active?.cancelAndJoin()
+        val work = active
+        work?.cancel()
+        // Coroutine cancellation alone does not unblock a synchronous socket read.
+        withContext(Dispatchers.IO) { activeConnection?.disconnect() }
+        work?.join()
         withContext(Dispatchers.IO) {
             state.value.values.filter { it.phase == TransferPhase.QUEUED }.forEach {
                 publish(it.copy(phase = TransferPhase.PAUSED))
@@ -221,7 +255,12 @@ class ModelDownloadRepository @Inject constructor(
         var location = URI(url)
         repeat(6) {
             require(ModelResumePolicy.trusted(location)) { "Untrusted model download source" }
-            val connection = location.toURL().openConnection() as HttpURLConnection
+            val connection = openConnection(location)
+            activeConnection = connection
+            if (active?.isActive == false || activeId?.let { it in stopped } == true) {
+                connection.disconnect()
+                throw CancellationException("Model transfer stopped")
+            }
             connection.instanceFollowRedirects = false
             connection.connectTimeout = 15_000
             connection.readTimeout = 15_000

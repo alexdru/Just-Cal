@@ -184,7 +184,11 @@ comparison base. Several bullets may cite the same commit when it contains disti
 changes. Review the actual diff/tests; ancestry validation cannot judge the truth of
 prose. Do not invent changes to fill the count or claim unfinished quality/transfer
 work as shipped. If fewer than three changes are ready, accumulate a meaningful
-release before publication.
+release before publication. For an uncommitted implementation, keep Evidence: PENDING
+in the working draft until its implementing commit exists; this intentionally blocks
+release validation. After manually committing the implementation, replace PENDING
+with that actual SHA in a follow-up draft commit. Never use an unrelated ancestor
+or invent a future commit hash. Agents do not automatically commit either step.
 
 scripts/create-release-notes.sh reads version.properties and the draft using
 git show from RELEASE_COMMIT (HEAD by default), ignoring working-tree/later edits.

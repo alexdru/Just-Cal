@@ -135,6 +135,7 @@ class ModelRuntimeDeviceTest {
             check(store.validate(model).sha256 == descriptor.sha256)
         }
         if (model == null) {
+            downloads.queue(modelId)
             downloads.transfer(modelId)
             check(downloads.state.value[modelId]?.phase == TransferPhase.INSTALLED) { downloads.state.value[modelId].toString() }
             model = store.list().first { store.validate(it).sha256 == descriptor.sha256 }

@@ -31,9 +31,16 @@ Downloads require explicit Download/Resume. HTTPS hosts/redirects, size, Range/
 If-Range/ETag and final hash are checked. Pause retains the partial checkpoint;
 Cancel joins its writer before removal. Process restoration marks partial work
 paused. API 34+ uses UIDT JobService; API 30–33 uses a non-sticky dataSync service.
-A 512 MiB storage reserve is not a peak-RAM estimate. **Full on-device HTTPS/resume,
-API 34+ OS-stop and disk-full/race qualification remain open.** The earlier API 30
-network test stopped at DNS failure; successful inference used USB-supplied weights.
+A 512 MiB storage reserve is not a peak-RAM estimate. Controlled 32-byte fixtures
+exercise 200/206/416, changed/weak ETags, progress, interrupted reads, restart,
+insufficient-space checks, cancellation and concurrent deletion on API 30/37.
+These use simulated HTTP/storage with real repository/checkpoint/private-file code;
+they do not establish real server, filesystem-full or OS scheduler behavior.
+An API 37 emulator force-stop/relaunch restored an 8-byte partial as paused and
+resumed it correctly using simulated 206. A real pinned HTTPS range fetched only
+64 KiB on that emulator (2,151 ms); API 30 still failed DNS. API 37 accepted foreground
+UIDT scheduling without a queued transfer. Full HTTPS install/resume, real connection
+loss/recovery and API 34+ transfer/OS-stop qualification remain open.
 
 Installing never selects a recognition task. Choose Scan package or Scan meal
 explicitly. Selection and production share supportsRecognition: exact artifact/
@@ -120,8 +127,33 @@ its own macro-flow run and is not raw evidence for those later checks.
 Historical October 22 post-call process PSS samples were 3,155,710 KiB for Gemma
 and 2,943,053–3,222,535 KiB for Paddle. Immediate post-unload snapshots sometimes stayed high. These are process
 samples, not measured model peak requirements or proof of a leak/its absence.
-Repeated GPU cancel/retry/exit, controlled Java/native/graphics memory cycles,
-OnePlus 12/Android 16 and true 16-KiB-page execution remain unverified.
+
+On 2026-10-29, OnePlus 7T/API 30 (4-KiB pages) ran both existing pinned models from
+disposable local copies. Hash/container inspection, two load/unload cycles per model,
+three alternating synthetic-image inferences per cycle, cancel/join/retry, model
+switching and Activity STOP → LocalAiSession.close during inference passed. This is
+a lifecycle harness, not full Playground navigation coverage or recognition evidence.
+Unsupported Gemma GPU selection released the runtime lease before successful Auto.
+Original diary/preferences/admission metadata hashes and installed file sizes were unchanged.
+
+| Measured operation | Gemma CPU | Paddle GPU |
+| --- | --- | --- |
+| First initialization / reload | 15,976 / 660 ms | 16,515 / 12,428 ms |
+| Six completed image runs per model | 10,851–13,587 ms | 10,894–16,861 ms |
+| Cancellation joined native work | 7,921 ms | 8,921 ms |
+| Sampled native malloc peak / after final unload | 1,220,962,576 / 21,908,992 bytes | 609,512,032 / 27,599,376 bytes |
+
+These are sampled malloc counters, excluding mapped weights and GPU driver allocations,
+not total/peak process requirements. OEM PSS stayed at 48,197 KiB throughout and graphics
+PSS reported zero; neither provides usable GPU-memory or leak evidence. Two cycles do
+not prove leak absence. Long-duration native/GPU profiling remains open.
+API 37/Android 17 emulator loaded JNI and rejected an invalid container; real inference
+was physical API 30 only. Packaged ELF alignment and bundled OCR smoke passed on both;
+ZIP alignment is checked separately. No Android 16 or true 16-KiB execution was available.
+The reliability change passed the full JVM suite, debug/test APK assembly, debug and
+release lint, release-note/publication fixture tests and local documentation links.
+Ten transfer fixture tests passed on each device; the two process-death methods skip
+in a normal run and were exercised separately on the emulator as described below.
 Full requirement disposition/open gates: [AI_REDESIGN_PLAN.md](AI_REDESIGN_PLAN.md).
 
 ## Reproducing tests without implicit downloads
@@ -134,6 +166,22 @@ realAiModels=true for runtime/selection/meal UI. Without flags they skip, which
 is not a quality pass. Requested runs fail if required fixtures are absent.
 ModelRuntimeDeviceTest may explicitly download missing models when opted in;
 review its setup and avoid enabling it during ordinary cleanup.
+
+Reliability fixtures: [ModelTransferReliabilityTest](../app/src/androidTest/java/com/justcal/app/ai/ModelTransferReliabilityTest.kt)
+uses only owned 32-byte files and simulated HTTP/storage. Its normal run skips two
+external process-death methods. To reproduce those on a disposable emulator, run
+seedForProcessDeath with processTransferFixture=<UUID>, wait for PROCESS_TRANSFER_READY,
+force-stop the target app, then run resumeAfterProcessDeath with the same UUID;
+the second method verifies restoration and deletes that owned fixture directory.
+[ModelRuntimeReliabilityTest](../app/src/androidTest/java/com/justcal/app/ai/ModelRuntimeReliabilityTest.kt)
+requires runtimeReliability=true and both already installed pinned models. It makes
+private copies (roughly 4 GiB plus 2 GiB cache headroom), never downloads or changes
+selections, and removes only its copies/caches. Rehashes protect diary/preferences/
+admission files. A killed test cannot run finally cleanup: remove only its identified
+runtime-reliability-UUID cache directory before retrying, never installed weights.
+[ModelPlatformReliabilityTest](../app/src/androidTest/java/com/justcal/app/ai/ModelPlatformReliabilityTest.kt)
+requires modelNetworkProbe=true for a bounded 64-KiB HTTPS range (200 is refused unread),
+or uidtProbe=true on API 34+ for scheduling only. No flag enables implicit installation.
 
 Use the [package reproduction instructions](ai-verification/2026-10-28/README.md#reproduction)
 and [earlier meal reproduction](ai-verification/2026-10-22/quality-audit.md#reproduction).
