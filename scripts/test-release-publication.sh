@@ -31,9 +31,28 @@ export MOCK_LOG="$fixture/calls.log"
 export MOCK_DRAFT="" MOCK_RACE="" MOCK_DOWNLOAD_MISMATCH=false
 export MOCK_COUNTER="$fixture/counter" MOCK_MISSING="$fixture/missing"
 export MOCK_NOTES="$fixture/notes"
+export MOCK_CREATE_FAILURE="" MOCK_STATE_ERROR=false MOCK_UNEXPECTED=false
+export MOCK_FAULT_LOG="$fixture/fault-calls.log"
 unset RELEASE_COMMIT
 export GH_TOKEN=fixture-token GH_REPO=fixture/repository
 gh() {
+    if [[ "$1" == api && "$2" != --method && "$MOCK_STATE_ERROR" == true ]]; then
+        # Partial output must not turn a failed API read into permission to publish.
+        printf true
+        return 1
+    fi
+    if [[ "$1" == release && "$2" == create && -n "$MOCK_CREATE_FAILURE" ]]; then
+        printf 'create\n' >> "$MOCK_FAULT_LOG"
+        printf 'HTTP 500 (mock release creation)\n' >&2
+        case "$MOCK_CREATE_FAILURE" in
+            before) ;;
+            after) export MOCK_DRAFT=true; printf missing > "$MOCK_MISSING" ;;
+            public) export MOCK_DRAFT=false ;;
+            unreadable) export MOCK_DRAFT=true MOCK_STATE_ERROR=true ;;
+            unexpected) export MOCK_DRAFT=true MOCK_UNEXPECTED=true ;;
+        esac
+        return 1
+    fi
     if [[ "$1" == release && ( "$2" == create || "$2" == edit ) ]]; then
         local previous="" notes_file=""
         for argument in "$@"; do
@@ -51,6 +70,10 @@ gh() {
         printf 'tag\n' >> "$MOCK_LOG"
         git --git-dir="$MOCK_REMOTE" update-ref refs/tags/v0.4.0 "$(git rev-parse HEAD)"
     elif [[ "$1" == api ]]; then
+        if [[ "$MOCK_RACE" == read ]]; then
+            if [[ -f "$MOCK_COUNTER" ]]; then printf true; return 1; fi
+            printf seen > "$MOCK_COUNTER"
+        fi
         if [[ "$MOCK_RACE" == public ]]; then
             if [[ -f "$MOCK_COUNTER" ]]; then printf false; return; fi
             printf seen > "$MOCK_COUNTER"
@@ -58,6 +81,7 @@ gh() {
         printf '%s' "$MOCK_DRAFT"
     elif [[ "$1" == release && "$2" == view ]]; then
         if [[ "$MOCK_RACE" == tag ]]; then git --git-dir="$MOCK_REMOTE" update-ref -d refs/tags/v0.4.0; fi
+        [[ "$MOCK_UNEXPECTED" != true ]] || printf '%s\n' unexpected.apk
         printf '%s\n' Just-Cal-v0.4.0.apk Just-Cal-v0.4.0.aab
         [[ -f "$MOCK_MISSING" ]] || printf '%s\n' Just-Cal-v0.4.0-SHA256SUMS.txt
     elif [[ "$1" == release && "$2" == download ]]; then
@@ -124,6 +148,45 @@ export MOCK_DRAFT=false
 reject
 [[ "$(wc -l < "$MOCK_LOG" | tr -d ' ')" == 8 ]] || exit 1
 export MOCK_DRAFT=""
+# HTTP 500 before server creation: preserve the tag and recover on a later run.
+(
+    export MOCK_LOG="$fixture/before.log" MOCK_CREATE_FAILURE=before
+    reject
+    [[ ! -e "$MOCK_LOG" && "$(wc -l < "$MOCK_FAULT_LOG" | tr -d ' ')" == 1 ]] || exit 1
+    [[ "$(git ls-remote origin refs/tags/v0.4.0)" == "$(git rev-parse HEAD)"$'\trefs/tags/v0.4.0' ]] || exit 1
+    export MOCK_CREATE_FAILURE=""
+    bash "$publisher" v0.4.0
+    [[ "$(wc -l < "$MOCK_LOG" | tr -d ' ')" == 2 ]] || exit 1
+)
+# Error after draft creation/partial upload: inspect it, upload only the missing
+# checksum asset and verify all hosted bytes before publishing, without another POST.
+(
+    export MOCK_LOG="$fixture/after.log" MOCK_CREATE_FAILURE=after
+    bash "$publisher" v0.4.0
+    [[ "$(wc -l < "$MOCK_LOG" | tr -d ' ')" == 2 ]] || exit 1
+    [[ "$(wc -l < "$MOCK_FAULT_LOG" | tr -d ' ')" == 2 ]] || exit 1
+)
+# Ambiguous errors never permit mutation of public/unreadable/unexpected state.
+for failure in public unreadable unexpected; do
+    (
+        export MOCK_LOG="$fixture/$failure.log" MOCK_CREATE_FAILURE="$failure"
+        reject
+        [[ ! -e "$MOCK_LOG" ]] || exit 1
+    )
+done
+# A failed API response with draft-looking partial output is still a failure.
+(
+    export MOCK_LOG="$fixture/read-error.log" MOCK_DRAFT=true MOCK_STATE_ERROR=true
+    reject
+    [[ ! -e "$MOCK_LOG" ]] || exit 1
+)
+# The same failed-read check must hold after the initial successful draft read.
+(
+    export MOCK_LOG="$fixture/later-read-error.log" MOCK_DRAFT=true MOCK_RACE=read
+    export MOCK_COUNTER="$fixture/read-counter"
+    reject
+    [[ ! -e "$MOCK_LOG" ]] || exit 1
+)
 # A remotely moved tag is rejected even if the local tag cache has not seen it.
 git commit --allow-empty -qm different
 git push -q origin HEAD:refs/heads/master

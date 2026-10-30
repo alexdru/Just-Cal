@@ -44,10 +44,12 @@ release_state() {
 }
 require_draft() {
     check_tag required
-    [[ "$(release_state)" == true ]] || fail "Release is no longer a draft; no mutation is allowed."
+    local state
+    state="$(release_state)" || fail "Cannot read release state; no mutation is allowed."
+    [[ "$state" == true ]] || fail "Release is no longer a draft; no mutation is allowed."
 }
 check_tag optional
-draft="$(release_state)"
+draft="$(release_state)" || fail "Cannot read release state; no mutation is allowed."
 [[ -z "$draft" || "$draft" == true ]] || fail "Release $tag is already public; assets are immutable."
 
 if [[ -z "$remote_commit" ]]; then
@@ -56,27 +58,34 @@ if [[ -z "$remote_commit" ]]; then
 fi
 check_tag required
 if [[ -z "$draft" ]]; then
-    gh release create "$tag" --verify-tag --target "$commit" --draft \
-        --title "Just Cal $tag" --notes-file "$notes" "$apk" "$aab" "$sums"
-else
-    require_draft
-    names="$(gh release view "$tag" --json assets --jq '.assets[].name')"
-    while IFS= read -r name; do
-        [[ -z "$name" || "$name" == "Just-Cal-$tag.apk" || "$name" == "Just-Cal-$tag.aab" ||
-           "$name" == "Just-Cal-$tag-SHA256SUMS.txt" ]] || fail "Unexpected draft asset; inspect the draft."
-    done <<< "$names"
-    for asset in "$apk" "$aab" "$sums"; do
-        found=false
-        while IFS= read -r name; do
-            [[ "$name" != "${asset##*/}" ]] || found=true
-        done <<< "$names"
-        if [[ "$found" == false ]]; then
-            require_draft
-            # Never --clobber: duplicate/racing uploads fail rather than overwrite bytes.
-            gh release upload "$tag" "$asset"
-        fi
-    done
+    if ! gh release create "$tag" --verify-tag --target "$commit" --draft \
+        --title "Just Cal $tag" --notes-file "$notes" "$apk" "$aab" "$sums"; then
+        # A failed response can follow a successful server-side write. Never repeat
+        # creation blindly: inspect the draft and use the same recovery checks.
+        draft="$(release_state)" || fail "Draft creation failed and state is unreadable. Retry the same source/version when GitHub recovers; keep the tag."
+        [[ "$draft" == true ]] ||
+            fail "Draft creation failed and no recoverable draft is confirmed. Retry the same source/version; do not delete or move the tag."
+        printf 'Draft creation returned an error; checking the saved draft and assets.\n' >&2
+    fi
 fi
+# Creation may have stopped partway through uploads. Complete only missing assets.
+require_draft
+names="$(gh release view "$tag" --json assets --jq '.assets[].name')"
+while IFS= read -r name; do
+    [[ -z "$name" || "$name" == "Just-Cal-$tag.apk" || "$name" == "Just-Cal-$tag.aab" ||
+       "$name" == "Just-Cal-$tag-SHA256SUMS.txt" ]] || fail "Unexpected draft asset; inspect the draft."
+done <<< "$names"
+for asset in "$apk" "$aab" "$sums"; do
+    found=false
+    while IFS= read -r name; do
+        [[ "$name" != "${asset##*/}" ]] || found=true
+    done <<< "$names"
+    if [[ "$found" == false ]]; then
+        require_draft
+        # Never --clobber: duplicate/racing uploads fail rather than overwrite bytes.
+        gh release upload "$tag" "$asset"
+    fi
+done
 require_draft
 asset_names="$(gh release view "$tag" --json assets --jq '.assets[].name' | sort)"
 expected_names="$(printf '%s\n' "Just-Cal-$tag.apk" "Just-Cal-$tag.aab" "Just-Cal-$tag-SHA256SUMS.txt" | sort)"

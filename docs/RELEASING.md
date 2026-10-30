@@ -243,6 +243,20 @@ No manual `git tag` step is required. Pushes and PRs never publish production re
 
 If a run fails before publication, fix the cause and rerun the same revision/version. A missing release with an existing same-commit tag is recoverable. Interrupted drafts are completed by uploading only missing assets, never overwriting existing ones. The same committed notes are supplied at final draft publication, so older interrupted drafts recover their notes as well. The workflow downloads all three hosted assets and compares their bytes to the verified local outputs before publication. A mismatched existing asset causes a safe failure; inspect the unpublished draft and remove the inconsistent draft assets manually before recovery. Do not change the tag or any public release.
 
+A GitHub HTTP 5xx during draft creation can occur after the tag or draft was saved.
+The publisher does not repeat creation blindly: it rereads release state, resumes
+only a confirmed draft and applies the same missing-asset, hosted-byte and final
+state checks. If no draft is confirmed or the API remains unreadable, it stops and
+preserves the tag. Failed state reads are rejected even if partial output says
+`true`. Retry the same version/source after GitHub recovers; never delete or move
+the tag to work around a server error.
+
+When applying a release-tooling fix after a tag was created, dispatch a **new** run
+from updated master so it uses the corrected policies, but set `ref` to the
+**original full release source SHA** and keep the same version. Leaving ref blank
+would select the tooling commit and correctly conflict with the existing tag.
+A public release remains immutable.
+
 Remote tag/draft state is rechecked before uploads and final publication. A different-commit tag, a released draft, unexpected assets or already public release fails. Correcting public releases requires a new versionName/versionCode.
 
 The fixed `android-release` concurrency group serializes this workflow across refs/versions, but GitHub concurrency is not a FIFO queue and newer pending runs can replace older pending runs. It does not serialize administrator/API actions outside this workflow. GitHub has no atomic compare-and-publish operation covering tag, draft and uploads; tiny check/mutation races remain. Platform release immutability and tag/master rules are needed to close that external-actor risk.
