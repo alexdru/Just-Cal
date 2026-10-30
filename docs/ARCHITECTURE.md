@@ -102,7 +102,7 @@ Gemma only fills blank P/F/C on the same explicit 100-g basis from nutrition-cro
 It preserves energy/name/mass/nonempty OCR fields, enforces individual/combined macro
 bounds and retains raw evidence. The separate transcription consumer preserves
 conflicts for review and separate VLM mass, but Paddle has no production admission.
-Optional-model failure/deadline returns OCR after cleanup; caller cancellation propagates.
+Optional package inference uses a non-exported bound service in :package_ai, with metadata-only Messenger IPC and the same admission/prompt/crop/consumer. OCR stays in the parent and is checkpointed first. The client holds the parent runtime lease, so Playground/meal loading and removal cannot overlap the worker. Stages are acknowledged only after diagnostic checkpointing. Normal completion joins native disposal; cancellation allows 15 seconds to join, then unbinding terminates only the single-use worker and waits for Binder death. The request deadline is 120 seconds. Worker death/failure/deadline returns OCR after cleanup; caller cancellation propagates.
 Meal support validates isFood/singleDish/name only; refusal retains bounded diagnostic
 evidence and opens no empty successful editor. Numerical meal estimates and consumed
 mass from photos are disabled. Meal names retain MANUAL source, preserving backup schema.
@@ -129,7 +129,7 @@ independent run. At most one allowed recoverable init fallback is attempted; mal
 artifacts, memory failure and cancellation never retry on another backend.
 Cache identity includes artifact/runtime/backend/device/profile. Cancellation waits for
 native terminal completion before disposal; an interrupted-operation marker prevents
-silent assumptions after process death. A deadline cannot safely free stuck JNI.
+silent assumptions after process death. A deadline cannot safely free stuck in-process JNI. Package inference contains that case by terminating its separate worker process; meal and Playground remain in-process.
 
 Playground retains LocalAiLab and an independent session without DiaryRepository or
 editor navigation. [LOCAL_AI_LAB.md](LOCAL_AI_LAB.md) describes current tasks and evidence.
@@ -139,7 +139,7 @@ Success/valid JSON/smoke and task quality are distinct; admission is reviewed an
 backup-excluded database. Optional JSON fields preserve older rows; failures never
 block diary Save. Changed editor values are corrections, unchanged values are not
 ground truth. Consumer reports include retained OCR details; sanitized AI exports omit
-prompts/raw responses. Photos require explicit export selection.
+prompts/raw responses. Production scan photos are normalized into a private bounded attachment store by default. Photos/native tombstones require an explicit export option; clearing diagnostics removes attachments too.
 
 ## Build and direct updates
 

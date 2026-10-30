@@ -42,6 +42,7 @@ class FoodRecognitionRouter @Inject constructor(
     private val store: LocalModelStore, private val catalog: ModelCatalog,
     private val preferences: GoalPreferences, private val runtime: LiteRtLocalAiEngine,
     private val cropper: LabelImageCropper,
+    private val packageWorker: PackageInferenceClient,
 ) {
     /** UI availability uses the same task/metadata checks as production, without loading a model. */
     suspend fun packageModelName(id: String?): String? = validatedPackageModel(id)?.second?.name
@@ -62,9 +63,14 @@ class FoodRecognitionRouter @Inject constructor(
         image: PreparedImage,
         allowModel: Boolean = true,
         onModelProcessing: (String) -> Unit = {},
+        onBaseline: suspend (PackageOcrResult, PackageScanPrefill, Long) -> Unit = { _, _, _ -> },
+        onDiagnostic: suspend (com.justcal.app.diagnostics.DiagnosticAiAttempt) -> Unit = {},
     ): Pair<PackageOcrResult, PackageScanPrefill> {
         val result = ocr.recognize(images.verify(image))
+        val parseStarted = System.nanoTime()
         val baseline = PackageScanPrefill.from(result)
+        val parsingMs = (System.nanoTime() - parseStarted) / 1_000_000
+        onBaseline(result, baseline, parsingMs)
         // Opting out bypasses all optional model lookup, validation, loading and inference.
         if (!allowModel || LabelRegionSelection.complete(result)) return result to baseline
         val (model, descriptor) = validatedPackageModel(preferences.aiModels.first()["package"])
@@ -76,20 +82,39 @@ class FoodRecognitionRouter @Inject constructor(
             try {
                 crop = cropper.crop(image, result) ?: return@packageEnrichmentOrBaseline baseline
                 onModelProcessing(descriptor.name)
-                runtime.load(model, AiBackend.AUTO)
-                val raw = StringBuilder()
-                withTimeout(90.seconds) {
-                    runtime.generate(crop, if (macroTask) PackageMacroAssistance.PROMPT else "OCR:", macroTask) {
-                        require((raw.length + it.length) <= 16_000)
-                        raw.append(it)
+                var latest = com.justcal.app.diagnostics.DiagnosticAiAttempt(
+                    stage = "PACKAGE_MODEL_STARTING", artifactHash = descriptor.sha256,
+                    revision = descriptor.revision, runtimeVersion = AI_RUNTIME_VERSION,
+                    profile = descriptor.profile.name, requestedBackend = "AUTO")
+                onDiagnostic(latest)
+                val completed = try {
+                    packageWorker.generate(model, crop) { event ->
+                        latest = event
+                        onDiagnostic(event)
                     }
+                } catch (deadline: TimeoutCancellationException) {
+                    currentCoroutineContext().ensureActive()
+                    onDiagnostic(latest.copy(validationError = "PACKAGE_MODEL_DEADLINE"))
+                    throw deadline
+                } catch (cancelled: CancellationException) { throw cancelled }
+                catch (failure: Exception) {
+                    onDiagnostic(latest.copy(validationError = if (failure is PackageWorkerDied)
+                        "PACKAGE_MODEL_PROCESS_DIED" else "PACKAGE_MODEL_FAILED:${failure.javaClass.simpleName}",
+                        processId = (failure as? PackageWorkerDied)?.pid ?: latest.processId))
+                    throw failure
                 }
-                val recognition = if (macroTask) PackageMacroAssistance.merge(baseline.label, raw.toString())
-                    else TranscriptionNutrition.merge(baseline.label, raw.toString())
+                onDiagnostic(completed)
+                val raw = completed.rawOutput.orEmpty()
+                val recognition = try {
+                    if (macroTask) PackageMacroAssistance.merge(baseline.label, raw)
+                    else TranscriptionNutrition.merge(baseline.label, raw)
+                } catch (failure: Exception) {
+                    onDiagnostic(completed.copy(validationError = "PACKAGE_MODEL_OUTPUT_REJECTED:${failure.javaClass.simpleName}"))
+                    throw failure
+                }
                 baseline.copy(recognition = recognition)
             } finally {
                 withContext(NonCancellable) {
-                    runtime.unload()
                     crop?.let { images.discard(it.uri) }
                 }
             }

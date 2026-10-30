@@ -20,6 +20,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -68,7 +69,7 @@ internal fun OcrDiagnosticsContent(
     saved: Boolean, report: File?, onBack: () -> Unit,
     onClear: () -> Unit, onBrand: (String, String) -> Unit,
     onNetWeight: (String, String) -> Unit,
-    onExport: (Set<String>?, Boolean, List<android.net.Uri>) -> Unit, onSave: (File, android.net.Uri) -> Unit,
+    onExport: (Set<String>?, Boolean, List<android.net.Uri>, Boolean) -> Unit, onSave: (File, android.net.Uri) -> Unit,
     onReportHandled: () -> Unit, onReportFailed: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -84,6 +85,7 @@ internal fun OcrDiagnosticsContent(
     var exportMode by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingMode by rememberSaveable { mutableStateOf<String?>(null) }
     var photos by remember { mutableStateOf(emptyList<android.net.Uri>()) }
+    var attachments by rememberSaveable { mutableStateOf(false) }
     val photoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(5)) { photos = it }
     LaunchedEffect(scans) { selected = selected.intersect(scans.map { it.id }.toSet()) }
     val saveLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
@@ -126,8 +128,8 @@ internal fun OcrDiagnosticsContent(
             topBar = { CalTopBar({ Text(stringResource(R.string.ocr_diagnostics)) }, onBack, CalLayout.readingWidth) },
             bottomBar = {
                 if (!compactIme) DiagnosticReportActions(selected.size, busy, error, saved,
-                    onSave = { photos = emptyList(); exportMode = "save" },
-                    onShare = { photos = emptyList(); exportMode = "share" })
+                    onSave = { photos = emptyList(); attachments = false; exportMode = "save" },
+                    onShare = { photos = emptyList(); attachments = false; exportMode = "share" })
             },
             contentWindowInsets = WindowInsets.safeDrawing,
         ) { padding ->
@@ -165,9 +167,11 @@ internal fun OcrDiagnosticsContent(
                                         }
                                         Text(stringResource(R.string.diag_small_sample), style = MaterialTheme.typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                        TextButton(onClick = { clear = true }, enabled = !busy) {
-                                            Text(stringResource(R.string.diag_clear), color = MaterialTheme.colorScheme.error)
-                                        }
+                                    }
+                                }
+                                item {
+                                    TextButton(onClick = { clear = true }, enabled = !busy) {
+                                        Text(stringResource(R.string.diag_clear), color = MaterialTheme.colorScheme.error)
                                     }
                                 }
                             }
@@ -289,6 +293,13 @@ internal fun OcrDiagnosticsContent(
             Text(stringResource(R.string.diag_report_preview, if (selected.isEmpty()) scans.size else selected.size))
             Text(stringResource(R.string.diag_report_content), style = MaterialTheme.typography.bodyMedium)
             Text(stringResource(R.string.diag_no_photos), style = MaterialTheme.typography.bodyMedium)
+            Row(Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                .testTag("diagnostic_attachments")
+                .then(Modifier.toggleable(attachments, role = androidx.compose.ui.semantics.Role.Checkbox) { attachments = it }),
+                verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(attachments, onCheckedChange = null)
+                Text(stringResource(R.string.diag_include_attachments), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+            }
             OutlinedButton(onClick = { photoLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }) {
                 Text(stringResource(R.string.diag_add_photos))
             }
@@ -296,7 +307,7 @@ internal fun OcrDiagnosticsContent(
         } },
         confirmButton = { TextButton(onClick = {
             pendingMode = exportMode; exportMode = null
-            onExport(selected.ifEmpty { null }, true, photos)
+            onExport(selected.ifEmpty { null }, true, photos, attachments)
         }) { Text(stringResource(R.string.diag_continue)) } },
         dismissButton = { TextButton(onClick = { exportMode = null }) { Text(stringResource(R.string.diag_cancel)) } })
     scans.firstOrNull { it.id == opened }?.let { scan ->
@@ -486,6 +497,12 @@ private fun ScanDetail(scan: DiagnosticScan, busy: Boolean, onDismiss: () -> Uni
                                     Text(attempt.artifactHash, style = MaterialTheme.typography.bodySmall)
                                 }
                                 attempt.fallbackReason?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                                attempt.validationError?.let {
+                                    Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+                                }
+                                attempt.processExit?.let {
+                                    Text(stringResource(R.string.diag_process_exit, it.reason, it.status), style = MaterialTheme.typography.bodySmall)
+                                }
                             }
                         }
                     }

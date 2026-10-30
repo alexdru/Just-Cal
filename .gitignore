@@ -32,3 +32,6 @@ release-files/
 
 # Local food-package photo fixtures for recognition checks; never commit or bundle.
 /test-data/package-photos/
+
+# Disposable local code graph and extraction caches
+/graphify-out/

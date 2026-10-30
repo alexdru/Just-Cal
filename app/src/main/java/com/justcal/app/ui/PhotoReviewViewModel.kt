@@ -1,6 +1,5 @@
 package com.justcal.app.ui
 
-import android.os.SystemClock
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -59,6 +58,7 @@ class PhotoReviewViewModel @Inject constructor(
             val attempt = diagnostics.begin(image)
             operation = viewModelScope.launch {
                 try {
+                    attempt.prepare()
                     val result = router.meal(image)
                     val review = result.review
                     attempt.ai(com.justcal.app.diagnostics.DiagnosticAiAttempt(
@@ -101,15 +101,20 @@ class PhotoReviewViewModel @Inject constructor(
         val attempt = diagnostics.begin(image)
         operation = viewModelScope.launch {
             var stage = "OCR_RECOGNITION_FAILURE"
+            var parsingMs = 0L
             try {
-                val (result, routed) = router.packageOcr(image, allowModel = allowModel) { name ->
-                    mutableState.update { it.copy(processingModel = name) }
-                }
+                attempt.prepare()
+                val (result, routed) = router.packageOcr(image, allowModel = allowModel,
+                    onModelProcessing = { name -> mutableState.update { it.copy(processingModel = name) } },
+                    onBaseline = { result, baseline, measured ->
+                        parsingMs = measured
+                        attempt.success(result, baseline, measured)
+                    },
+                    onDiagnostic = attempt::checkpoint)
                 check(result.lines.isNotEmpty()) { "No readable text found" }
                 stage = "NUTRITION_PARSER_FAILURE"
-                val parseStarted = SystemClock.elapsedRealtime()
                 val prefill = routed.copy(diagnosticSessionId = attempt.id)
-                attempt.success(result, prefill, SystemClock.elapsedRealtime() - parseStarted)
+                attempt.success(result, prefill, parsingMs)
                 savedState["ocrReview"] = Json.encodeToString(prefill)
                 savedState["ocrStarted"] = false
                 mutableState.value = PackageReviewState(prefill = prefill)

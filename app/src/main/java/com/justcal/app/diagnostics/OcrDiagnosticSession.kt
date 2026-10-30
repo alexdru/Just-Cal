@@ -20,6 +20,16 @@ class OcrDiagnosticSession @Inject constructor(private val repository: OcrDiagno
             repository.record(repository.metadata(id, timestamp, "RUNNING", elapsed()).copy(
                 width = image.width, height = image.height, detailedConsent = detailed), generation, consentGeneration)
         }
+        suspend fun prepare() {
+            try { repository.preparePhoto(id, image, generation, consentGeneration) }
+            catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+            catch (_: Exception) { /* Diagnostics must never prevent recognition. */ }
+        }
+        suspend fun checkpoint(value: DiagnosticAiAttempt) {
+            try { repository.checkpointAi(id, value) }
+            catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+            catch (_: Exception) { /* Continue without optional diagnostic evidence. */ }
+        }
         fun success(result: PackageOcrResult, prefill: PackageScanPrefill, parsingMs: Long, origin: String = "PACKAGE_SCAN") {
             val label = prefill.label
             val draft = label.draft()

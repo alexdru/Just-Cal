@@ -101,7 +101,7 @@ class DiagnosticReportSharingTest {
     }
 
     @Test fun photosAreIncludedOnlyWhenExplicitlySelectedAndRawTextRequiresStoredConsent() = runBlocking<Unit> {
-        repository.record(scan("basic"), repository.generation)
+        repository.record(scan("basic").copy(detailedConsent = false), repository.generation)
         repository.awaitIdle()
         val exporter = DiagnosticReportExporter(isolated, repository)
         val photo = File(directory, "selected-image").apply { writeBytes(byteArrayOf(1, 2, 3)) }

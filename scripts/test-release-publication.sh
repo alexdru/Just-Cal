@@ -18,11 +18,10 @@ cp "$validator" scripts/validate-release.sh
 printf 'versionName=0.4.0\nversionCode=5\n' > version.properties
 git add scripts version.properties
 git commit -qm fixture
-feature="$(git rev-parse HEAD)"
 {
     printf '# v0.4.0\n\n'
     for change in One Two Three; do
-        printf -- '- %s user-facing change.\n  Evidence: %s\n' "$change" "$feature"
+        printf -- '- %s user-facing change.\n  Evidence: THIS_COMMIT\n' "$change"
     done
 } > docs/RELEASE_HIGHLIGHTS.md
 git add docs && git commit -qm highlights

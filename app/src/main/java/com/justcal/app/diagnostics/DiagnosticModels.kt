@@ -3,6 +3,10 @@ package com.justcal.app.diagnostics
 import kotlinx.serialization.Serializable
 import kotlin.math.ceil
 
+@Serializable data class DiagnosticProcessExit(
+    val reason: Int, val status: Int, val timestampMillis: Long,
+    val pssKiB: Long, val rssKiB: Long,
+)
 @Serializable data class DiagnosticAiAttempt(
     val stage: String,
     val artifactHash: String,
@@ -20,6 +24,8 @@ import kotlin.math.ceil
     val inferenceMs: Long? = null,
     val firstResponseMs: Long? = null,
     val pssKiB: Int? = null,
+    val processId: Int? = null,
+    val processExit: DiagnosticProcessExit? = null,
 )
 @Serializable data class DiagnosticCorrection(val field: String, val category: String, val before: String? = null, val after: String? = null)
 @Serializable data class DiagnosticScan(
@@ -61,6 +67,8 @@ import kotlin.math.ceil
     val detailedConsent: Boolean = false,
     val origin: String = "PACKAGE_SCAN",
     val aiAttempts: List<DiagnosticAiAttempt> = emptyList(),
+    val photoRetained: Boolean = false,
+    val nativeTraceRetained: Boolean = false,
 ) {
     fun sanitized(includeRawText: Boolean = false): DiagnosticScan =
         if (includeRawText && detailedConsent) this else copy(

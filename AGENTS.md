@@ -102,7 +102,9 @@ require explicit scope; skipped opt-in tests are not quality passes.
   through retries; discussion/documentation-only work needs no bump.
 - Maintain [RELEASE_HIGHLIGHTS.md](docs/RELEASE_HIGHLIGHTS.md) for meaningful user-facing
   changes: replace the small current-release draft, retain 3–6 factual concise bullets,
-  update its version and cite included evidence commits. Never describe unfinished
+  update its version and cite included evidence commits. Use Evidence: THIS_COMMIT
+  when implementation and highlights share a commit; it resolves to the pinned release
+  source. Existing implementing SHAs remain supported. Never describe unfinished
   features as released. See [RELEASING.md](docs/RELEASING.md) for format and verification.
 - Release tags equal v + versionName; published tags/releases are immutable.
   Production APK/AAB use the persistent release key. Never commit keys, credentials
@@ -113,3 +115,18 @@ require explicit scope; skipped opt-in tests are not quality passes.
   verification and remaining limitations, followed by exactly one short English Git
   commit message. Use imperative mood, describe the main change, preferably at most
   72 characters, and omit version numbers unless necessary.
+
+## Optional Graphify navigation
+
+For cross-file dependency questions, consider the local Graphify map before broad
+source searches: `python3 scripts/graphify-project.py query "question with symbols"`.
+The wrapper refreshes stale/missing graphs using source content fingerprints,
+including uncommitted edits and branch changes. See [GRAPHIFY.md](docs/GRAPHIFY.md)
+for installation and query/path/explain commands. Use this wrapper rather than raw
+Graphify update/query commands so freshness and code-only exclusions stay consistent.
+
+Use direct rg/source reads whenever the exact location is known, the graph is
+incomplete, or setup fails. Graphify is advisory; always verify relevant current
+source and tests. Do not treat missing graph edges as proof of no dependency. Do
+not read the full graph/report for a narrow task or install mandatory search hooks.
+Graph artifacts stay local and ignored; no app/build dependency or version bump.

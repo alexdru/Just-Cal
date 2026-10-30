@@ -65,6 +65,20 @@ and total macros ≤100 g. It cannot change OCR calories, name, mass or a nonemp
 macro. Model calories/name/mass are ignored. Failure preserves OCR after cleanup.
 Raw output remains untrusted review evidence and Save remains explicit.
 
+Optional package model inference runs in the private :package_ai process; OCR and the
+editor stay in the main process. Native worker death falls back to the checkpointed OCR.
+The parent lease also blocks model deletion and other engines until worker cleanup/death.
+Cancellation first joins normally, then terminates only a stuck worker after 15 seconds;
+the complete request has a 120-second deadline. Meal/Playground are still in-process.
+Model files, selected tasks, prompts, crop profile and quality admission are unchanged.
+A OnePlus 12/Android 16 export reported four native exits (reason 5), without a native
+stack or AI stage; it does not establish the failing native operation. The new package
+worker passed a real Gemma structured-image smoke on OnePlus 7T/API 30 (9,593 ms init,
+28,182 ms inference), using a disposable copy of the installed artifact. A separate
+SIGABRT fixture verified native exit 5, parent survival, OCR retention and retry.
+This contains the crash; the underlying OnePlus 12 runtime defect still needs a fresh
+report with the optional native trace, and a device retest. No new quality admission.
+
 The [27-photo package gate](ai-verification/2026-10-28/README.md) records 82/127 correct
 OCR prefills and 94/127 with Gemma: 12 recovered macros on 6 independent photos,
 zero wrong accepted values or OCR losses. **33 fields remain empty.** The full
@@ -94,8 +108,10 @@ complex-meal accuracy.
 5. Unload before switching/removing. Exit joins cancellation/cleanup before releasing
    owned images; process death restores neither native engines nor image resources.
 
-Diagnostics retain bounded prompt/raw/runtime evidence locally. Sanitized AI exports
-omit prompt/raw; photos require explicit report selection. No diary-save action exists.
+Diagnostics retain bounded prompt/raw/runtime evidence locally. Production scan photos
+are saved privately by default with bounded retention. Sanitized AI exports omit
+prompt/raw; saved photos and native tombstones require an explicit report attachment
+option. See [OCR_DIAGNOSTICS.md](OCR_DIAGNOSTICS.md). No diary-save action exists.
 
 ## Runtime evidence and limits
 
@@ -182,6 +198,14 @@ runtime-reliability-UUID cache directory before retrying, never installed weight
 [ModelPlatformReliabilityTest](../app/src/androidTest/java/com/justcal/app/ai/ModelPlatformReliabilityTest.kt)
 requires modelNetworkProbe=true for a bounded 64-KiB HTTPS range (200 is refused unread),
 or uidtProbe=true on API 34+ for scheduling only. No flag enables implicit installation.
+[PackageWorkerProcessTest](../app/src/androidTest/java/com/justcal/app/ai/PackageWorkerProcessTest.kt)
+uses the debug-only worker fixture: native SIGABRT, cancellation, a nonresponsive worker,
+lease ordering and retry, with no installed models or diary writes.
+[PackageWorkerModelTest](../app/src/androidTest/java/com/justcal/app/ai/PackageWorkerModelTest.kt)
+requires packageWorkerModel=true and an already installed pinned Gemma. It creates a
+private disposable UUID copy, uses a synthetic label and the production service, then
+removes only its copy/cache and restores backend cache preferences. It never downloads,
+changes task selection or saves diary entries. Allow model bytes plus 2 GiB headroom.
 
 Use the [package reproduction instructions](ai-verification/2026-10-28/README.md#reproduction)
 and [earlier meal reproduction](ai-verification/2026-10-22/quality-audit.md#reproduction).

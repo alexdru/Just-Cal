@@ -44,6 +44,18 @@ class NutritionLabelParserTest {
         }
     }
 
+    @Test fun compactProductBasisKeepsExplicitHundredButNeverRepairsDamagedDigits() {
+        val label = parse("Пищевая ценность 100 гпродукта (средние значения):",
+            "Белки 12,3 г; жиры 4,3 г; углеводы 1,4 г.", "Энергетическая ценность: 93,5 ккал.")
+        assertEquals(LabelBasis.PER_100_G, label.basis)
+        assertEquals("12.3", label.draft().protein)
+        assertEquals("4.3", label.draft().fat)
+        assertEquals("1.4", label.draft().carbs)
+        assertEquals("93.5", label.draft().energy)
+        assertEquals(LabelBasis.UNKNOWN, parse("Пищевая ценность 10б г продукта:", "Белки 12,3 г").basis)
+        assertEquals(LabelBasis.UNKNOWN, parse("Пищевая ценность 100 глюкозы:", "Белки 12,3 г").basis)
+    }
+
     @Test fun russianDenseLabelDecimalCommasAndNetMass() {
         val label = parse("Масса нетто: 240 г", "Пищевая ценность 100 г продукта (средние значения): белки — 11 г; жиры — 6,4 г",
             "в т.ч. насыщенные жирные кислоты — 2,4 г; углеводы — 20,4 г; сахар — 1 г",

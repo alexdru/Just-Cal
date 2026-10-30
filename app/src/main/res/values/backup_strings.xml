@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="data_backup">Data &amp; Backup</string>
+    <string name="backup_headline">Your diary, safely with you</string>
     <string name="backup_description">Portable diary backup. Food names, dates, amounts and nutrition are included; OCR diagnostics and settings are excluded. Keep the file private.</string>
     <string name="export_diary">Export diary</string>
     <string name="import_diary">Import diary</string>

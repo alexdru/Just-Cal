@@ -1,8 +1,10 @@
-# v0.19.4
+# v0.20.0
 
-- Close the active download connection when pausing or cancelling, before waiting for cleanup.
-  Evidence: d5597e0a201c47bda8eea6e1bae980dc3f5fdd93
-- Resume restarted downloads without associating old partial bytes with a new server validator.
-  Evidence: d5597e0a201c47bda8eea6e1bae980dc3f5fdd93
-- Ignore late transfer callbacks after installation to prevent duplicate model downloads.
-  Evidence: d5597e0a201c47bda8eea6e1bae980dc3f5fdd93
+- Preserve package OCR when the optional model process crashes or fails.
+  Evidence: THIS_COMMIT
+- Keep bounded scan photos locally and optionally include linked photos and native crash traces in diagnostic reports.
+  Evidence: THIS_COMMIT
+- Place diary export and import actions at the bottom of Data & Backup for easier reach.
+  Evidence: THIS_COMMIT
+- Recognize the explicit per-100-g basis when OCR joins “гпродукта” without a space.
+  Evidence: THIS_COMMIT

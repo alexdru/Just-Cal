@@ -1,6 +1,6 @@
 # Diary backup format 1
 
-Settings → Data & Backup uses Android CreateDocument/OpenDocument (SAF), with no storage permission. The JSON is independent of package name, build variant and device. It contains diary entries only, never diagnostic logs, photographs or preferences.
+Settings → Data & Backup places full-width export/import actions at the bottom of a short screen, below a quiet diary illustration and explanation. The whole content scrolls behind system bars on short windows/enlarged text; safe-area spacing belongs inside the scroll content. Recovery export and feedback stay with the actions. Merge and replacement confirmations are unchanged. It uses Android CreateDocument/OpenDocument (SAF), with no storage permission. The JSON is independent of package name, build variant and device. It contains diary entries only, never diagnostic logs, photographs or preferences.
 
 Required metadata: `format: "just-cal-diary"`, `schemaVersion: 1`, `exportedAtMillis`, `appVersion`, `entries`. Each entry carries a stable UUID `id`, ISO local calendar `date`, `createdAtMillis`, `name`, `source`, `consumedAmount`, `consumedUnit: "g"`, `nutritionBasis: "per100g"`, `caloriesKcal`, `proteinGrams`, `fatGrams`, `carbohydratesGrams`. Nutrition and consumed amounts are decimal strings with at most two decimal places, preserving Room's exact integer hundredths without floating point. Nutrients are per 100 g; consumed amount is independent.
 

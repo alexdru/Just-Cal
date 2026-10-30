@@ -34,6 +34,8 @@ import kotlinx.serialization.json.Json
     val runtimes: List<String>,
     val rawTextIncluded: Boolean,
     val selectedPhotoCount: Int,
+    val retainedPhotoCount: Int = 0,
+    val nativeTraceCount: Int = 0,
 )
 @Serializable data class ScanCorrections(val scanId: String, val corrections: List<DiagnosticCorrection>)
 @javax.inject.Singleton class DiagnosticReportExporter @Inject constructor(
@@ -41,7 +43,7 @@ import kotlinx.serialization.json.Json
     private val repository: OcrDiagnosticsRepository,
 ) {
     private val reportJson = Json { encodeDefaults = true }
-    suspend fun export(ids: Set<String>? = null, includeRawText: Boolean = false, photos: List<Uri> = emptyList()): File = withContext(Dispatchers.IO) {
+    suspend fun export(ids: Set<String>? = null, includeRawText: Boolean = false, photos: List<Uri> = emptyList(), includeAttachments: Boolean = false): File = withContext(Dispatchers.IO) {
         require(photos.size <= 5) { "At most five explicitly selected photos can be attached" }
         val scans = repository.scans.first().filter { ids == null || it.id in ids }.map { it.sanitized(includeRawText) }
         val stats = DiagnosticStatistics.from(scans)
@@ -53,14 +55,27 @@ import kotlinx.serialization.json.Json
                 fun entry(name: String, text: String) {
                     zip.putNextEntry(ZipEntry(name)); zip.write(text.toByteArray(Charsets.UTF_8)); zip.closeEntry()
                 }
+                var retainedPhotos = 0
+                var nativeTraces = 0
+                if (includeAttachments) for (scan in scans.filter { it.detailedConsent }) {
+                    for ((suffix, folder) in listOf("jpg" to "photos", "pb" to "native")) {
+                        repository.attachment(scan.id, suffix)?.use { input ->
+                            zip.putNextEntry(ZipEntry("$folder/scan-${scan.id}.$suffix"))
+                            input.copyTo(zip, 16 * 1024)
+                            zip.closeEntry()
+                            if (suffix == "jpg") retainedPhotos++ else nativeTraces++
+                        }
+                    }
+                }
                 entry("summary.json", reportJson.encodeToString(DiagnosticReportSummary(createdAtMillis = System.currentTimeMillis(),
                     scanCount = scans.size, timingSampleCount = scans.count { it.status !in listOf("RUNNING", "INTERRUPTED") }, eligibleCorrectionScans = scans.count { it.detailedConsent && it.status in listOf("SUCCESS", "PARTIAL") }, successful = stats.successful, failed = stats.failed, cancelled = scans.count { it.status == "CANCELLED" }, interrupted = scans.count { it.status == "INTERRUPTED" },
                     correctionsByField = stats.correctionsByField, failureCategories = stats.failures, brandStatistics = stats.brands, averageMs = stats.averageMs,
                     medianMs = stats.medianMs, p95Ms = stats.p95Ms, models = scans.map { it.model }.distinct(),
-                    runtimes = scans.map { it.runtime }.distinct(), rawTextIncluded = scans.any { it.rawText != null }, selectedPhotoCount = photos.size)))
+                    runtimes = scans.map { it.runtime }.distinct(), rawTextIncluded = scans.any { it.rawText != null }, selectedPhotoCount = photos.size,
+                    retainedPhotoCount = retainedPhotos, nativeTraceCount = nativeTraces)))
                 entry("scans.jsonl", scans.joinToString("\n", postfix = if (scans.isEmpty()) "" else "\n") { reportJson.encodeToString(it.copy(corrections = emptyList())) })
                 entry("corrections.json", reportJson.encodeToString(scans.map { ScanCorrections(it.id, it.corrections) }))
-                entry("README.txt", "Just Cal OCR/AI diagnostics format 1 (additive AI attempt fields). Offline report; no automatic uploads. EXPERIMENT means an unverified Playground response, not successful nutrition recognition. AI attempt timings and PSS snapshots are measured; unavailable values are null. Default exports omit prompts and raw model output as well as OCR text.\nTimes are measured milliseconds; null means unavailable. Average, median and p95 summarize finished attempts including cancelled and failed attempts; timingSampleCount is their sample count. RUNNING/INTERRUPTED elapsed is only the last recorded observation, not full processing duration; these scans are excluded from time aggregates. EXIF orientation describes normalized OCR pixels.\nDefault exports exclude OCR text, product names, parsed values, correction values, original paths and device identifiers.\nCorrection counts are user edits, not verified truth or model accuracy. Frequency denominators must include only eligibleCorrectionScans (detailed-consent sessions); basic-mode scans have no correction observation. Unchanged fields are never verified ground truth. Amount changes are portion adjustments. Small brand groups are descriptive only.\nPhotos, if present, were explicitly selected by the user for this report; association with scans is not inferred. Images may contain personal content and EXIF metadata.\n")
+                entry("README.txt", "Just Cal OCR/AI diagnostics format 1 (additive AI attempt fields). Offline report; no automatic uploads. EXPERIMENT means an unverified Playground response, not successful nutrition recognition. AI attempt timings and PSS snapshots are measured; unavailable values are null. Default exports omit prompts and raw model output as well as OCR text.\nTimes are measured milliseconds; null means unavailable. Average, median and p95 summarize finished attempts including cancelled and failed attempts; timingSampleCount is their sample count. RUNNING/INTERRUPTED elapsed is only the last recorded observation, not full processing duration; these scans are excluded from time aggregates. EXIF orientation describes normalized OCR pixels.\nDefault exports exclude OCR text, product names, parsed values, correction values, original paths and device identifiers.\nCorrection counts are user edits, not verified truth or model accuracy. Frequency denominators must include only eligibleCorrectionScans (detailed-consent sessions); basic-mode scans have no correction observation. Unchanged fields are never verified ground truth. Amount changes are portion adjustments. Small brand groups are descriptive only.\nSaved scan photos and native tombstones are attached only by explicit report choice. photos/scan-ID.jpg is linked to scan ID, normalized and re-encoded without original EXIF. Native tombstones may contain private paths and technical identifiers. photos/selected-N.image are extra picker originals, not automatically associated with scans, and may contain EXIF/location metadata. Missing or evicted attachments are not recreated.\n")
                 photos.forEachIndexed { index, uri ->
                     zip.putNextEntry(ZipEntry("photos/selected-${index + 1}.image"))
                     requireNotNull(context.contentResolver.openInputStream(uri)).use { input ->

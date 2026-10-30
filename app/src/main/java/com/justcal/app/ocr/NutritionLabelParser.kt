@@ -60,7 +60,7 @@ private fun formatRecognizedName(value: String): String {
 /** Context and units establish meaning. Never scans arbitrary label numbers for plausible nutrition. */
 object NutritionLabelParser {
     private const val NUMBER = "([0-9]+(?:[.,]\\s*[0-9]{1,2})?)"
-    private val per100 = Regex("(?:per\\s*|на\\s*)?100\\s*(?:g(?:rams?)?|г(?:рамм(?:а|ов)?)?)(?![a-zа-я])", RegexOption.IGNORE_CASE)
+    private val per100 = Regex("(?:per\\s*|на\\s*)?100\\s*(?:g(?:rams?)?(?![a-zа-я])|г(?:рамм(?:а|ов)?)?(?:(?![a-zа-я])|(?=продукта(?![a-zа-яё]))))", RegexOption.IGNORE_CASE)
     private val serving = Regex("(?:per\\s+(?:serving|portion)|на\\s+(?:порци[юяи]|упаковку)|в\\s+одной\\s+порции|на\\s+вс[её]\\s+блюдо)", RegexOption.IGNORE_CASE)
     private val nutritionHeading = Regex("пищев[а-я]+\\s*(?:и\\s*энергетическ[а-я]+\\s*)?ценност[а-я]*|nutrition(?:al)?(?:\\s+(?:information|values?|facts))?", RegexOption.IGNORE_CASE)
     private val stop = Regex("состав[: ]|ingredients?[: ]|изготовител[ья]|manufacturer|рекомендации|приготовлени[ея]|cooking|хранить|условия\\s+хранения|storage|срок\\s+годности|best\\s+before|use\\s+by", RegexOption.IGNORE_CASE)

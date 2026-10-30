@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="data_backup">Данные и резервные копии</string>
+    <string name="backup_headline">Ваш дневник — с вами</string>
     <string name="backup_description">Переносимая копия дневника содержит названия, даты, количество и пищевую ценность. Диагностика OCR и настройки не включены. Храните файл в безопасном месте.</string>
     <string name="export_diary">Экспорт дневника</string>
     <string name="import_diary">Импорт дневника</string>

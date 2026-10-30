@@ -34,7 +34,7 @@ class OcrDiagnosticsInteractionTest {
                 androidx.navigationevent.compose.NavigationBackHandler(back) { parentBacks++ }
                 MaterialTheme {
                     OcrDiagnosticsContent(listOf(scan), false, false, false, null,
-                        {}, {}, { _, _ -> }, { _, _ -> }, { _, _, _ -> }, { _, _ -> }, {}, {})
+                        {}, {}, { _, _ -> }, { _, _ -> }, { _, _, _, _ -> }, { _, _ -> }, {}, {})
                 }
             }
         }
@@ -52,7 +52,7 @@ class OcrDiagnosticsInteractionTest {
             MaterialTheme {
                 OcrDiagnosticsContent(emptyList(), false, false, false, null,
                     {}, {}, { _, _ -> }, { _, _ -> },
-                    { _, _, _ -> }, { _, _ -> }, {}, {})
+                    { _, _, _, _ -> }, { _, _ -> }, {}, {})
             }
         }
         compose.onNodeWithTag("diagnostics_page_0").performScrollToNode(hasText(label(R.string.diag_capture)))
@@ -67,7 +67,7 @@ class OcrDiagnosticsInteractionTest {
         compose.onNodeWithText(label(R.string.diag_brands)).performScrollTo().performClick()
         compose.onNodeWithText(label(R.string.diag_brands)).assertIsSelected()
         compose.onNodeWithTag("diagnostics_pager").performTouchInput { swipeRight() }
-        compose.onNodeWithText(label(R.string.diag_errors)).assertIsSelected()
+        compose.onNode(hasText(label(R.string.diag_errors)) and hasClickAction()).assertIsSelected()
         compose.onAllNodesWithText(label(R.string.diag_save)).assertCountEquals(1)
         compose.onAllNodesWithText(label(R.string.diag_share)).assertCountEquals(1)
         compose.onNodeWithText(label(R.string.diag_save)).assertIsDisplayed()
@@ -81,7 +81,7 @@ class OcrDiagnosticsInteractionTest {
             MaterialTheme {
                 OcrDiagnosticsContent(emptyList(), false, false, false, null,
                     {}, {}, { _, _ -> }, { _, _ -> },
-                    { _, includeRaw, photos -> raw = includeRaw; photoCount = photos.size },
+                    { _, includeRaw, photos, attachments -> raw = includeRaw; photoCount = photos.size; assertEquals(false, attachments) },
                     { _, _ -> }, {}, {})
             }
         }
@@ -90,7 +90,7 @@ class OcrDiagnosticsInteractionTest {
         compose.onNodeWithText(label(R.string.diag_save)).performClick()
         compose.onNodeWithText(label(R.string.diag_report_title)).assertExists()
         compose.onNodeWithText(label(R.string.diag_report_content)).assertExists()
-        compose.onAllNodes(isToggleable() and hasAnyAncestor(isDialog())).assertCountEquals(0)
+        compose.onNodeWithTag("diagnostic_attachments").assertIsOff()
         compose.onNodeWithText(label(R.string.diag_continue)).performClick()
         compose.runOnIdle { assertEquals(true, raw); assertEquals(0, photoCount) }
     }
@@ -103,7 +103,7 @@ class OcrDiagnosticsInteractionTest {
         compose.setContent {
             MaterialTheme {
                 OcrDiagnosticsContent(scans, false, false, false, null,
-                    {}, {}, { _, _ -> }, { _, _ -> }, { _, _, _ -> }, { _, _ -> }, {}, {})
+                    {}, {}, { _, _ -> }, { _, _ -> }, { _, _, _, _ -> }, { _, _ -> }, {}, {})
             }
         }
         compose.onNodeWithText(label(R.string.diag_history)).performClick()
@@ -127,7 +127,7 @@ class OcrDiagnosticsInteractionTest {
             ) {
                 MaterialTheme {
                     OcrDiagnosticsContent(emptyList(), false, false, false, null,
-                        {}, {}, { _, _ -> }, { _, _ -> }, { _, _, _ -> }, { _, _ -> }, {}, {})
+                        {}, {}, { _, _ -> }, { _, _ -> }, { _, _, _, _ -> }, { _, _ -> }, {}, {})
                 }
             }
         }
@@ -144,7 +144,7 @@ class OcrDiagnosticsInteractionTest {
         compose.setContent {
             MaterialTheme {
                 OcrDiagnosticsContent(listOf(scan), false, false, false, null,
-                    {}, {}, { _, _ -> }, { _, _ -> }, { _, _, _ -> }, { _, _ -> }, {}, {})
+                    {}, {}, { _, _ -> }, { _, _ -> }, { _, _, _, _ -> }, { _, _ -> }, {}, {})
             }
         }
         compose.onNodeWithText(label(R.string.diag_history)).performClick()
@@ -162,10 +162,16 @@ class OcrDiagnosticsInteractionTest {
             MaterialTheme {
                 OcrDiagnosticsContent(emptyList(), false, false, false, null,
                     {}, { clears++ }, { _, _ -> }, { _, _ -> },
-                    { _, _, _ -> }, { _, _ -> }, {}, {})
+                    { _, _, _, _ -> }, { _, _ -> }, {}, {})
             }
         }
-        compose.onNodeWithText(label(R.string.diag_clear)).performScrollTo().performClick()
+        compose.onNodeWithText(label(R.string.diag_clear)).performScrollTo()
+        // The viewport intentionally extends behind floating actions; finish scrolling to its padded end.
+        compose.onNodeWithTag("diagnostics_page_0").performTouchInput { swipeUp() }
+        val clearBounds = compose.onNode(hasText(label(R.string.diag_clear)) and hasClickAction()).fetchSemanticsNode().boundsInRoot
+        val actions = compose.onNodeWithTag("diagnostics_actions").fetchSemanticsNode().boundsInRoot
+        assertTrue("Clear must be above the floating report actions", clearBounds.bottom <= actions.top)
+        compose.onNode(hasText(label(R.string.diag_clear)) and hasClickAction()).performClick()
         compose.onNodeWithText(label(R.string.diag_clear_title)).assertExists()
         compose.runOnIdle { assertEquals(0, clears) }
         compose.onNodeWithText(label(R.string.diag_cancel)).performClick()

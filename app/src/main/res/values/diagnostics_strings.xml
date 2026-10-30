@@ -6,12 +6,12 @@
     <string name="diag_performance">Performance</string>
     <string name="diag_errors">Recognition errors</string>
     <string name="diag_brands">Retailer / brand</string>
-    <string name="diag_capture">OCR timings, recognized packaging text, product names, nutrition fields and corrections are stored locally. Original photos are not retained.</string>
-    <string name="diag_retention">Stored locally for up to 30 days with bounded history. Nothing is uploaded.</string>
+    <string name="diag_capture">OCR timings, packaging text, nutrition fields, corrections and normalized scan photos are stored locally. Native crash details are retained when Android makes them available.</string>
+    <string name="diag_retention">Stored only on this device for up to 30 days: 8 MiB of records and 64 MiB of photos/crash traces. Older attachments may be removed sooner. Nothing is uploaded.</string>
     <string name="diag_cancel">Cancel</string>
     <string name="diag_clear">Clear diagnostic history</string>
     <string name="diag_clear_title">Clear all diagnostics?</string>
-    <string name="diag_clear_hint">All locally stored scans and corrections will be deleted. Diary entries are unaffected.</string>
+    <string name="diag_clear_hint">All local scans, corrections, saved photos and native traces will be deleted. Diary entries are unaffected.</string>
     <string name="diag_empty">No scans match this view.</string>
     <string name="diag_total">Total scans</string>
     <string name="diag_success">Successful</string>
@@ -33,7 +33,8 @@
     <string name="diag_report_title">Report content</string>
     <string name="diag_report_preview">Scans: %1$d. Includes performance, status, model/runtime metadata and recorded OCR results.</string>
     <string name="diag_report_content">Saved OCR text, product and brand names, nutrition values and detailed corrections are included. Private paths and device identifiers are excluded.</string>
-    <string name="diag_no_photos">Original photos are not retained. You can explicitly select available photos for this report.</string>
+    <string name="diag_no_photos">Saved scan photos are linked to their scans and re-encoded without original location metadata. Photos and native crash traces are excluded from reports unless you include them below.</string>
+    <string name="diag_include_attachments">Include saved scan photos and native crash traces. They may contain personal content and private technical details.</string>
     <string name="diag_continue">Continue</string>
     <string name="diag_saved">Report saved</string>
     <string name="diag_error">The operation failed. Your diary is unchanged. Try again.</string>
@@ -84,6 +85,7 @@
     <string name="diag_confidence_mean">Mean confidence</string>
     <string name="diag_confidence_min">Minimum confidence</string>
     <string name="diag_confidence_max">Maximum confidence</string>
+    <string name="diag_process_exit">Android exit reason: %1$d · Status / signal: %2$d</string>
     <string name="diag_runtime">Runtime</string>
     <string name="diag_app_version">App version</string>
     <string name="diag_android_version">Android version</string>

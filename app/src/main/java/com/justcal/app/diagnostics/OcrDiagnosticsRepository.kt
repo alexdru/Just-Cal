@@ -14,6 +14,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.json.Json
+import kotlin.time.Duration.Companion.milliseconds
 
 @Entity(tableName = "ocr_scans")
 data class StoredScan(@PrimaryKey val id: String, val timestampMillis: Long, val payload: String)
@@ -30,7 +31,9 @@ data class StoredScan(@PrimaryKey val id: String, val timestampMillis: Long, val
 abstract class DiagnosticDatabase : RoomDatabase() { abstract fun scans(): DiagnosticDao }
 
 /** Isolated database and supervisor: diagnostic failures never fail recognition or diary writes. */
-@Singleton class OcrDiagnosticsRepository @Inject constructor(@ApplicationContext context: Context) {
+@Singleton class OcrDiagnosticsRepository @Inject constructor(@ApplicationContext private val context: Context,
+    images: com.justcal.app.camera.ImagePreprocessor = com.justcal.app.camera.ImagePreprocessor(context)) {
+    private val attachments = DiagnosticAttachments(context, images)
     private val preferences = context.getSharedPreferences("ocr-diagnostic-consent", Context.MODE_PRIVATE)
     // All future scans capture details, including upgrades with a former disabled preference.
     private val mutableDetailed = MutableStateFlow(true)
@@ -69,7 +72,7 @@ abstract class DiagnosticDatabase : RoomDatabase() { abstract fun scans(): Diagn
                 prune()
             }
         }
-        scope.launch { while (isActive) { delay(60 * 60 * 1000L); operations.send { prune() } } }
+        scope.launch { while (isActive) { delay((60 * 60 * 1000L).milliseconds); operations.send { prune() } } }
     }
     private suspend fun execute(block: suspend () -> Unit) {
         val completion = CompletableDeferred<Unit>()
@@ -83,14 +86,52 @@ abstract class DiagnosticDatabase : RoomDatabase() { abstract fun scans(): Diagn
         mutableDetailed.value = enabled
         if (!enabled) consentGeneration++
         // Revoking consent removes previously captured content as well.
+        if (!enabled) attachments.clear()
         if (!enabled) database.withTransaction {
             dao.observe().first().forEach { row ->
                 val old = Json.decodeFromString<DiagnosticScan>(row.payload)
-                put(old.sanitized().copy(brand = null, detailedConsent = false, corrections = emptyList(), correctedFields = emptyList()))
+                put(old.sanitized().copy(brand = null, detailedConsent = false, corrections = emptyList(), correctedFields = emptyList(),
+                    photoRetained = false, nativeTraceRetained = false))
             }
         }
     }
-    suspend fun clear() { generation++; execute { dao.clear() } }
+    suspend fun clear() { generation++; execute { dao.clear(); attachments.clear() } }
+    internal fun attachment(id: String, suffix: String) = attachments.open(id, suffix)
+    internal suspend fun preparePhoto(id: String, image: com.justcal.app.camera.PreparedImage,
+        attemptGeneration: Long, attemptConsentGeneration: Long) = execute {
+        if (generation != attemptGeneration || consentGeneration != attemptConsentGeneration || !detailed.value) return@execute
+        val old = dao.get(id)?.let { Json.decodeFromString<DiagnosticScan>(it.payload) } ?: return@execute
+        if (old.detailedConsent) {
+            val retained = runCatching { attachments.capture(id, image) }.getOrDefault(false)
+            put(old.copy(photoRetained = retained))
+            prune()
+        }
+    }
+    internal suspend fun checkpointAi(id: String, value: DiagnosticAiAttempt) = execute {
+        val old = dao.get(id)?.let { Json.decodeFromString<DiagnosticScan>(it.payload) } ?: return@execute
+        val safe = if (old.detailedConsent && detailed.value) value else value.copy(prompt = null, rawOutput = null)
+        var next = old.copy(aiAttempts = listOf(safe), status = "RUNNING")
+        if (value.validationError == "PACKAGE_MODEL_PROCESS_DIED") {
+            var exit: android.app.ApplicationExitInfo? = null
+            repeat(4) {
+                if (exit == null) {
+                    exit = context.getSystemService(android.app.ActivityManager::class.java)
+                        .getHistoricalProcessExitReasons(context.packageName, value.processId ?: 0, 16)
+                        .firstOrNull { it.timestamp >= old.timestampMillis && it.processName == context.packageName + ":package_ai" }
+                    if (exit == null) delay(150.milliseconds)
+                }
+            }
+            exit?.let { info ->
+                val evidence = DiagnosticProcessExit(info.reason, info.status, info.timestamp, info.pss, info.rss)
+                val trace = if (Build.VERSION.SDK_INT >= 31 &&
+                    info.reason == android.app.ApplicationExitInfo.REASON_CRASH_NATIVE && old.detailedConsent && detailed.value) runCatching {
+                    info.traceInputStream?.use { attachments.trace(id, it) } == true
+                }.getOrDefault(false) else false
+                next = next.copy(aiAttempts = listOf(safe.copy(processExit = evidence)), nativeTraceRetained = trace)
+            }
+        }
+        put(next)
+    }
     internal suspend fun awaitIdle() = execute { }
     internal suspend fun close() { awaitIdle(); operations.close(); scope.cancel(); database.close() }
     suspend fun setBrand(id: String, brand: String?) = execute {
@@ -104,7 +145,11 @@ abstract class DiagnosticDatabase : RoomDatabase() { abstract fun scans(): Diagn
     fun record(scan: DiagnosticScan, attemptGeneration: Long, attemptConsentGeneration: Long = consentGeneration) {
         operations.trySend { if (attemptGeneration == generation) database.withTransaction {
             val safe = if (detailed.value && scan.detailedConsent && attemptConsentGeneration == consentGeneration) scan else scan.sanitized().copy(brand = null, detailedConsent = false, corrections = emptyList(), correctedFields = emptyList())
-            put(safe); prune()
+            val old = dao.get(scan.id)?.let { Json.decodeFromString<DiagnosticScan>(it.payload) }
+            put(safe.copy(photoRetained = safe.detailedConsent && old?.photoRetained == true,
+                nativeTraceRetained = safe.detailedConsent && old?.nativeTraceRetained == true,
+                aiAttempts = safe.aiAttempts.ifEmpty { old?.aiAttempts.orEmpty() },
+                errors = (safe.errors + old?.aiAttempts.orEmpty().mapNotNull { it.validationError }).distinct())); prune()
         } }
     }
     fun corrections(prefill: PackageScanPrefill, draft: FoodDraft) {
@@ -145,6 +190,14 @@ abstract class DiagnosticDatabase : RoomDatabase() { abstract fun scans(): Diagn
     private suspend fun prune() {
         dao.prune(System.currentTimeMillis() - RETENTION_MS)
         while ((dao.bytes() ?: 0) > MAX_BYTES) dao.removeOldest()
+        val rows = dao.observe().first().map { Json.decodeFromString<DiagnosticScan>(it.payload) }
+        attachments.prune(rows.map { it.id }.toSet())
+        for (scan in rows) {
+            val photo = scan.photoRetained && attachments.exists(scan.id, "jpg")
+            val trace = scan.nativeTraceRetained && attachments.exists(scan.id, "pb")
+            if (photo != scan.photoRetained || trace != scan.nativeTraceRetained)
+                put(scan.copy(photoRetained = photo, nativeTraceRetained = trace))
+        }
     }
     fun metadata(id: String, timestamp: Long, status: String, elapsed: Long) = DiagnosticScan(id, timestamp,
         appVersion = BuildConfig.VERSION_NAME, androidVersion = Build.VERSION.RELEASE,

@@ -6,12 +6,12 @@
     <string name="diag_performance">Скорость</string>
     <string name="diag_errors">Ошибки</string>
     <string name="diag_brands">Магазин / бренд</string>
-    <string name="diag_capture">Время OCR, распознанный текст упаковки, названия продуктов, поля питания и исправления сохраняются локально. Исходные фото не сохраняются.</string>
-    <string name="diag_retention">Хранится только на устройстве до 30 дней, объём истории ограничен. Ничего не отправляется.</string>
+    <string name="diag_capture">Время OCR, текст упаковки, поля питания, исправления и нормализованные фото сканирований сохраняются локально. Данные native-падений сохраняются, если Android предоставляет их.</string>
+    <string name="diag_retention">Хранится только на устройстве до 30 дней: 8 МиБ записей и 64 МиБ фото/стеков. Старые вложения могут удаляться раньше. Ничего не отправляется.</string>
     <string name="diag_cancel">Отмена</string>
     <string name="diag_clear">Очистить историю диагностики</string>
     <string name="diag_clear_title">Удалить всю диагностику?</string>
-    <string name="diag_clear_hint">Все локальные сканирования и исправления будут удалены. Записи дневника сохранятся.</string>
+    <string name="diag_clear_hint">Все локальные сканирования, исправления, сохранённые фото и native-стеки будут удалены. Записи дневника сохранятся.</string>
     <string name="diag_empty">В этом разделе нет сканирований.</string>
     <string name="diag_total">Всего сканирований</string>
     <string name="diag_success">Успешные</string>
@@ -33,7 +33,8 @@
     <string name="diag_report_title">Содержимое отчёта</string>
     <string name="diag_report_preview">Сканирований: %1$d. Включает время, статус, сведения о модели и среде и сохранённые результаты OCR.</string>
     <string name="diag_report_content">Сохранённый текст OCR, названия продуктов и брендов, значения питания и подробные исправления включены. Приватные пути и идентификаторы устройства исключены.</string>
-    <string name="diag_no_photos">Исходные фото не сохраняются. Доступные фото можно выбрать отдельно для этого отчёта.</string>
+    <string name="diag_no_photos">Фото привязаны к сканированиям и пересохранены без исходных геометаданных. Фото и native-стеки не включаются в отчёт без выбора ниже.</string>
+    <string name="diag_include_attachments">Включить сохранённые фото и native-стеки. Они могут содержать личную информацию и приватные технические данные.</string>
     <string name="diag_continue">Продолжить</string>
     <string name="diag_saved">Отчёт сохранён</string>
     <string name="diag_error">Не удалось выполнить действие. Дневник не изменён. Попробуйте снова.</string>
@@ -84,6 +85,7 @@
     <string name="diag_confidence_mean">Средняя уверенность</string>
     <string name="diag_confidence_min">Минимальная уверенность</string>
     <string name="diag_confidence_max">Максимальная уверенность</string>
+    <string name="diag_process_exit">Причина выхода Android: %1$d · Код / сигнал: %2$d</string>
     <string name="diag_runtime">Среда выполнения</string>
     <string name="diag_app_version">Версия приложения</string>
     <string name="diag_android_version">Версия Android</string>

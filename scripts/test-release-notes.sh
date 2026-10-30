@@ -98,6 +98,33 @@ reject
 git tag -d v0.3.0 v0.4.0
 draft v0.4.0 "$feature"
 [[ "$(bash "$generator" v0.4.0)" == *"/compare/$base...v0.4.0"* ]] || exit 1
+# Self evidence allows implementation and highlights in one commit.
+git tag v0.3.0 "$feature"
+draft v0.4.0 THIS_COMMIT
+self_source="$(git rev-parse HEAD)"
+self_notes="$(bash "$generator" v0.4.0)"
+[[ "$self_notes" == *'/compare/v0.3.0...v0.4.0'* &&
+   "$self_notes" != *THIS_COMMIT* && "$self_notes" != *Evidence:* ]] || exit 1
+git tag v0.4.0
+[[ "$(bash "$generator" v0.4.0)" == "$self_notes" ]] || exit 1
+# A later HEAD/tag and dirty draft cannot change the pinned source's self evidence.
+draft v0.4.0 "$feature"
+git tag v0.3.1
+printf broken > docs/RELEASE_HIGHLIGHTS.md
+[[ "$(RELEASE_COMMIT="$self_source" bash "$generator" v0.4.0)" == "$self_notes" ]] || exit 1
+# A source already present in the comparison base is still rejected with self evidence.
+git tag -d v0.3.1
+git tag v0.3.1 "$self_source"
+if RELEASE_COMMIT="$self_source" bash "$generator" v0.4.0 > "$fixture/result" 2>&1; then exit 1; fi
+git tag -d v0.3.1
+# Only the exact marker is accepted; no punctuation, expressions or unresolved placeholders.
+for invalid in THIS_COMMIT: this_commit HEAD PENDING; do
+    draft v0.4.0 "$invalid"
+    reject
+done
+git tag -d v0.3.0 v0.4.0
+draft v0.4.0 THIS_COMMIT
+[[ "$(bash "$generator" v0.4.0)" == *"/compare/$base...v0.4.0"* ]] || exit 1
 # Optionally validate the pending project draft against local project history.
 # Keep ordinary fixture tests usable with a shallow CI/source checkout.
 if [[ "${CHECK_PROJECT_DRAFT:-false}" == true ]]; then

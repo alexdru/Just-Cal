@@ -175,7 +175,7 @@ historical changelog. Its first line must exactly match the intended tag:
 # vMAJOR.MINOR.PATCH
 
 - Concise factual change visible to users.
-  Evidence: FULL_LOWERCASE_40_CHARACTER_COMMIT_SHA
+  Evidence: THIS_COMMIT
 ```
 
 Keep **3–6** single-line bullets, at most 180 characters each, each followed by one
@@ -184,11 +184,15 @@ comparison base. Several bullets may cite the same commit when it contains disti
 changes. Review the actual diff/tests; ancestry validation cannot judge the truth of
 prose. Do not invent changes to fill the count or claim unfinished quality/transfer
 work as shipped. If fewer than three changes are ready, accumulate a meaningful
-release before publication. For an uncommitted implementation, keep Evidence: PENDING
-in the working draft until its implementing commit exists; this intentionally blocks
-release validation. After manually committing the implementation, replace PENDING
-with that actual SHA in a follow-up draft commit. Never use an unrelated ancestor
-or invent a future commit hash. Agents do not automatically commit either step.
+release before publication. Use Evidence: THIS_COMMIT when committing implementation
+and highlights together: no second evidence-only commit is needed. The exact marker
+resolves to the pinned RELEASE_COMMIT, not a later checkout HEAD or the last commit
+that edited the draft. A full lowercase 40-character implementing commit SHA remains
+supported for changes already committed in the release range. Both forms undergo the
+same ancestry/comparison-base checks. PENDING, HEAD and THIS_COMMIT: are invalid.
+Review each claim against the actual release diff; the marker does not prove prose
+is factual or turn an already released feature into a new change. Agents do not
+automatically commit, push, tag or publish.
 
 scripts/create-release-notes.sh reads version.properties and the draft using
 git show from RELEASE_COMMIT (HEAD by default), ignoring working-tree/later edits.

@@ -45,9 +45,11 @@ while IFS= read -r line || [[ -n "$line" ]]; do
         body+="$line"$'\n'
         count=$((count + 1))
         pending=true
-    elif [[ "$line" =~ ^\ \ Evidence:\ ([0-9a-f]{40})$ ]]; then
+    elif [[ "$line" =~ ^\ \ Evidence:\ ([0-9a-f]{40}|THIS_COMMIT)$ ]]; then
         [[ "$pending" == true ]] || fail "Evidence must follow a highlight."
         evidence="${BASH_REMATCH[1]}"
+        # Resolve against the pinned source, never the workflow checkout or later HEAD.
+        [[ "$evidence" != THIS_COMMIT ]] || evidence="$commit"
         [[ "$(git cat-file -t "$evidence")" == commit ]] || fail "Evidence must name a commit object."
         git merge-base --is-ancestor "$evidence" "$commit" || fail "Evidence is outside the selected source."
         if [[ "$base" != "$evidence" ]] || [[ "$base" == v* ]]; then

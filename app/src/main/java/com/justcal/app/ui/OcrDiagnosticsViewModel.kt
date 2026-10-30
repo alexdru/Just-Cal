@@ -36,8 +36,8 @@ class OcrDiagnosticsViewModel @Inject constructor(
     fun clear() = operation { repository.clear() }
     fun setBrand(id: String, brand: String) = operation { repository.setBrand(id, brand.trim().ifBlank { null }) }
     fun correctNetWeight(id: String, value: String) = operation { repository.correctNetWeight(id, value) }
-    fun export(ids: Set<String>?, includeRawText: Boolean, photos: List<Uri>) = operation {
-        mutableReport.value = exporter.export(ids, includeRawText, photos)
+    fun export(ids: Set<String>?, includeRawText: Boolean, photos: List<Uri>, includeAttachments: Boolean) = operation {
+        mutableReport.value = exporter.export(ids, includeRawText, photos, includeAttachments)
     }
     fun reportHandled() { mutableReport.value = null }
     fun reportFailed() { mutableError.value = true; mutableReport.value = null }
