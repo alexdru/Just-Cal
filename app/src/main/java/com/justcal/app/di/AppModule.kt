@@ -18,9 +18,11 @@ object AppModule {
     @Provides @Singleton
     fun database(@ApplicationContext context: Context): DiaryDatabase =
         Room.databaseBuilder(context, DiaryDatabase::class.java, "just-cal.db")
-            .addMigrations(DiaryDatabase.MIGRATION_1_2).build()
+            .addMigrations(DiaryDatabase.MIGRATION_1_2, DiaryDatabase.MIGRATION_2_3)
+            .addCallback(DiaryDatabase.CALLBACK).build()
     @Provides fun dao(database: DiaryDatabase): DiaryDao = database.diaryDao()
-    @Provides @Singleton fun repository(dao: DiaryDao): DiaryRepository = RoomDiaryRepository(dao)
+    @Provides @Singleton fun repository(dao: DiaryDao, database: DiaryDatabase): DiaryRepository = RoomDiaryRepository(dao, database)
+    @Provides @Singleton fun catalog(repository: RoomFoodCatalogRepository): com.justcal.app.domain.FoodCatalogRepository = repository
     @Provides fun packageOcr(engine: com.justcal.app.ocr.PaddlePackageOcrEngine): com.justcal.app.ocr.PackageOcrEngine = engine
     @Provides fun updates(repository: GitHubUpdateRepository): com.justcal.app.domain.AppUpdateRepository = repository
     @Provides fun clock(): Clock = Clock.systemUTC()

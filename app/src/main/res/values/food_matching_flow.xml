@@ -1,0 +1,26 @@
+<resources>
+    <string name="match_open">Compare saved foods</string>
+    <string name="match_source_catalog">From saved product</string>
+    <string name="match_source_history">From diary history</string>
+    <string name="match_source_scan">From recognition</string>
+    <string name="match_add_product">Add food</string>
+    <string name="match_package_scan">Package scan</string>
+    <string name="match_check_values">Check values</string>
+    <string name="match_recognized">Recognition completed</string>
+    <string name="match_scan_count">Recognized %1$d of 4 nutrition values per 100 g.</string>
+    <string name="match_current_entry">Current entry</string>
+    <string name="match_current_count">Filled nutrition fields: %1$d of 4. Edit them on Check values.</string>
+    <string name="match_amount_independent">Amount eaten does not depend on the selected product.</string>
+    <string name="match_explicit_save">Your choice changes only the draft. Save to the diary on Check values.</string>
+    <string name="match_previous_foods">Previously added foods</string>
+    <string name="match_choose_source">Which values should be used?</string>
+    <string name="match_parameter">Parameter</string>
+    <string name="match_source_manual">Entered manually</string>
+    <string name="match_missing_fields">Missing from OCR: %1$s</string>
+    <string name="match_source_edited">%1$s · edited</string>
+    <string name="match_equal_fields">Identical known nutrition values: %1$d of 4</string>
+    <string name="match_manufacturer_unknown">The current product manufacturer is unknown.</string>
+    <string name="match_nutrition_comparison">Nutrition comparison</string>
+    <string name="match_column_current">Recognition</string>
+    <string name="match_column_saved">Saved</string>
+</resources>

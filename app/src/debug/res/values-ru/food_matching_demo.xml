@@ -1,0 +1,13 @@
+<resources>
+    <string name="match_demo_title">Smart Food Matching — демо</string>
+    <string name="match_demo_notice">Синтетические данные во временной базе. Сохранение, архивация и удаление продукта действуют только в демо. При закрытии редактора его база удаляется.</string>
+    <string name="match_demo_partial">Неполный OCR</string>
+    <string name="match_demo_conflict">Противоречивые пищевые значения</string>
+    <string name="match_demo_history">Значения из истории дневника</string>
+    <string name="match_demo_manual">Ручные правки и undo</string>
+    <string name="match_demo_saved">Сохранено во временном демо-дневнике</string>
+    <string name="match_demo_back">К выбору сценария</string>
+    <string name="match_demo_error">Не удалось загрузить демо. Закройте его и попробуйте снова.</string>
+    <string name="match_demo_yogurt">Ванильный йогурт с миндалём</string>
+    <string name="match_demo_salad">Куриный салат с кунжутом</string>
+</resources>

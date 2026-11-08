@@ -13,6 +13,37 @@ import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
 class DiaryMigrationTest {
+    @Test fun directVersionTwoMigrationPreservesEveryDiaryField() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val name = "migration-v2-catalog-test.db"
+        context.deleteDatabase(name)
+        val path = context.getDatabasePath(name)
+        path.parentFile!!.mkdirs()
+        val uuid = UUID.randomUUID().toString()
+        SQLiteDatabase.openOrCreateDatabase(path, null).use { old ->
+            old.execSQL("""CREATE TABLE diary_entries (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT NOT NULL,
+                energyKcalHundredths INTEGER NOT NULL, proteinGramsHundredths INTEGER NOT NULL,
+                fatGramsHundredths INTEGER NOT NULL, carbsGramsHundredths INTEGER NOT NULL,
+                eatenGramsHundredths INTEGER NOT NULL, dayEpoch INTEGER NOT NULL,
+                createdAtMillis INTEGER NOT NULL, source TEXT NOT NULL, portableId TEXT NOT NULL DEFAULT '')""")
+            old.execSQL("CREATE INDEX index_diary_entries_dayEpoch ON diary_entries(dayEpoch)")
+            old.execSQL("CREATE UNIQUE INDEX index_diary_entries_portableId ON diary_entries(portableId)")
+            old.execSQL("INSERT INTO diary_entries VALUES (42,'Йогурт',20550,1234,567,2001,3751,20738,123,'PACKAGE_SCAN',?)", arrayOf(uuid))
+            old.version = 2
+        }
+        val db = Room.databaseBuilder(context, DiaryDatabase::class.java, name)
+            .addMigrations(DiaryDatabase.MIGRATION_2_3).build()
+        try {
+            assertEquals(DiaryEntryEntity(42, "Йогурт", 20550, 1234, 567, 2001, 3751, 20738, 123, "PACKAGE_SCAN", uuid),
+                db.diaryDao().get(42))
+            assertTrue(db.foodCatalogDao().products().isEmpty())
+            assertTrue(db.foodCatalogDao().allRevisions().isEmpty())
+            assertTrue(db.foodCatalogDao().links().isEmpty())
+            assertEquals(3, db.openHelper.readableDatabase.version)
+        } finally { db.close(); context.deleteDatabase(name) }
+    }
+
     @Test fun versionOneRowsAndLocalIdsSurviveWithStablePortableIdentity() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val name = "migration-backup-test.db"
@@ -32,7 +63,7 @@ class DiaryMigrationTest {
             old.version = 1
         }
         fun open() = Room.databaseBuilder(context, DiaryDatabase::class.java, name)
-            .addMigrations(DiaryDatabase.MIGRATION_1_2).build()
+            .addMigrations(DiaryDatabase.MIGRATION_1_2, DiaryDatabase.MIGRATION_2_3).addCallback(DiaryDatabase.CALLBACK).build()
         var database = open()
         try {
             val rows = database.diaryDao().getAll()

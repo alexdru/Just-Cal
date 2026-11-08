@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
 data class DiaryBackupState(
     val busy: Boolean = false,
     val preview: DiaryBackup? = null,
+    val previewCounts: DiaryImportResult? = null,
     val result: DiaryImportResult? = null,
     val error: Boolean = false,
     val exported: Boolean = false,
@@ -46,12 +47,13 @@ class DiaryBackupViewModel @Inject constructor(
 
     fun preview(uri: Uri) = work {
         val backup = requireNotNull(context.contentResolver.openInputStream(uri)).use { repository.preview(it) }
-        mutableState.update { it.copy(preview = backup) }
+        val counts = repository.previewCounts(backup)
+        mutableState.update { it.copy(preview = backup, previewCounts = counts) }
     }
 
-    fun export(uri: Uri, recovery: Boolean = false) = work {
+    fun export(uri: Uri, recovery: Boolean = false, legacy: Boolean = false) = work {
         requireNotNull(context.contentResolver.openOutputStream(uri, "wt")).use {
-            if (recovery) repository.exportRecovery(it) else repository.export(it)
+            if (recovery) repository.exportRecovery(it) else repository.export(it, legacy)
         }
         mutableState.update { it.copy(exported = true) }
     }

@@ -183,6 +183,7 @@ fun SettingsScreen(state: SettingsState, onChange: (SettingsDraft) -> Unit,
                         }
                     }
                 }
+                FoodMatchingDemoAction()
                 UpdateSettings()
                 AboutSettings()
             }

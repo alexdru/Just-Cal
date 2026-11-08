@@ -1,0 +1,26 @@
+<resources>
+    <string name="match_open">Сравнить с сохранёнными продуктами</string>
+    <string name="match_source_catalog">Из сохранённого продукта</string>
+    <string name="match_source_history">Из истории дневника</string>
+    <string name="match_source_scan">Из распознавания</string>
+    <string name="match_add_product">Добавить продукт</string>
+    <string name="match_package_scan">Сканирование упаковки</string>
+    <string name="match_check_values">Проверить значения</string>
+    <string name="match_recognized">Распознавание завершено</string>
+    <string name="match_scan_count">Найдено %1$d из 4 значений КБЖУ на 100 г.</string>
+    <string name="match_current_entry">Текущая запись</string>
+    <string name="match_current_count">Заполнено значений КБЖУ: %1$d из 4. Изменить их можно на экране проверки.</string>
+    <string name="match_amount_independent">Количество съеденного не зависит от выбранного продукта.</string>
+    <string name="match_explicit_save">Выбор меняет только черновик. Сохранить запись в дневник можно на экране проверки значений.</string>
+    <string name="match_previous_foods">Ранее добавленные продукты</string>
+    <string name="match_choose_source">Какие данные использовать?</string>
+    <string name="match_parameter">Параметр</string>
+    <string name="match_source_manual">Введено вручную</string>
+    <string name="match_missing_fields">Не распознаны значения: %1$s</string>
+    <string name="match_source_edited">%1$s · изменено</string>
+    <string name="match_equal_fields">Совпадает известных значений КБЖУ: %1$d из 4</string>
+    <string name="match_manufacturer_unknown">Производитель текущего продукта неизвестен.</string>
+    <string name="match_nutrition_comparison">Сравнение КБЖУ</string>
+    <string name="match_column_current">Распознавание</string>
+    <string name="match_column_saved">Сохранено</string>
+</resources>

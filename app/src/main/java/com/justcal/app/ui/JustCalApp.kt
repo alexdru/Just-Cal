@@ -304,7 +304,10 @@ fun JustCalApp(splashVisible: Boolean = false) {
                             EditorScreen(state, route.id != null, viewModel::change, viewModel::save,
                                 { removed = true; viewModel.delete() }, close, viewModel::retryLoad, scan = route.scan,
                                 claimInitialFocus = viewModel::claimInitialFocus,
-                                onChangeDate = viewModel::changeDate, onDuplicate = viewModel::duplicate)
+                                onChangeDate = viewModel::changeDate, onDuplicate = viewModel::duplicate,
+                                onMatchAction = viewModel::matchingAction, onInspectMatch = viewModel::inspectMatch,
+                                onReuseMatch = viewModel::reuseDuplicate, onRetention = viewModel::setRetention,
+                                onProductDetails = viewModel::changeProductDetails)
                         }
                     },
                 )

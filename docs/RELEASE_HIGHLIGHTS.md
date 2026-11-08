@@ -1,10 +1,12 @@
-# v0.20.0
+# v0.23.0
 
-- Preserve package OCR when the optional model process crashes or fails.
+- Debug builds offer an isolated Smart Food Matching demo with four interactive scenarios.
   Evidence: THIS_COMMIT
-- Keep bounded scan photos locally and optionally include linked photos and native crash traces in diagnostic reports.
+- Compare scans on a dedicated food matching screen, then review editable values before saving to the diary.
   Evidence: THIS_COMMIT
-- Place diary export and import actions at the bottom of Data & Backup for easier reach.
+- Apply saved nutrition explicitly, restore scan or previous values, and preserve the eaten amount and diary date.
   Evidence: THIS_COMMIT
-- Recognize the explicit per-100-g basis when OCR joins “гпродукта” without a space.
+- Remember reusable products with immutable nutrition versions, explicit history promotion, archive and forget actions.
+  Evidence: THIS_COMMIT
+- Export and recover the complete diary and food catalog, with legacy diary-only export and v1 import support.
   Evidence: THIS_COMMIT

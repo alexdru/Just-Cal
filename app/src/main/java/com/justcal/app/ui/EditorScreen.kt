@@ -23,12 +23,14 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
 import com.justcal.app.ocr.PackageScanPrefill
+import com.justcal.app.domain.Retention
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -43,11 +45,14 @@ import com.justcal.app.ui.theme.CalLayout
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun EditorScreen(
+internal fun CheckFoodScreen(
     state: EditorState, editing: Boolean, onChange: (FoodField, String) -> Unit,
     onSave: () -> Unit, onDelete: () -> Unit, onBack: () -> Unit, onRetry: () -> Unit,
     scan: PackageScanPrefill? = null, claimInitialFocus: () -> Boolean = { false },
     onChangeDate: (Long) -> Unit = {}, onDuplicate: (Long) -> Unit = {},
+    onMatchAction: (String) -> Unit = {}, onReuseMatch: (String) -> Unit = {},
+    onRetention: (Retention) -> Unit = {}, onProductDetails: (ProductDetails) -> Unit = {},
+    onMatching: () -> Unit = {},
 ) {
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
     var actions by rememberSaveable { mutableStateOf(false) }
@@ -154,7 +159,7 @@ fun EditorScreen(
                         start = padding.calculateStartPadding(direction), end = padding.calculateEndPadding(direction),
                         top = padding.calculateTopPadding(), bottom = imeBottom,
                     ).consumeWindowInsets(padding).calContent(CalLayout.readingWidth)
-                        .verticalScroll(rememberScrollState()).padding(horizontal = CalSpacing.page)
+                        .verticalScroll(rememberScrollState()).testTag("food_editor_scroll").padding(horizontal = CalSpacing.page)
                         .padding(top = 16.dp, bottom = buttonSpace),
                     verticalArrangement = Arrangement.spacedBy(CalSpacing.section),
                 ) {
@@ -182,6 +187,8 @@ fun EditorScreen(
                             Text(result.evidence, style = MaterialTheme.typography.bodySmall)
                         }
                     }
+                    TextButton(onClick = onMatching, enabled = !state.busy) { Text(stringResource(R.string.match_open)) }
+                    FoodDuplicateChoices(state, onMatchAction, onReuseMatch)
                     input(FoodField.NAME, Modifier.fillMaxWidth())
                     Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                         SectionTitle(stringResource(R.string.per_100g))
@@ -205,6 +212,7 @@ fun EditorScreen(
                             stringResource(R.string.ocr_net_weight, nutritionText(scan.label.netGrams.value.toBigDecimal(), 2)),
                             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         input(FoodField.AMOUNT, Modifier.fillMaxWidth())
+                        FoodRetentionControls(state, onRetention, onProductDetails)
                         Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = MaterialTheme.shapes.large) {
                             Column(Modifier.fillMaxWidth().padding(CalSpacing.dense).animateContentSize(CalMotion.size()), verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                                 Text(stringResource(R.string.portion_preview), style = MaterialTheme.typography.labelLarge)
@@ -238,7 +246,7 @@ fun EditorScreen(
 }
 
 @Composable
-private fun FoodInputField(
+internal fun FoodInputField(
     field: FoodField, state: EditorState, onChange: (FoodField, String) -> Unit,
     modifier: Modifier = Modifier, done: Boolean = false, onNext: () -> Unit,
 ) {

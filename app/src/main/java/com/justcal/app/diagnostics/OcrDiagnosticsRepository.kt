@@ -152,12 +152,12 @@ abstract class DiagnosticDatabase : RoomDatabase() { abstract fun scans(): Diagn
                 errors = (safe.errors + old?.aiAttempts.orEmpty().mapNotNull { it.validationError }).distinct())); prune()
         } }
     }
-    fun corrections(prefill: PackageScanPrefill, draft: FoodDraft) {
+    fun corrections(prefill: PackageScanPrefill, draft: FoodDraft, substitutionFields: Set<FoodField> = emptySet(), substitutionOrigin: String = "EXPLICIT_CORRECTION") {
         val id = prefill.diagnosticSessionId ?: return
         val original = prefill.recognition?.draft() ?: prefill.label.draft()
         val changes = FoodField.entries.filter { normalize(it, original.value(it)) != normalize(it, draft.value(it)) }
             .map { field -> DiagnosticCorrection(field.name,
-                if (field == FoodField.AMOUNT) "USER_PORTION_ADJUSTMENT" else if (original.value(field).isBlank()) "MISSING_FIELD_FILLED" else "EXPLICIT_CORRECTION",
+                if (field == FoodField.AMOUNT) "USER_PORTION_ADJUSTMENT" else if (field in substitutionFields) substitutionOrigin else if (original.value(field).isBlank()) "MISSING_FIELD_FILLED" else "EXPLICIT_CORRECTION",
                 original.value(field), draft.value(field)) }
         operations.trySend { database.withTransaction {
             val old = dao.get(id)?.let { Json.decodeFromString<DiagnosticScan>(it.payload) } ?: return@withTransaction

@@ -17,8 +17,9 @@ class BackupNavigationTest {
     @Test fun backupDestinationSurvivesRecreationAndUsesSystemDocumentPicker() {
         compose.onNode(hasText(label(R.string.settings)) and hasClickAction()).performClick()
         compose.onNode(hasText(label(R.string.data_backup)) and hasClickAction())
-            .performScrollTo().performClick()
-        compose.onNodeWithText(label(R.string.export_diary)).assertExists()
+            .performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick) { it() }
+        compose.waitUntil(5000) { compose.onAllNodesWithText(label(R.string.backup_full_export)).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText(label(R.string.backup_full_export)).assertExists()
         compose.onNodeWithText(label(R.string.import_diary)).assertExists()
         compose.activityRule.scenario.recreate()
         compose.onNodeWithText(label(R.string.import_diary)).assertExists().performClick()

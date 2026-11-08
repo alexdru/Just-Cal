@@ -1,8 +1,10 @@
 package com.justcal.app.domain
 
+@kotlinx.serialization.Serializable
 enum class FoodField { NAME, ENERGY, PROTEIN, FAT, CARBS, AMOUNT }
 enum class InputError { REQUIRED, NUMBER, PRECISION, NON_NEGATIVE, POSITIVE, TOO_LARGE }
 
+@kotlinx.serialization.Serializable
 data class FoodDraft(
     val name: String = "",
     val energy: String = "",

@@ -61,11 +61,63 @@ interface DiaryDao {
     suspend fun delete(id: Long)
 }
 
-@Database(entities = [DiaryEntryEntity::class], version = 2, exportSchema = true)
+@Database(entities = [DiaryEntryEntity::class, ProductEntity::class, ProductRevisionEntity::class,
+    EntryProductLinkEntity::class, FoodSearchEntity::class, FoodTokenEntity::class, FoodHistoryMember::class], version = 3, exportSchema = true)
 abstract class DiaryDatabase : RoomDatabase() {
     abstract fun diaryDao(): DiaryDao
+    abstract fun foodCatalogDao(): FoodCatalogDao
 
     companion object {
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS products (id TEXT NOT NULL PRIMARY KEY, createdAtMillis INTEGER NOT NULL, archived INTEGER NOT NULL)")
+                db.execSQL("""CREATE TABLE IF NOT EXISTS product_revisions (
+                    id TEXT NOT NULL PRIMARY KEY, productId TEXT NOT NULL, previousRevisionId TEXT,
+                    name TEXT NOT NULL, energy INTEGER NOT NULL, protein INTEGER NOT NULL, fat INTEGER NOT NULL, carbs INTEGER NOT NULL,
+                    savedAtMillis INTEGER NOT NULL, brand TEXT, manufacturer TEXT, retailer TEXT, deliveryService TEXT,
+                    packageMassHundredths INTEGER, origins TEXT NOT NULL,
+                    FOREIGN KEY(productId) REFERENCES products(id) ON DELETE CASCADE,
+                    FOREIGN KEY(previousRevisionId) REFERENCES product_revisions(id) ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED)""")
+                db.execSQL("CREATE INDEX index_product_revisions_productId ON product_revisions(productId)")
+                db.execSQL("CREATE INDEX index_product_revisions_previousRevisionId ON product_revisions(previousRevisionId)")
+                db.execSQL("""CREATE TABLE IF NOT EXISTS entry_product_links (
+                    entryId TEXT NOT NULL PRIMARY KEY, revisionId TEXT NOT NULL, provenance TEXT NOT NULL,
+                    FOREIGN KEY(entryId) REFERENCES diary_entries(portableId) ON DELETE CASCADE,
+                    FOREIGN KEY(revisionId) REFERENCES product_revisions(id) ON DELETE CASCADE)""")
+                db.execSQL("CREATE INDEX index_entry_product_links_revisionId ON entry_product_links(revisionId)")
+                db.execSQL("""CREATE TABLE IF NOT EXISTS food_search (
+                    `key` TEXT NOT NULL PRIMARY KEY, source TEXT NOT NULL, normalizedName TEXT NOT NULL,
+                    name TEXT NOT NULL, energy INTEGER NOT NULL, protein INTEGER NOT NULL, fat INTEGER NOT NULL,
+                    carbs INTEGER NOT NULL, normalizationVersion INTEGER NOT NULL)""")
+                listOf("energy", "protein", "fat", "carbs").forEach { column ->
+                    db.execSQL("CREATE INDEX index_food_search_$column ON food_search($column)")
+                }
+                db.execSQL("""CREATE TABLE IF NOT EXISTS food_tokens (
+                    token TEXT NOT NULL, ownerKey TEXT NOT NULL, PRIMARY KEY(token, ownerKey),
+                    FOREIGN KEY(ownerKey) REFERENCES food_search(`key`) ON DELETE CASCADE)""")
+                db.execSQL("CREATE INDEX index_food_tokens_ownerKey ON food_tokens(ownerKey)")
+                db.execSQL("""CREATE TABLE IF NOT EXISTS food_history_members (
+                    entryId TEXT NOT NULL PRIMARY KEY, ownerKey TEXT NOT NULL,
+                    FOREIGN KEY(entryId) REFERENCES diary_entries(portableId) ON DELETE CASCADE,
+                    FOREIGN KEY(ownerKey) REFERENCES food_search(`key`) ON DELETE CASCADE)""")
+                db.execSQL("CREATE INDEX index_food_history_members_ownerKey ON food_history_members(ownerKey)")
+                installSearchTriggers(db)
+            }
+        }
+        val CALLBACK = object : Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) = installSearchTriggers(db)
+            override fun onOpen(db: SupportSQLiteDatabase) = installSearchTriggers(db)
+        }
+        private fun installSearchTriggers(db: SupportSQLiteDatabase) {
+            db.execSQL("""CREATE TRIGGER IF NOT EXISTS food_history_orphan AFTER DELETE ON food_history_members
+                BEGIN DELETE FROM food_search WHERE `key` = OLD.ownerKey AND NOT EXISTS
+                (SELECT 1 FROM food_history_members m WHERE m.ownerKey = OLD.ownerKey); END""")
+            db.execSQL("""CREATE TRIGGER IF NOT EXISTS food_history_changed AFTER UPDATE OF name,
+                energyKcalHundredths, proteinGramsHundredths, fatGramsHundredths, carbsGramsHundredths ON diary_entries
+                BEGIN DELETE FROM food_history_members WHERE entryId = NEW.portableId; END""")
+            db.execSQL("""CREATE TRIGGER IF NOT EXISTS food_history_linked AFTER INSERT ON entry_product_links
+                BEGIN DELETE FROM food_history_members WHERE entryId = NEW.entryId; END""")
+        }
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE diary_entries ADD COLUMN portableId TEXT NOT NULL DEFAULT ''")

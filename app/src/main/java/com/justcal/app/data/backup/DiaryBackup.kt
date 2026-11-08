@@ -2,6 +2,9 @@ package com.justcal.app.data.backup
 
 import com.justcal.app.data.DiaryEntryEntity
 import com.justcal.app.domain.EntrySource
+import com.justcal.app.domain.Product
+import com.justcal.app.domain.ProductRevision
+import com.justcal.app.domain.EntryProductLink
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -19,6 +22,10 @@ data class DiaryBackup(
     val exportedAtMillis: Long,
     val appVersion: String,
     val entries: List<BackupEntry>,
+    val products: List<Product> = emptyList(),
+    val revisions: List<ProductRevision> = emptyList(),
+    val links: List<EntryProductLink> = emptyList(),
+    val catalogUnits: String = "hundredths-per100g",
 )
 
 @Serializable
@@ -65,8 +72,12 @@ object DiaryImportValidator {
     private val decimal = Regex("[0-9]+(\\.[0-9]{1,2})?")
     fun validate(backup: DiaryBackup): DiaryBackup {
         require(backup.format == "just-cal-diary") { "Unsupported diary backup format" }
-        require(backup.schemaVersion == 1) { "Unsupported diary backup schema version" }
+        require(backup.schemaVersion in 1..2) { "Unsupported diary backup schema version" }
         require(backup.exportedAtMillis >= 0 && backup.appVersion.length in 1..128) { "Invalid backup metadata" }
+        require(backup.entries.size <= MAX_ENTRIES) { "Too many diary entries" }
+        require(backup.products.size <= 10_000 && backup.revisions.size <= 50_000 && backup.links.size <= MAX_ENTRIES) { "Catalog limit exceeded" }
+        require(backup.catalogUnits == "hundredths-per100g") { "Unsupported catalog units" }
+        require(backup.schemaVersion == 2 || (backup.products.isEmpty() && backup.revisions.isEmpty() && backup.links.isEmpty())) { "Legacy backup cannot contain catalog data" }
         val ids = HashSet<String>()
         backup.entries.forEachIndexed { index, entry ->
             fun valid(condition: Boolean, field: String) = require(condition) { "Invalid entry ${index + 1}: $field" }
@@ -84,6 +95,42 @@ object DiaryImportValidator {
                 val number = runCatching { BigDecimal(value).movePointRight(2).longValueExact() }.getOrNull()
                 valid(number != null && number >= 0 && (field != "consumedAmount" || number > 0), field)
             }
+        }
+        fun uuid(id: String) = require(runCatching { UUID.fromString(id).toString() == id }.getOrDefault(false)) { "Invalid catalog UUID" }
+        val products = backup.products.associateBy { it.id }
+        val revisions = backup.revisions.associateBy { it.id }
+        require(products.size == backup.products.size && revisions.size == backup.revisions.size) { "Duplicate catalog UUID" }
+        backup.products.forEach { uuid(it.id); require(it.createdAtMillis >= 0) }
+        backup.revisions.forEach { r ->
+            uuid(r.id); uuid(r.productId)
+            require(r.productId in products && r.savedAtMillis >= 0) { "Missing product or invalid timestamp" }
+            require(r.name.isNotBlank() && r.name.length <= 1000 && '\u0000' !in r.name)
+            require(listOf(r.energy, r.protein, r.fat, r.carbs).all { it >= 0 })
+            require(r.packageMassHundredths == null || r.packageMassHundredths > 0)
+            require(listOf(r.brand, r.manufacturer, r.retailer, r.deliveryService).all {
+                it == null || (it.isNotBlank() && it.length <= 200 && '\u0000' !in it)
+            })
+            require(r.origins.length in 1..1000 && '\u0000' !in r.origins)
+            r.previousRevisionId?.let { parent ->
+                uuid(parent)
+                require(revisions[parent]?.productId == r.productId) { "Invalid revision parent" }
+            }
+        }
+        val visited = HashSet<String>()
+        backup.revisions.forEach { r ->
+            val path = HashSet<String>()
+            var id: String? = r.id
+            while (id != null && id !in visited) {
+                require(path.add(id)) { "Cyclic revision ancestry" }
+                id = revisions.getValue(id).previousRevisionId
+            }
+            visited.addAll(path)
+        }
+        val linked = HashSet<String>()
+        backup.links.forEach { link ->
+            uuid(link.entryId); uuid(link.revisionId)
+            require(linked.add(link.entryId) && link.entryId in ids && link.revisionId in revisions) { "Invalid entry link" }
+            require(link.provenance in setOf("USER_SELECTED", "HISTORY_PROMOTION", "SCAN_ACCEPTED", "USER_CORRECTION")) { "Invalid selection provenance" }
         }
         return backup
     }
@@ -106,6 +153,11 @@ object DiaryBackupSerializer {
         require(tree.keys.containsAll(listOf("format", "schemaVersion", "exportedAtMillis", "appVersion", "entries"))) {
             "Missing required backup metadata"
         }
+        if (tree["schemaVersion"].toString() == "2") {
+            require(tree.keys.containsAll(listOf("products", "revisions", "links", "catalogUnits"))) { "Missing catalog graph" }
+            require(tree.getValue("products").jsonArray.size <= 10_000 && tree.getValue("revisions").jsonArray.size <= 50_000 &&
+                tree.getValue("links").jsonArray.size <= DiaryImportValidator.MAX_ENTRIES) { "Catalog limit exceeded" }
+        }
         val entries = requireNotNull(tree["entries"]).jsonArray
         require(entries.size <= DiaryImportValidator.MAX_ENTRIES) { "Too many diary entries" }
         entries.forEach {
@@ -115,7 +167,14 @@ object DiaryBackupSerializer {
     }
     fun write(backup: DiaryBackup, output: OutputStream) {
         DiaryImportValidator.validate(backup)
-        output.write(json.encodeToString(DiaryBackup.serializer(), backup).toByteArray(Charsets.UTF_8))
+        val encoded = if (backup.schemaVersion == 1) {
+            val tree = json.parseToJsonElement(json.encodeToString(DiaryBackup.serializer(), backup)).jsonObject
+            json.encodeToString(kotlinx.serialization.json.JsonObject.serializer(),
+                kotlinx.serialization.json.JsonObject(tree.filterKeys { it !in setOf("products", "revisions", "links", "catalogUnits") }))
+        } else json.encodeToString(DiaryBackup.serializer(), backup)
+        val bytes = encoded.toByteArray(Charsets.UTF_8)
+        require(bytes.size <= DiaryImportValidator.MAX_BYTES) { "Backup exceeds self-import limit of 32 MiB" }
+        output.write(bytes)
         output.flush()
     }
 }

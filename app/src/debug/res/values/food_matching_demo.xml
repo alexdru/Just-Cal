@@ -1,0 +1,13 @@
+<resources>
+    <string name="match_demo_title">Smart Food Matching — demo</string>
+    <string name="match_demo_notice">Synthetic data in a temporary database. Save, Archive and Forget affect only this demo. Closing the editor discards its database.</string>
+    <string name="match_demo_partial">Incomplete OCR</string>
+    <string name="match_demo_conflict">Contradictory nutrition</string>
+    <string name="match_demo_history">Values from diary history</string>
+    <string name="match_demo_manual">Manual edits and undo</string>
+    <string name="match_demo_saved">Saved in the temporary demo diary</string>
+    <string name="match_demo_back">Back to scenarios</string>
+    <string name="match_demo_error">Demo could not load. Close it and try again.</string>
+    <string name="match_demo_yogurt">Vanilla almond yogurt</string>
+    <string name="match_demo_salad">Chicken sesame salad</string>
+</resources>

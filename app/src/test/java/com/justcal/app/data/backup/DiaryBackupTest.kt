@@ -36,7 +36,7 @@ class DiaryBackupTest {
         assertTrue(DiaryBackupSerializer.read(ByteArrayInputStream(output.toByteArray())).entries.isEmpty())
     }
     @Test fun rejectsUnsupportedVersionsUnitsDuplicateIdsAndInvalidNumbers() {
-        reject(backup().copy(schemaVersion = 2))
+        reject(backup().copy(schemaVersion = 3))
         reject(backup().copy(format = "other"))
         reject(backup(listOf(entry(), entry())))
         listOf("-1", "1.001", "NaN", "1e2", "92233720368547758.08").forEach {

@@ -29,11 +29,12 @@ import com.justcal.app.ui.theme.CalSpacing
 @Composable
 fun DiaryBackupScreen(viewModel: DiaryBackupViewModel, onBack: () -> Unit) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var legacyExport by rememberSaveable { mutableStateOf(false) }
     var recoveryExport by rememberSaveable { mutableStateOf(false) }
     var replaceConfirmation by rememberSaveable { mutableStateOf(false) }
     var replacementAcknowledged by rememberSaveable { mutableStateOf(false) }
     val create = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) {
-        it?.let { uri -> viewModel.export(uri, recoveryExport) }
+        it?.let { uri -> viewModel.export(uri, recoveryExport, legacyExport) }
     }
     val open = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
         it?.let(viewModel::preview)
@@ -77,9 +78,18 @@ fun DiaryBackupScreen(viewModel: DiaryBackupViewModel, onBack: () -> Unit) {
                         Text(stringResource(R.string.backup_result, it.imported, it.skipped, it.conflicting),
                             style = MaterialTheme.typography.bodyLarge)
                     }
-                    Button(onClick = { recoveryExport = false; create.launch("just-cal-diary.json") },
+                    Button(onClick = { recoveryExport = false; legacyExport = false; create.launch("just-cal-diary.json") },
                         enabled = !state.busy, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
-                        Text(stringResource(R.string.export_diary), textAlign = TextAlign.Center)
+                        Text(stringResource(R.string.backup_full_export), textAlign = TextAlign.Center)
+                    }
+                    TextButton(onClick = { recoveryExport = false; legacyExport = true; create.launch("just-cal-diary-v1.json") },
+                        enabled = !state.busy, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Text(stringResource(R.string.backup_legacy_export), textAlign = TextAlign.Center)
+                    }
+                    Text(stringResource(R.string.backup_legacy_hint), style = MaterialTheme.typography.bodySmall)
+                    state.result?.let { result ->
+                        fun counts(c: com.justcal.app.data.backup.ImportTypeCounts) = listOf(c.imported, c.skipped, c.conflicting).joinToString("/")
+                        Text(stringResource(R.string.backup_graph_result, counts(result.products), counts(result.revisions), counts(result.links)))
                     }
                     CalTonalButton(onClick = { open.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
                         enabled = !state.busy, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
@@ -103,6 +113,12 @@ fun DiaryBackupScreen(viewModel: DiaryBackupViewModel, onBack: () -> Unit) {
             title = { Text(stringResource(R.string.import_diary)) },
             text = { Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
                 Text(stringResource(R.string.backup_preview, backup.entries.size))
+                Text(stringResource(R.string.backup_graph_counts, backup.products.size, backup.revisions.size, backup.links.size))
+                state.previewCounts?.let { result ->
+                    Text(stringResource(R.string.backup_result, result.imported, result.skipped, result.conflicting))
+                    fun counts(c: com.justcal.app.data.backup.ImportTypeCounts) = listOf(c.imported, c.skipped, c.conflicting).joinToString("/")
+                    Text(stringResource(R.string.backup_graph_result, counts(result.products), counts(result.revisions), counts(result.links)))
+                }
                 Text(stringResource(R.string.backup_merge_hint))
                 TextButton(onClick = { replacementAcknowledged = false; replaceConfirmation = true },
                     enabled = !state.busy) {
@@ -121,6 +137,7 @@ fun DiaryBackupScreen(viewModel: DiaryBackupViewModel, onBack: () -> Unit) {
             title = { Text(stringResource(R.string.replace_all)) },
             text = { Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
                 Text(stringResource(R.string.replace_warning, backup.entries.size))
+                Text(stringResource(if (backup.schemaVersion == 2) R.string.backup_scope_full else R.string.backup_scope_legacy))
                 Row(Modifier.fillMaxWidth().toggleable(value = replacementAcknowledged,
                     enabled = !state.busy, role = Role.Checkbox,
                     onValueChange = { replacementAcknowledged = it })) {

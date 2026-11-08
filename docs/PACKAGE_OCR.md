@@ -100,6 +100,20 @@ confidence participates in nutrition confidence. Raw text remains available.
 OCR probability does not prove factual correctness. Product names use title
 geometry and, for short categories, the explicit culinary product descriptor.
 
+## Matching handoff
+
+FoodMatchEvidenceAdapter reads the existing PackageScanPrefill and optional routed
+RecognitionDraft after recognition. It retains known/missing/uncertain/conflicting and
+AI-recovered fields and the original nutrition basis. Unsupported basis is non-comparable,
+not contradictory numeric evidence. Only explicit existing metadata is eligible; historical
+manufacturer/brand/delivery information is never inferred. OCR net mass remains independent
+of consumed amount; VLM package mass is not used for matching or consumed amount.
+
+The adapter performs no OCR/model calls and does not change PP-OCRv5, Gemma admission,
+image ownership, native lifecycle or preprocessing. Matching and inline comparison remain
+optional in FoodEditor; explicit Save is still the only diary persistence point.
+See [architecture](ARCHITECTURE.md#reusable-foods-and-matching).
+
 ## Native packaging and licensing
 
 Paddle code/model metadata: Apache-2.0; ONNX Runtime: MIT; OpenCV: Apache-2.0 with
