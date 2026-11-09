@@ -18,7 +18,7 @@ import java.util.UUID
 @Serializable
 data class DiaryBackup(
     val format: String = "just-cal-diary",
-    val schemaVersion: Int = 1,
+    val schemaVersion: Int = 2,
     val exportedAtMillis: Long,
     val appVersion: String,
     val entries: List<BackupEntry>,
@@ -72,12 +72,11 @@ object DiaryImportValidator {
     private val decimal = Regex("[0-9]+(\\.[0-9]{1,2})?")
     fun validate(backup: DiaryBackup): DiaryBackup {
         require(backup.format == "just-cal-diary") { "Unsupported diary backup format" }
-        require(backup.schemaVersion in 1..2) { "Unsupported diary backup schema version" }
+        require(backup.schemaVersion == 2) { "Unsupported diary backup schema version; only version 2 is supported" }
         require(backup.exportedAtMillis >= 0 && backup.appVersion.length in 1..128) { "Invalid backup metadata" }
         require(backup.entries.size <= MAX_ENTRIES) { "Too many diary entries" }
         require(backup.products.size <= 10_000 && backup.revisions.size <= 50_000 && backup.links.size <= MAX_ENTRIES) { "Catalog limit exceeded" }
         require(backup.catalogUnits == "hundredths-per100g") { "Unsupported catalog units" }
-        require(backup.schemaVersion == 2 || (backup.products.isEmpty() && backup.revisions.isEmpty() && backup.links.isEmpty())) { "Legacy backup cannot contain catalog data" }
         val ids = HashSet<String>()
         backup.entries.forEachIndexed { index, entry ->
             fun valid(condition: Boolean, field: String) = require(condition) { "Invalid entry ${index + 1}: $field" }
@@ -153,11 +152,12 @@ object DiaryBackupSerializer {
         require(tree.keys.containsAll(listOf("format", "schemaVersion", "exportedAtMillis", "appVersion", "entries"))) {
             "Missing required backup metadata"
         }
-        if (tree["schemaVersion"].toString() == "2") {
-            require(tree.keys.containsAll(listOf("products", "revisions", "links", "catalogUnits"))) { "Missing catalog graph" }
-            require(tree.getValue("products").jsonArray.size <= 10_000 && tree.getValue("revisions").jsonArray.size <= 50_000 &&
-                tree.getValue("links").jsonArray.size <= DiaryImportValidator.MAX_ENTRIES) { "Catalog limit exceeded" }
+        require(tree["schemaVersion"].toString() == "2") {
+            "Unsupported diary backup schema version; only version 2 is supported"
         }
+        require(tree.keys.containsAll(listOf("products", "revisions", "links", "catalogUnits"))) { "Missing catalog graph" }
+        require(tree.getValue("products").jsonArray.size <= 10_000 && tree.getValue("revisions").jsonArray.size <= 50_000 &&
+            tree.getValue("links").jsonArray.size <= DiaryImportValidator.MAX_ENTRIES) { "Catalog limit exceeded" }
         val entries = requireNotNull(tree["entries"]).jsonArray
         require(entries.size <= DiaryImportValidator.MAX_ENTRIES) { "Too many diary entries" }
         entries.forEach {
@@ -167,11 +167,7 @@ object DiaryBackupSerializer {
     }
     fun write(backup: DiaryBackup, output: OutputStream) {
         DiaryImportValidator.validate(backup)
-        val encoded = if (backup.schemaVersion == 1) {
-            val tree = json.parseToJsonElement(json.encodeToString(DiaryBackup.serializer(), backup)).jsonObject
-            json.encodeToString(kotlinx.serialization.json.JsonObject.serializer(),
-                kotlinx.serialization.json.JsonObject(tree.filterKeys { it !in setOf("products", "revisions", "links", "catalogUnits") }))
-        } else json.encodeToString(DiaryBackup.serializer(), backup)
+        val encoded = json.encodeToString(DiaryBackup.serializer(), backup)
         val bytes = encoded.toByteArray(Charsets.UTF_8)
         require(bytes.size <= DiaryImportValidator.MAX_BYTES) { "Backup exceeds self-import limit of 32 MiB" }
         output.write(bytes)

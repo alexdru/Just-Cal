@@ -106,7 +106,6 @@
     <string name="language_russian">Русский</string>
     <string name="nutrition_with_unit">%1$s %2$s</string>
     <string name="ocr_processing">Читаем этикетку…</string>
-    <string name="ocr_confirmation">Проверить значения</string>
     <string name="ocr_review_values">Сверьте все значения с этикеткой. Заполните пустые поля и измените съеденный вес, если съели не всю упаковку.</string>
     <string name="ocr_basis_unknown">Значения на 100 г не удалось определить однозначно. Введите их с этикетки.</string>
     <string name="ocr_confidence">Уверенность распознавания текста: %1$d%%. Это не проверка правильности пищевой ценности.</string>

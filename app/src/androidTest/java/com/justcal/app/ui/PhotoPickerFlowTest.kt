@@ -102,7 +102,8 @@ class PhotoPickerFlowTest {
             click(R.string.use_photo)
             compose.waitUntil(20000) {
                 check(compose.onAllNodesWithText(label(R.string.review_failed)).fetchSemanticsNodes().isEmpty()) { "Real OCR failed on the rendered text fixture" }
-                compose.onAllNodesWithText(label(R.string.ocr_confirmation)).fetchSemanticsNodes().isNotEmpty()
+                compose.onAllNodes(hasText(label(R.string.food_name)) and hasSetTextAction())
+                    .fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()
             }
             val screenshot = automation.takeScreenshot()
             try {

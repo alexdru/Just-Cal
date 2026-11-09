@@ -36,6 +36,7 @@ class DiaryBackupTest {
         assertTrue(DiaryBackupSerializer.read(ByteArrayInputStream(output.toByteArray())).entries.isEmpty())
     }
     @Test fun rejectsUnsupportedVersionsUnitsDuplicateIdsAndInvalidNumbers() {
+        reject(backup().copy(schemaVersion = 1))
         reject(backup().copy(schemaVersion = 3))
         reject(backup().copy(format = "other"))
         reject(backup(listOf(entry(), entry())))
@@ -53,7 +54,7 @@ class DiaryBackupTest {
         val output = ByteArrayOutputStream()
         DiaryBackupSerializer.write(backup(), output)
         val text = output.toString("UTF-8")
-        listOf(""""schemaVersion": 1,""", """"format": "just-cal-diary",""",
+        listOf(""""schemaVersion": 2,""", """"format": "just-cal-diary",""",
             """"consumedUnit": "g",""", """"nutritionBasis": "per100g",""").forEach { field ->
             assertThrows(IllegalArgumentException::class.java) {
                 DiaryBackupSerializer.read(ByteArrayInputStream(text.replace(field, "").toByteArray()))

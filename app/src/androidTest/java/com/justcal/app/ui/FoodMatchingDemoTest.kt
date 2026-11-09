@@ -22,47 +22,37 @@ class FoodMatchingDemoTest {
     private fun activate(id: Int) {
         compose.onNodeWithText(label(id)).performScrollTo().performSemanticsAction(SemanticsActions.OnClick) { it() }
     }
-    @Test fun chooserOpensRealEditorAndSaveStaysInDisposableSession() {
+    @Test fun chooserOpensUnifiedEditorAndSaveStaysInDisposableSession() {
         activate(R.string.match_demo_partial)
-        compose.waitUntil(10000) { compose.onAllNodesWithText(label(R.string.match_use_saved)).fetchSemanticsNodes().isNotEmpty() }
-        val nextBounds = compose.onNodeWithText(label(R.string.match_check_values)).fetchSemanticsNode().boundsInRoot
-        val rootBounds = compose.onRoot().fetchSemanticsNode().boundsInRoot
-        assertTrue("The pinned next action must stay below the content viewport center", nextBounds.top > rootBounds.center.y)
-        compose.onNodeWithText(label(R.string.match_add_product)).assertIsDisplayed()
-        activate(R.string.match_use_saved)
+        compose.waitUntil(10000) { compose.onAllNodesWithText(label(R.string.match_use)).fetchSemanticsNodes().isNotEmpty() }
+        val saveBounds = compose.onNodeWithText(label(R.string.save_food)).fetchSemanticsNode().boundsInRoot
+        val screenCenter = compose.activity.resources.displayMetrics.heightPixels / 2f
+        assertTrue("The pinned Save action must stay below the content viewport center", saveBounds.top > screenCenter)
+        compose.onNodeWithText(label(R.string.add_food)).assertIsDisplayed()
+        compose.onAllNodesWithText(label(R.string.match_use)).onFirst()
+            .performScrollTo().performSemanticsAction(SemanticsActions.OnClick) { it() }
         compose.onNode(hasText(label(R.string.amount)) and hasSetTextAction())
             .performScrollTo().performTextReplacement("37.51")
-        compose.onNodeWithText(label(R.string.save_food)).assertDoesNotExist()
-        compose.onNodeWithText(label(R.string.match_check_values)).performSemanticsAction(SemanticsActions.OnClick) { it() }
-        compose.onNodeWithText(label(R.string.match_previous_foods)).assertDoesNotExist()
         compose.onNode(hasText(label(R.string.amount)) and hasSetTextAction()).assertTextContains("37.51")
-        androidx.test.espresso.Espresso.pressBack()
-        compose.onNodeWithText(label(R.string.match_selected)).assertExists()
-        compose.onNodeWithText(label(R.string.match_check_values)).assertExists()
-        compose.onNode(hasText(label(R.string.amount)) and hasSetTextAction()).assertTextContains("37.51")
-        compose.onNodeWithText(label(R.string.match_check_values)).performSemanticsAction(SemanticsActions.OnClick) { it() }
         compose.onNodeWithText(label(R.string.save_food)).performSemanticsAction(SemanticsActions.OnClick) { it() }
         compose.waitUntil(10000) { compose.onAllNodesWithText(label(R.string.match_demo_saved)).fetchSemanticsNodes().isNotEmpty() }
         activate(R.string.match_demo_back)
         compose.waitUntil(5000) { compose.onAllNodesWithText(label(R.string.match_demo_conflict)).fetchSemanticsNodes().isNotEmpty() }
         activate(R.string.match_demo_conflict)
-        compose.waitUntil(10000) { compose.onAllNodesWithText(label(R.string.match_use_saved)).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(10000) { compose.onAllNodesWithText(label(R.string.match_use)).fetchSemanticsNodes().isNotEmpty() }
         compose.onNode(hasText(label(R.string.match_conflicting), substring = true)).assertExists()
     }
-    @Test fun verificationPageAndManualDraftSurviveActivityRecreation() {
+    @Test fun unifiedEditorAndManualDraftSurviveActivityRecreation() {
         val scenario = androidx.test.core.app.ActivityScenario.launch<FoodMatchingDemoActivity>(
             android.content.Intent(compose.activity, FoodMatchingDemoActivity::class.java).putExtra("scenario", 3))
         try {
-            compose.waitUntil(10000) { compose.onAllNodesWithText(label(R.string.match_use_saved)).fetchSemanticsNodes().isNotEmpty() }
-            compose.onNodeWithText(label(R.string.match_check_values)).performSemanticsAction(SemanticsActions.OnClick) { it() }
-            compose.onNode(hasText(label(R.string.energy)) and hasSetTextAction()).assertTextContains("222")
-            scenario.recreate()
             compose.waitUntil(10000) { compose.onAllNodesWithText(label(R.string.save_food)).fetchSemanticsNodes().isNotEmpty() }
-            compose.onNodeWithText(label(R.string.match_previous_foods)).assertDoesNotExist()
             compose.onNode(hasText(label(R.string.energy)) and hasSetTextAction()).assertTextContains("222")
             compose.onNode(hasText(label(R.string.amount)) and hasSetTextAction()).assertTextContains("37,51")
-            androidx.test.espresso.Espresso.pressBack()
-            compose.onNodeWithText(label(R.string.match_check_values)).assertExists()
+            scenario.recreate()
+            compose.waitUntil(10000) { compose.onAllNodesWithText(label(R.string.save_food)).fetchSemanticsNodes().isNotEmpty() }
+                compose.onNode(hasText(label(R.string.energy)) and hasSetTextAction()).assertTextContains("222")
+            compose.onNode(hasText(label(R.string.amount)) and hasSetTextAction()).assertTextContains("37,51")
         } finally { scenario.close() }
     }
     @Test fun separateSessionsStartWithOnlyFixtures() = runBlocking {

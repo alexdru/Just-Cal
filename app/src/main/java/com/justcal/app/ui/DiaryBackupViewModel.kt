@@ -24,6 +24,7 @@ data class DiaryBackupState(
     val previewCounts: DiaryImportResult? = null,
     val result: DiaryImportResult? = null,
     val error: Boolean = false,
+    val unsupportedFormat: Boolean = false,
     val exported: Boolean = false,
     val recoveryAvailable: Boolean = false,
 )
@@ -51,9 +52,9 @@ class DiaryBackupViewModel @Inject constructor(
         mutableState.update { it.copy(preview = backup, previewCounts = counts) }
     }
 
-    fun export(uri: Uri, recovery: Boolean = false, legacy: Boolean = false) = work {
+    fun export(uri: Uri, recovery: Boolean = false) = work {
         requireNotNull(context.contentResolver.openOutputStream(uri, "wt")).use {
-            if (recovery) repository.exportRecovery(it) else repository.export(it, legacy)
+            if (recovery) repository.exportRecovery(it) else repository.export(it)
         }
         mutableState.update { it.copy(exported = true) }
     }
@@ -69,12 +70,16 @@ class DiaryBackupViewModel @Inject constructor(
 
     private fun work(block: suspend () -> Unit) {
         if (state.value.busy) return
-        mutableState.update { it.copy(busy = true, error = false, result = null, exported = false) }
+        mutableState.update { it.copy(busy = true, error = false, unsupportedFormat = false, result = null, exported = false) }
         viewModelScope.launch {
             try { withContext(Dispatchers.IO) { block() } }
             catch (error: Exception) {
                 if (error is CancellationException) throw error
-                mutableState.update { it.copy(error = true) }
+                mutableState.update { it.copy(
+                    error = true,
+                    unsupportedFormat = error is IllegalArgumentException &&
+                        error.message.orEmpty().startsWith("Unsupported diary backup"),
+                ) }
             } finally { mutableState.update { it.copy(busy = false) } }
         }
     }

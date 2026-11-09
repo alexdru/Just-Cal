@@ -49,10 +49,10 @@ class CatalogBackupPersistenceTest {
             assertEquals(1, conflict.links.conflicting)
             assertFalse(db.foodCatalogDao().products().single().archived)
 
-            // V1 replacement retains catalog but drops old consumption links.
+            // The only supported replacement scope is the complete v2 diary/catalog graph.
             repo.importBackup(DiaryBackup(exportedAtMillis = 1, appVersion = "test", entries = emptyList()), true)
             assertTrue(db.diaryDao().getAll().isEmpty())
-            assertEquals(1, db.foodCatalogDao().products().size)
+            assertTrue(db.foodCatalogDao().products().isEmpty())
             assertTrue(db.foodCatalogDao().links().isEmpty())
             val recoveryOut = ByteArrayOutputStream()
             repo.exportRecovery(recoveryOut)

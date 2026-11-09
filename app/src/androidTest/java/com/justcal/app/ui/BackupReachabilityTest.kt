@@ -42,7 +42,6 @@ class BackupReachabilityTest {
             val export = compose.onNodeWithText(base.getString(R.string.backup_full_export))
             val import = compose.onNodeWithText(base.getString(R.string.import_diary))
             export.performScrollTo().assertIsDisplayed()
-            compose.onNodeWithText(base.getString(R.string.backup_legacy_export)).performScrollTo().assertIsDisplayed()
             import.performScrollTo().assertIsDisplayed()
             val viewport = compose.onNodeWithTag("backup_scroll").fetchSemanticsNode().boundsInRoot
             val actions = compose.onNodeWithTag("backup_actions").fetchSemanticsNode().boundsInRoot

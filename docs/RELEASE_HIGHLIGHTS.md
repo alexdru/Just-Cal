@@ -1,12 +1,12 @@
-# v0.23.0
+# v0.24.0
 
-- Debug builds offer an isolated Smart Food Matching demo with four interactive scenarios.
+- Review scan values, saved-food suggestions and the final diary Save in one unified Food Editor.
   Evidence: THIS_COMMIT
-- Compare scans on a dedicated food matching screen, then review editable values before saving to the diary.
+- Reuse a familiar product in one action, with optional comparison and one-step restore.
   Evidence: THIS_COMMIT
-- Apply saved nutrition explicitly, restore scan or previous values, and preserve the eaten amount and diary date.
+- Preserve manual corrections behind a focused overwrite confirmation and keep amount and date unchanged.
   Evidence: THIS_COMMIT
-- Remember reusable products with immutable nutrition versions, explicit history promotion, archive and forget actions.
+- Keep rare product versions, identity retention, archive and forget actions behind contextual controls.
   Evidence: THIS_COMMIT
-- Export and recover the complete diary and food catalog, with legacy diary-only export and v1 import support.
+- Export, merge, replace and recover the complete diary/catalog graph through backup format v2 only.
   Evidence: THIS_COMMIT

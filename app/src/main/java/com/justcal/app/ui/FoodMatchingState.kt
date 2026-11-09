@@ -14,7 +14,7 @@ data class MatchMemory(
     val dirty: Set<FoodField> = emptySet(), val association: ProductRevision? = null,
     val fromHistory: Boolean = false, val retention: Retention = Retention.DIARY_ONLY,
     val undo: MatchUndo? = null, val inspectedKey: String? = null,
-    val details: ProductDetails = ProductDetails(), val collapsed: Boolean = false,
+    val details: ProductDetails = ProductDetails(),
     val origin: String = "SCAN_OR_MANUAL", val searchName: String? = null, val detailsDirty: Boolean = false,
 )
 fun MatchMemory.effectiveRetention(draft: FoodDraft, unavailable: Boolean): Retention {
@@ -36,5 +36,5 @@ data class FoodMatchingState(
     val unavailable: Boolean = false, val pending: String? = null,
     val duplicates: List<FoodCandidate> = emptyList(), val showAll: Boolean = false,
     val alternateOffset: Int = 0, val moreVersions: Boolean = true,
-    val alternateVersions: List<FoodCandidate> = emptyList(),
+    val alternateVersions: List<FoodCandidate> = emptyList(), val comparisonOpen: Boolean = false,
 )

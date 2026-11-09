@@ -25,16 +25,16 @@ class DiaryBackupRepository @Inject constructor(
     private val database: DiaryDatabase, @ApplicationContext private val context: Context,
 ) {
     private val recovery get() = File(context.noBackupFilesDir, "diary-recovery.json")
-    private suspend fun snapshot(legacy: Boolean = false): DiaryBackup {
+    private suspend fun snapshot(): DiaryBackup {
         val catalog = database.foodCatalogDao()
-        return DiaryBackup(schemaVersion = if (legacy) 1 else 2, exportedAtMillis = System.currentTimeMillis(),
+        return DiaryBackup(schemaVersion = 2, exportedAtMillis = System.currentTimeMillis(),
             appVersion = BuildConfig.VERSION_NAME, entries = database.diaryDao().getAll().map(BackupEntry::from),
-            products = if (legacy) emptyList() else catalog.products().map { it.domain() },
-            revisions = if (legacy) emptyList() else catalog.allRevisions().map { it.domain() },
-            links = if (legacy) emptyList() else catalog.links().map { it.domain() })
+            products = catalog.products().map { it.domain() },
+            revisions = catalog.allRevisions().map { it.domain() },
+            links = catalog.links().map { it.domain() })
     }
-    suspend fun export(output: OutputStream, legacy: Boolean = false) = withContext(Dispatchers.IO) {
-        DiaryBackupSerializer.write(database.withTransaction { snapshot(legacy) }, output)
+    suspend fun export(output: OutputStream) = withContext(Dispatchers.IO) {
+        DiaryBackupSerializer.write(database.withTransaction { snapshot() }, output)
     }
     suspend fun preview(input: InputStream): DiaryBackup = withContext(Dispatchers.IO) { DiaryBackupSerializer.read(input) }
     suspend fun recoveryAvailable(): Boolean = withContext(Dispatchers.IO) { recovery.isFile }
@@ -63,7 +63,7 @@ class DiaryBackupRepository @Inject constructor(
                 writeRecovery()
                 catalog.deleteLinks()
                 diary.deleteAll()
-                if (backup.schemaVersion == 2) catalog.deleteProducts()
+                catalog.deleteProducts()
             }
             val existing = diary.getAll().associateBy { it.portableId }
             val existingProducts = catalog.products().associateBy { it.id }

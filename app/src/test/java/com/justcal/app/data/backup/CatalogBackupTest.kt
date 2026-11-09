@@ -14,14 +14,10 @@ class CatalogBackupTest {
         protein = 100, fat = 200, carbs = 300, savedAtMillis = 1)
     private fun backup() = DiaryBackup(schemaVersion = 2, exportedAtMillis = 1, appVersion = "test",
         entries = emptyList(), products = listOf(product), revisions = listOf(revision))
-    @Test fun graphRoundTripAndLegacyHasNoNewFields() {
+    @Test fun fullGraphRoundTrips() {
         val out = ByteArrayOutputStream()
         DiaryBackupSerializer.write(backup(), out)
         assertEquals(backup(), DiaryBackupSerializer.read(ByteArrayInputStream(out.toByteArray())))
-        val legacy = ByteArrayOutputStream()
-        DiaryBackupSerializer.write(backup().copy(schemaVersion = 1, products = emptyList(), revisions = emptyList()), legacy)
-        assertFalse(legacy.toString("UTF-8").contains("catalogUnits"))
-        assertFalse(legacy.toString("UTF-8").contains("products"))
     }
     @Test fun missingReferencesCyclesAndCrossProductParentsAreRejected() {
         val original = backup()

@@ -32,7 +32,7 @@ the same ID. Row date changes use a single day-only UPDATE. Duplication transact
 copies persisted data with a new ID/UUID/timestamp, preserving source and unsaved
 editor work. Calendar milliseconds use UTC; chosen dates remain local calendar days.
 
-[Backup formats 1 and 2](DATA_BACKUP.md) preserve portable identity; v2 also carries the catalog graph. Full validation and
+[Backup format 2](DATA_BACKUP.md) preserves portable identity and the complete catalog graph. Older JSON backup versions are rejected before preview or database work. Full validation and
 preview precede transactional merge; conflicts leave existing data untouched.
 Explicit replacement fsyncs an atomic private recovery snapshot before deletion.
 Models, diagnostics, photographs and settings are excluded. No destructive migration.
@@ -62,7 +62,7 @@ Retrieval queries token postings before capped prefix/length fuzzy variants (50 
 Nutrition range postings can retrieve candidates from two known nonzero nutrients. Candidates
 are capped at 200 total, initially reserving 100 per source; unused capacity is filled.
 Revision/history hydration is batched. Distinct products show their best retrieved revision,
-while different historical recipes stay separate. UI shows three candidates, expandable to
+while different historical recipes stay separate. UI shows two candidates, expandable to
 five; alternate immutable versions are fetched in pages of 20. Caps and incomplete indexing
 are disclosed; fuzzy prefix retrieval can miss first-letter OCR errors. Editable name/details
 and explicit Refresh provide recovery.
@@ -83,26 +83,22 @@ These are unvalidated ranking heuristics, not measured population accuracy.
 
 The existing EditorViewModel owns editable fields, manual dirty flags, association,
 inspection, retention intent and one SavedStateHandle undo snapshot. Inspection is read-only.
-Apply/scan restore/undo change only name and four nutrients after inline confirmation when
-manual changes differ. Amount text and date are preserved exactly. Undo is consumed rather
+Apply/undo change only name and four nutrients after a focused confirmation when manual
+changes differ. Amount text and date are preserved exactly. Undo is consumed rather
 than swapped. Pending prompts are dropped on recreation. Matching uses immutable scan
 evidence plus explicitly edited search identity, never copied candidate nutrition; changes
 to name/details debounce 400 ms with latest-job cancellation. Expanded/applied results stay
 stable until Refresh. Failures cannot block manual entry. No inference call is added.
 
-FoodEditor hosts two retained Navigation 3 child pages with one parent EditorViewModel.
-Package scans start on Smart Food Matching: recognition summary, expandable candidates,
-adaptive OCR/saved comparison and explicit source selection, current draft status and amount.
-Check values contains the editable fields, retention controls, evidence and sole diary Save.
-Manual/existing entries start on Check values and can open matching explicitly. Page changes
-clear focus/pending prompts, preserve the exact draft/amount/date, and never persist anything.
-Native/predictive Back and Activity recreation retain child page/scroll state. Matching rows
-can collapse without undoing an explicit application. Both pages use semantic M3/CalMotion
-and content clearance behind transparent pinned controls. The screen split was verified with
-200 unit and 12 focused connected tests, including navigation, exact amount preservation,
-manual draft/page restoration after Activity recreation and bottom-action placement. Debug
-assembly, lint and release/ocrCheck Kotlin compilation pass. HD1900/API 30 walkthroughs used
-synthetic demo data; predictive-gesture previews on newer Android versions remain unverified.
+FoodEditor is one Navigation 3 destination with one EditorViewModel draft. Recognition evidence,
+contextual saved-food suggestions, editable nutrition, consumed amount, retention and the sole
+diary Save share one continuous edge-to-edge editor. No-match scans render no matching section.
+Candidate rows expose one direct Use action; tapping the row opens an optional comparison sheet.
+Applying a candidate never persists and collapses to a compact status with one-level Undo.
+Only an overwrite of manual corrections asks for confirmation. Duplicate catalog identities are
+resolved at Save in one focused dialog. Rare revision/archive/forget and identity-retention choices
+stay behind contextual disclosure. Native/predictive Back exits the editor once while Activity
+recreation retains draft, amount, date, association and undo through the parent SavedStateHandle.
 
 New package scans default Remember for reuse on. Copying historical values switches retention
 off until explicit promotion. Changed applied fields default to diary-only; new revision or
@@ -115,18 +111,22 @@ label catalog/history substitutions separately from later manual corrections.
 Device evidence uses synthetic scan evidence and isolated Room databases. EN/light and
 RU/dark comparison screenshots cover narrow layouts and 100/150% font sizes. Permissioned
 real scan/history walkthroughs, full spoken TalkBack, larger-window/dynamic-color and
-additional-device validation remain open. Initial latency is measured by
-FoodMatchingPerformanceTest on HD1900/API 30, debug in-memory Room, with 10k products and
-3k history rows: cold projection construction 14,123 ms; 20 warm requests had median 565 ms,
-p95 614 ms and maximum 615 ms (median retrieval 340 ms, scoring 226 ms). Batched hydration
-and indexed revision lookup reduced an earlier 3,006 ms median, but the 100 ms warm p95
-remains unmet. These synthetic debug measurements do not establish release-device latency
-or matching accuracy. Current verification: 200 unit tests, 27 selected connected tests,
-debug assembly and lint; connected tests include migrations, full backup recovery, editor
-state/actions and bundled OCR on synthetic RU/EN pixels.
+additional-device validation remain open. FoodMatchingPerformanceTest on HD1900/API 30,
+debug in-memory Room, with 10k products and 3k history rows measured cold history projection
+at 13,514 ms; 20 warm requests had median 485 ms, p95 562 ms and maximum 563 ms
+(median candidate retrieval 317 ms, matching/ranking 187 ms). A separate debug frame sample
+opening and closing the comparison sheet had p50 6 ms, p90 14 ms and p95 18 ms; it is not a
+release benchmark. History preparation now refreshes suggestions after the first batch, every
+tenth batch and completion instead of starting a competing search after every 100-row batch;
+matching stays cancellable/off-main and never disables editing or Save. Batched hydration and
+indexed revision lookup reduced an earlier 3,006 ms median, but the 100 ms warm p95 remains
+unmet. These synthetic debug measurements do not establish release-device latency or matching
+accuracy. Current verification: 200 unit tests and the full connected suite on HD1900/API 30
+(122 passed, 16 explicit opt-in tests skipped); connected tests include migrations, full backup
+recovery, editor state/actions, recreation and bundled OCR on synthetic RU/EN pixels.
 
 Debug Settings also exposes Smart Food Matching — demo via a debug-source-set Activity.
-Four synthetic scenarios use the production EditorViewModel, matcher and Room repositories:
+Four synthetic scenarios use the production unified Food Editor, EditorViewModel, matcher and Room repositories:
 incomplete OCR, conflicting nutrition, diary history and manual edits/undo. Each scenario
 editor owns a fresh in-memory database; Save/Archive/Forget affect only that database.
 Activity recreation retains the session and editor draft; leaving the editor cancels/joins

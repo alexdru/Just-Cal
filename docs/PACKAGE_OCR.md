@@ -5,7 +5,8 @@ Persistent local content diagnostics, measured scan history and structured local
 ## Production flow and boundary
 
 Scan package → CameraX / Photo Picker → Photo Review → Use photo → local OCR →
-deterministic parsing → existing editable FoodEditor → explicit Add to diary.
+deterministic parsing → one editable FoodEditor with contextual saved-food suggestions →
+explicit Add to diary.
 The selected diary date is retained. No OCR result writes Room automatically.
 Repeated submission is guarded by editor busy/completed state. Every field can be
 corrected; missing or uncertain values remain empty and normal FoodValidator rules

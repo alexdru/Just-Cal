@@ -4,7 +4,7 @@ The approved review-only architecture is implemented. This document is no longer
 implementation plan. Maintained contracts now live in:
 
 - [Architecture and matching behavior](ARCHITECTURE.md#reusable-foods-and-matching)
-- [Portable backup formats and recovery](DATA_BACKUP.md)
+- [Portable backup format and recovery](DATA_BACKUP.md)
 - [OCR matching handoff](PACKAGE_OCR.md#matching-handoff)
 
 The implementation deliberately has no Likely classification, automatic replacement,

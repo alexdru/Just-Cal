@@ -57,7 +57,7 @@ class FoodMatchingEditorTest {
     private fun vm(catalog: Catalog, handle: SavedStateHandle = SavedStateHandle()) =
         EditorViewModel(Diary(), handle, Clock.systemUTC(), null, 1234, scan(), catalog = catalog)
 
-    @Test fun alternateVersionsPageBothWaysAndResetForAnotherProduct() = runTest(dispatcher) {
+    @Test fun alternateVersionsLoadForwardAndResetForAnotherProduct() = runTest(dispatcher) {
         val c = catalog()
         c.rows["R:b"] = FoodCandidate("R:b", b.copy(productId = "different"))
         c.versionRows = (0..44).map { FoodCandidate("R:version$it", a.copy(id = "version$it")) }
@@ -69,8 +69,6 @@ class FoodMatchingEditorTest {
         assertEquals("version20", vm.state.value.matching.alternateVersions.first().revision.id)
         vm.alternateVersions(); advanceUntilIdle()
         assertEquals(5, vm.state.value.matching.alternateVersions.size)
-        vm.previousVersions(); advanceUntilIdle()
-        assertEquals("version20", vm.state.value.matching.alternateVersions.first().revision.id)
         vm.inspectMatch("R:b"); advanceUntilIdle()
         assertEquals(0, vm.state.value.matching.alternateOffset)
         assertTrue(vm.state.value.matching.alternateVersions.isEmpty())
@@ -189,8 +187,6 @@ class FoodMatchingEditorTest {
         assertEquals(Retention.DIARY_ONLY, vm.effectiveRetention())
         vm.setRetention(Retention.NEW_REVISION)
         assertEquals(Retention.NEW_REVISION, vm.effectiveRetention())
-        vm.continueWithoutMatching()
         assertEquals("6", vm.state.value.draft.fat)
-        assertTrue(vm.state.value.matching.memory.collapsed)
     }
 }

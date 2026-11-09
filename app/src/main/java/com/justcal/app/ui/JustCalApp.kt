@@ -306,7 +306,8 @@ fun JustCalApp(splashVisible: Boolean = false) {
                                 claimInitialFocus = viewModel::claimInitialFocus,
                                 onChangeDate = viewModel::changeDate, onDuplicate = viewModel::duplicate,
                                 onMatchAction = viewModel::matchingAction, onInspectMatch = viewModel::inspectMatch,
-                                onReuseMatch = viewModel::reuseDuplicate, onRetention = viewModel::setRetention,
+                                onSelectMatch = viewModel::selectMatch, onReuseMatch = viewModel::reuseDuplicate,
+                                onRetention = viewModel::setRetention,
                                 onProductDetails = viewModel::changeProductDetails)
                         }
                     },

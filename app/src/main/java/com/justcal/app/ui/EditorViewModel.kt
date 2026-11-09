@@ -56,6 +56,7 @@ class EditorViewModel @AssistedInject constructor(
     private var indexingJob: Job? = null
     private var searchGeneration = 0
     private var lastQuery: String? = null
+    private val matchJson = Json { ignoreUnknownKeys = true }
     private fun restoredDraft(base: FoodDraft = recognition?.draft() ?: scan?.recognition?.draft() ?: scan?.label?.draft() ?: FoodDraft()) = FoodField.entries.fold(base) { draft, field ->
         draft.with(field, savedState[field.name] ?: draft.value(field))
     }
@@ -202,10 +203,10 @@ class EditorViewModel @AssistedInject constructor(
 
     private val originalScan get() = recognition?.draft() ?: scan?.recognition?.draft() ?: scan?.label?.draft()
     private fun restoreMatchMemory(): MatchMemory =
-        savedState.get<String>("matchMemory")?.let { runCatching { Json.decodeFromString<MatchMemory>(it) }.getOrNull() }
+        savedState.get<String>("matchMemory")?.let { runCatching { matchJson.decodeFromString<MatchMemory>(it) }.getOrNull() }
             ?: MatchMemory(retention = if (entryId == null && scan != null) Retention.NEW_PRODUCT else Retention.DIARY_ONLY)
     private fun rememberMatch(memory: MatchMemory) {
-        savedState["matchMemory"] = Json.encodeToString(MatchMemory.serializer(), memory)
+        savedState["matchMemory"] = matchJson.encodeToString(MatchMemory.serializer(), memory)
         mutableState.update { it.copy(matching = it.matching.copy(memory = memory)) }
     }
     private fun reservedUuid(key: String): String = savedState.get<String>(key) ?: java.util.UUID.randomUUID().toString().also { savedState[key] = it }
@@ -216,12 +217,15 @@ class EditorViewModel @AssistedInject constructor(
         indexingJob?.cancel()
         indexingJob = viewModelScope.launch {
             try {
+                var batch = 0
                 do {
                     val more = catalog.buildHistoryBatch()
+                    batch++
                     mutableState.update { it.copy(matching = it.matching.copy(indexing = more)) }
-                    if (state.value.matching.memory.inspectedKey == null && state.value.matching.memory.association == null)
-                        refreshMatching()
-                    else mutableState.update { it.copy(matching = it.matching.copy(stale = true)) }
+                    if (state.value.matching.memory.inspectedKey == null && state.value.matching.memory.association == null) {
+                        // Make early history useful, then avoid repeatedly contending with editing for every 100-row batch.
+                        if (batch == 1 || !more || batch % 10 == 0) refreshMatching()
+                    } else mutableState.update { it.copy(matching = it.matching.copy(stale = true)) }
                     if (more) delay(kotlin.time.Duration.parse("16ms"))
                 } while (more)
             } catch (error: Exception) {
@@ -276,8 +280,8 @@ class EditorViewModel @AssistedInject constructor(
         if (state.value.busy) return
         searchGeneration++
         searchJob?.cancel()
-        mutableState.update { it.copy(matching = it.matching.copy(searching = false, pending = null)) }
-        rememberMatch(state.value.matching.memory.copy(inspectedKey = key, collapsed = false))
+        mutableState.update { it.copy(matching = it.matching.copy(searching = false, pending = null, comparisonOpen = true)) }
+        rememberMatch(state.value.matching.memory.copy(inspectedKey = key))
         val priorProduct = state.value.matching.inspected?.revision?.productId
         viewModelScope.launch {
             val candidate = try { catalog?.candidate(key) } catch (error: Exception) {
@@ -291,16 +295,32 @@ class EditorViewModel @AssistedInject constructor(
                     moreVersions = if (priorProduct == candidate?.revision?.productId) it.matching.moreVersions else true)) }
         }
     }
+    fun selectMatch(key: String) {
+        if (state.value.busy) return
+        searchGeneration++
+        searchJob?.cancel()
+        viewModelScope.launch {
+            val candidate = try { catalog?.candidate(key) } catch (error: Exception) {
+                if (error is CancellationException) throw error
+                null
+            } ?: return@launch
+            rememberMatch(state.value.matching.memory.copy(inspectedKey = key))
+            mutableState.update { it.copy(matching = it.matching.copy(
+                inspected = candidate, pending = null, comparisonOpen = false,
+            )) }
+            requestReplacement("candidate")
+        }
+    }
     fun matchingAction(action: String) {
         when (action) {
-            "expand" -> expandMatching(); "continue" -> continueWithoutMatching()
             "collapse" -> { rememberMatch(state.value.matching.memory.copy(inspectedKey = null))
-                mutableState.update { it.copy(matching = it.matching.copy(inspected = null, pending = null)) } }
+                mutableState.update { it.copy(matching = it.matching.copy(inspected = null, pending = null, comparisonOpen = false)) } }
             "apply" -> applyMatch(); "scan" -> useCurrentScan(); "undo" -> restorePrevious()
             "confirm" -> confirmReplacement(); "cancel" -> cancelReplacement()
             "refresh" -> refreshMatching(); "more" -> showMoreMatches(); "versions" -> alternateVersions()
-            "archive" -> archiveInspected(); "forget" -> forgetInspected(); "previous_versions" -> previousVersions()
+            "archive" -> archiveInspected(); "forget" -> forgetInspected()
             "separate" -> keepSeparateProduct(); "diary" -> saveDiaryOnly()
+            "cancel_duplicates" -> mutableState.update { it.copy(matching = it.matching.copy(duplicates = emptyList())) }
         }
     }
     fun applyMatch() = requestReplacement("candidate")
@@ -354,16 +374,11 @@ class EditorViewModel @AssistedInject constructor(
         var draft = current
         FoodField.entries.take(5).forEach { field -> draft = draft.with(field, target[field.ordinal]); savedState[field.name] = target[field.ordinal] }
         savedState["hasDraft"] = true
-        rememberMatch(next)
+        rememberMatch(next.copy(inspectedKey = null))
         mutableState.update { it.copy(draft = draft, errors = it.errors.filterKeys { key -> key == FoodField.AMOUNT },
-            matching = it.matching.copy(pending = null)) }
+            matching = it.matching.copy(pending = null, inspected = null, comparisonOpen = false)) }
         updatePreview()
     }
-    fun continueWithoutMatching() {
-        rememberMatch(state.value.matching.memory.copy(collapsed = true))
-        cancelReplacement()
-    }
-    fun expandMatching() = rememberMatch(state.value.matching.memory.copy(collapsed = false))
     fun changeProductDetails(details: ProductDetails) {
         if (state.value.busy) return
         rememberMatch(state.value.matching.memory.copy(details = details, detailsDirty = true))
@@ -425,17 +440,17 @@ class EditorViewModel @AssistedInject constructor(
     }
     private fun manageProduct(operation: suspend () -> Unit) {
         if (state.value.busy) return
-        viewModelScope.launch { try { operation(); startMatching() } catch (error: Exception) {
+        viewModelScope.launch { try {
+            operation()
+            rememberMatch(state.value.matching.memory.copy(inspectedKey = null))
+            mutableState.update { it.copy(matching = it.matching.copy(inspected = null, comparisonOpen = false)) }
+            startMatching()
+        } catch (error: Exception) {
             if (error is CancellationException) throw error
             mutableState.update { it.copy(matching = it.matching.copy(error = true)) }
         } }
     }
     fun showMoreMatches() { mutableState.update { it.copy(matching = it.matching.copy(showAll = true)) } }
-    fun previousVersions() {
-        mutableState.update { it.copy(matching = it.matching.copy(alternateOffset =
-            (it.matching.alternateOffset - it.matching.alternateVersions.size - 20).coerceAtLeast(0))) }
-        alternateVersions()
-    }
     fun alternateVersions() {
         if (state.value.busy) return
         val r = state.value.matching.inspected?.takeIf { it.historyEntryUuid == null }?.revision ?: return

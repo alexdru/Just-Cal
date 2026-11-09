@@ -29,12 +29,11 @@ import com.justcal.app.ui.theme.CalSpacing
 @Composable
 fun DiaryBackupScreen(viewModel: DiaryBackupViewModel, onBack: () -> Unit) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    var legacyExport by rememberSaveable { mutableStateOf(false) }
     var recoveryExport by rememberSaveable { mutableStateOf(false) }
     var replaceConfirmation by rememberSaveable { mutableStateOf(false) }
     var replacementAcknowledged by rememberSaveable { mutableStateOf(false) }
     val create = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) {
-        it?.let { uri -> viewModel.export(uri, recoveryExport, legacyExport) }
+        it?.let { uri -> viewModel.export(uri, recoveryExport) }
     }
     val open = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
         it?.let(viewModel::preview)
@@ -69,7 +68,10 @@ fun DiaryBackupScreen(viewModel: DiaryBackupViewModel, onBack: () -> Unit) {
                 Column(Modifier.fillMaxWidth().testTag("backup_actions"),
                     verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                     AnimatedVisibility(state.busy, enter = CalMotion.enter(), exit = CalMotion.exit()) { CalWorkProgressRow() }
-                    if (state.error) Text(stringResource(R.string.backup_error), color = MaterialTheme.colorScheme.error)
+                    if (state.error) Text(
+                        stringResource(if (state.unsupportedFormat) R.string.backup_unsupported else R.string.backup_error),
+                        color = MaterialTheme.colorScheme.error,
+                    )
                     AnimatedVisibility(state.exported, enter = CalMotion.enter(), exit = CalMotion.exit()) {
                         Text(stringResource(R.string.backup_exported), style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.primary)
@@ -78,15 +80,10 @@ fun DiaryBackupScreen(viewModel: DiaryBackupViewModel, onBack: () -> Unit) {
                         Text(stringResource(R.string.backup_result, it.imported, it.skipped, it.conflicting),
                             style = MaterialTheme.typography.bodyLarge)
                     }
-                    Button(onClick = { recoveryExport = false; legacyExport = false; create.launch("just-cal-diary.json") },
+                    Button(onClick = { recoveryExport = false; create.launch("just-cal-diary.json") },
                         enabled = !state.busy, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
                         Text(stringResource(R.string.backup_full_export), textAlign = TextAlign.Center)
                     }
-                    TextButton(onClick = { recoveryExport = false; legacyExport = true; create.launch("just-cal-diary-v1.json") },
-                        enabled = !state.busy, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                        Text(stringResource(R.string.backup_legacy_export), textAlign = TextAlign.Center)
-                    }
-                    Text(stringResource(R.string.backup_legacy_hint), style = MaterialTheme.typography.bodySmall)
                     state.result?.let { result ->
                         fun counts(c: com.justcal.app.data.backup.ImportTypeCounts) = listOf(c.imported, c.skipped, c.conflicting).joinToString("/")
                         Text(stringResource(R.string.backup_graph_result, counts(result.products), counts(result.revisions), counts(result.links)))
@@ -137,7 +134,7 @@ fun DiaryBackupScreen(viewModel: DiaryBackupViewModel, onBack: () -> Unit) {
             title = { Text(stringResource(R.string.replace_all)) },
             text = { Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.small)) {
                 Text(stringResource(R.string.replace_warning, backup.entries.size))
-                Text(stringResource(if (backup.schemaVersion == 2) R.string.backup_scope_full else R.string.backup_scope_legacy))
+                Text(stringResource(R.string.backup_scope_full))
                 Row(Modifier.fillMaxWidth().toggleable(value = replacementAcknowledged,
                     enabled = !state.busy, role = Role.Checkbox,
                     onValueChange = { replacementAcknowledged = it })) {

@@ -30,6 +30,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
 import com.justcal.app.ocr.PackageScanPrefill
+import com.justcal.app.ocr.matchEvidence
 import com.justcal.app.domain.Retention
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -50,9 +51,9 @@ internal fun CheckFoodScreen(
     onSave: () -> Unit, onDelete: () -> Unit, onBack: () -> Unit, onRetry: () -> Unit,
     scan: PackageScanPrefill? = null, claimInitialFocus: () -> Boolean = { false },
     onChangeDate: (Long) -> Unit = {}, onDuplicate: (Long) -> Unit = {},
-    onMatchAction: (String) -> Unit = {}, onReuseMatch: (String) -> Unit = {},
+    onMatchAction: (String) -> Unit = {}, onInspectMatch: (String) -> Unit = {},
+    onSelectMatch: (String) -> Unit = {}, onReuseMatch: (String) -> Unit = {},
     onRetention: (Retention) -> Unit = {}, onProductDetails: (ProductDetails) -> Unit = {},
-    onMatching: () -> Unit = {},
 ) {
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
     var actions by rememberSaveable { mutableStateOf(false) }
@@ -92,7 +93,7 @@ internal fun CheckFoodScreen(
                 if (!compactIme) TopAppBar(
                     title = {
                         Column {
-                            Text(stringResource(if (editing) R.string.edit_food else if (scan != null) R.string.ocr_confirmation else R.string.add_food), style = MaterialTheme.typography.titleLarge)
+                            Text(stringResource(if (editing) R.string.edit_food else R.string.add_food), style = MaterialTheme.typography.titleLarge)
                             state.dayEpoch?.let {
                                 val locale = LocalConfiguration.current.locales[0]
                                 Text(java.time.LocalDate.ofEpochDay(it).format(
@@ -175,6 +176,13 @@ internal fun CheckFoodScreen(
                             onNext = { FoodField.entries.getOrNull(field.ordinal + 1)?.let { fieldFocus.getValue(it).requestFocus() } })
                     }
                     scan?.let { PackageRecognitionSummary(it) }
+                    FoodMatchSuggestions(
+                        state = state,
+                        baseline = scan?.matchEvidence(state.recognition),
+                        onAction = onMatchAction,
+                        onInspect = onInspectMatch,
+                        onSelect = onSelectMatch,
+                    )
                     state.recognition?.let { result ->
                         Text(stringResource(if (result.source == com.justcal.app.ai.PackageMacroAssistance.SOURCE)
                             R.string.ai_package_macro_suggestions else R.string.ai_suggestions),
@@ -187,8 +195,6 @@ internal fun CheckFoodScreen(
                             Text(result.evidence, style = MaterialTheme.typography.bodySmall)
                         }
                     }
-                    TextButton(onClick = onMatching, enabled = !state.busy) { Text(stringResource(R.string.match_open)) }
-                    FoodDuplicateChoices(state, onMatchAction, onReuseMatch)
                     input(FoodField.NAME, Modifier.fillMaxWidth())
                     Column(verticalArrangement = Arrangement.spacedBy(CalSpacing.related)) {
                         SectionTitle(stringResource(R.string.per_100g))
@@ -242,6 +248,17 @@ internal fun CheckFoodScreen(
     if (confirmDelete) EntryDeleteDialog(
         onDismiss = { confirmDelete = false },
         onConfirm = { confirmDelete = false; onDelete() },
+    )
+    if (state.matching.duplicates.isNotEmpty()) DuplicateProductDialog(
+        state = state,
+        onDismiss = { onMatchAction("cancel_duplicates") },
+        onReuse = onReuseMatch,
+        onKeepSeparate = { onMatchAction("separate") },
+        onDiaryOnly = { onMatchAction("diary") },
+    )
+    if (state.matching.pending != null && !state.matching.comparisonOpen) ReplacementDialog(
+        onDismiss = { onMatchAction("cancel") },
+        onConfirm = { onMatchAction("confirm") },
     )
 }
 

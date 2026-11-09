@@ -34,7 +34,6 @@ import java.time.Clock
 import java.time.LocalDate
 import java.util.UUID
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.first
 
 /** Each editor Activity owns a fresh, isolated Room graph. No production DI or diagnostics. */
 class FoodMatchingDemoActivity : AppCompatActivity() {
@@ -65,7 +64,14 @@ class FoodMatchingDemoActivity : AppCompatActivity() {
         enableEdgeToEdge()
         window.isNavigationBarContrastEnforced = false
         setContent {
-            JustCalTheme {
+            val preferences = remember { GoalPreferences(applicationContext) }
+            val appSettings by preferences.settings.collectAsState(initial = AppSettings())
+            val dark = when (appSettings.appearance) {
+                Appearance.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
+                Appearance.LIGHT -> false
+                Appearance.DARK -> true
+            }
+            JustCalTheme(darkTheme = dark, colorStyle = appSettings.colorStyle) {
                 if (scenario !in 0..3) DemoChooser(onBack = ::finish) { selected ->
                     startActivity(Intent(this, FoodMatchingDemoActivity::class.java).putExtra("scenario", selected))
                 } else {
@@ -79,18 +85,7 @@ class FoodMatchingDemoActivity : AppCompatActivity() {
                         }
                     }
                     if (!loaded) DemoStatus(if (failed) R.string.match_demo_error else null, ::finish)
-                    else {
-                        LaunchedEffect(editor) {
-                            val readyState = editor.state.first { !it.matching.searching && it.matching.candidates.isNotEmpty() }
-                            if (readyState.matching.memory.inspectedKey == null) {
-                                val candidates = readyState.matching.candidates
-                                val target = if (scenario == 1) candidates.firstOrNull { it.match?.category == FoodMatchCategory.CONFLICTING }
-                                    else if (scenario == 2) candidates.firstOrNull { it.historyEntryUuid != null } else candidates.firstOrNull()
-                                target?.let { editor.inspectMatch(it.key) }
-                            }
-                        }
-                        DemoEditor(editor, session.scan(scenario), ::finish)
-                    }
+                    else DemoEditor(editor, session.scan(scenario), ::finish)
                 }
             }
         }
@@ -139,7 +134,8 @@ private fun DemoEditor(editor: EditorViewModel, scan: PackageScanPrefill, onBack
         Box(Modifier.weight(1f)) {
             EditorScreen(state, false, editor::change, editor::save, {}, onBack, {}, scan = scan,
                 onMatchAction = editor::matchingAction, onInspectMatch = editor::inspectMatch,
-                onReuseMatch = editor::reuseDuplicate, onRetention = editor::setRetention,
+                onSelectMatch = editor::selectMatch, onReuseMatch = editor::reuseDuplicate,
+                onRetention = editor::setRetention,
                 onProductDetails = editor::changeProductDetails)
         }
     }
